@@ -9,7 +9,7 @@
  * android.*` here fails to compile rather than surviving to code review.
  */
 plugins {
-    id("minion.jvm.library")
+    id("mockserver.jvm.library")
 }
 
 dependencies {

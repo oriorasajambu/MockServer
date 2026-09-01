@@ -7,12 +7,12 @@
  * This is the only module where a raw colour, dimension or font may appear. A hex literal
  * anywhere else is a bug the design system was created to prevent.
  *
- * Showkase comes from the `minion.android.library.compose` convention, along with Compose itself.
+ * Showkase comes from the `mockserver.android.library.compose` convention, along with Compose itself.
  */
 plugins {
-    id("minion.android.library.compose")
+    id("mockserver.android.library.compose")
 }
 
 android {
-    namespace = "com.minion.scaffold.core.designsystem"
+    namespace = "com.rio.mockserver.core.designsystem"
 }

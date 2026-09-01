@@ -4,7 +4,7 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "com.minion.cashflowmanager.buildlogic"
+group = "com.rio.mockserver.buildlogic"
 
 // The convention plugins run inside the Gradle daemon, so they target the daemon's JVM (21 per
 // gradle/gradle-daemon-jvm.properties) rather than the Java 11 the Android modules compile to.

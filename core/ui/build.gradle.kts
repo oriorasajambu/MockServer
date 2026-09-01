@@ -9,11 +9,11 @@
  * May import `:core:domain`; may not import any repository implementation.
  */
 plugins {
-    id("minion.android.library.compose")
+    id("mockserver.android.library.compose")
 }
 
 android {
-    namespace = "com.minion.scaffold.core.ui"
+    namespace = "com.rio.mockserver.core.ui"
 }
 
 dependencies {

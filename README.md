@@ -54,7 +54,7 @@ There are no features. That is the point — clone it, rename the package, and r
 
 Three decisions do most of the work:
 
-**`:core:common`, `:core:domain` and `:core:navigation` apply `minion.jvm.library`, not the
+**`:core:common`, `:core:domain` and `:core:navigation` apply `mockserver.jvm.library`, not the
 Android plugin.** "No Android imports in the domain layer" becomes a compile error instead of a
 review comment.
 
@@ -76,12 +76,12 @@ drift apart.
 
 | Plugin | Applies to | Provides |
 |---|---|---|
-| `minion.android.application` | `:app` | `com.android.application`, compileSdk/minSdk/Java level, desugaring, Compose, Hilt, Showkase, test wiring |
-| `minion.android.library` | every Android library | the same, minus Compose; plus the `check` → `compileDebugAndroidTestKotlin` guard |
-| `minion.android.library.compose` | modules that draw | Compose BOM + bundles, Showkase processor |
-| `minion.android.hilt` | data-layer modules | Hilt + KSP, without dragging in Compose |
-| `minion.android.feature` | every `:feature:*` | Compose + Hilt + navigation + the core modules a feature may see |
-| `minion.jvm.library` | pure-Kotlin modules | `kotlin-jvm` only — deliberately no Android plugin |
+| `mockserver.android.application` | `:app` | `com.android.application`, compileSdk/minSdk/Java level, desugaring, Compose, Hilt, Showkase, test wiring |
+| `mockserver.android.library` | every Android library | the same, minus Compose; plus the `check` → `compileDebugAndroidTestKotlin` guard |
+| `mockserver.android.library.compose` | modules that draw | Compose BOM + bundles, Showkase processor |
+| `mockserver.android.hilt` | data-layer modules | Hilt + KSP, without dragging in Compose |
+| `mockserver.android.feature` | every `:feature:*` | Compose + Hilt + navigation + the core modules a feature may see |
+| `mockserver.jvm.library` | pure-Kotlin modules | `kotlin-jvm` only — deliberately no Android plugin |
 
 `check` depends on `compileDebugAndroidTestKotlin` on purpose. Neither `testDebugUnitTest` nor
 `assembleDebug` builds `androidTest` sources, so they can stop compiling with a green board and
@@ -214,9 +214,9 @@ lines you still have to add. Useful flags: `--dry-run`, `--force`, `--no-remote`
 
 ```
 feature/home/
-├── build.gradle.kts                     # id("minion.android.feature") + namespace. That's all.
+├── build.gradle.kts                     # id("mockserver.android.feature") + namespace. That's all.
 └── src/
-    ├── main/kotlin/com/minion/scaffold/feature/home/
+    ├── main/kotlin/com/rio/mockserver/feature/home/
     │   ├── presentation/                # HomeContract, HomeViewModel, HomeScreen, HomeNavigation
     │   ├── domain/                      # Article, ArticleRepository, GetArticlesUseCase
     │   ├── data/                        # ArticleApi, ArticleDto, ArticleMapper, …RepositoryImpl
@@ -266,15 +266,15 @@ wrong reason the moment the copy is reworded.
 
 ## 6. Renaming for a new project
 
-Everything is under `com.minion.scaffold`. To rebrand:
+Everything is under `com.rio.mockserver`. To rebrand:
 
-1. Replace `com.minion.scaffold` with your package across `*.kt`, `*.kts` and
+1. Replace `com.rio.mockserver` with your package across `*.kt`, `*.kts` and
    `scripts/scaffold_feature.py` (`BASE_PACKAGE`).
 2. Move the source directories to match.
 3. `settings.gradle.kts` — `rootProject.name`.
 4. `app/build.gradle.kts` — `applicationId`.
 5. `app/src/main/res/values/strings.xml` — `app_name`; and `themes.xml` if you rename
-   `Theme.Scaffold`.
+   `Theme.MockServer`.
 6. Replace the Material 3 baseline palette in `:core:designsystem` with your own tokens.
 
 ---

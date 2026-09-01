@@ -7,5 +7,5 @@
   file from becoming a thousand-line dumping ground nobody can safely delete from.
 -->
 <resources>
-    <string name="app_name">Android Scaffold</string>
+    <string name="app_name">Mock Server</string>
 </resources>

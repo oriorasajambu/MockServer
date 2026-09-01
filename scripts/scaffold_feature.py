@@ -30,7 +30,7 @@ import re
 import sys
 from pathlib import Path
 
-BASE_PACKAGE = "com.minion.scaffold"
+BASE_PACKAGE = "com.rio.mockserver"
 
 # --------------------------------------------------------------------------------------
 # Templates
@@ -39,7 +39,7 @@ BASE_PACKAGE = "com.minion.scaffold"
 BUILD_GRADLE = """/**
  * The __NAME__ feature: contract, ViewModel, screen, and its own data and domain packages.
  *
- * Everything this module needs comes from the `minion.android.feature` convention —
+ * Everything this module needs comes from the `mockserver.android.feature` convention —
  * :core:common, :core:domain, :core:navigation, :core:designsystem, :core:ui and :core:network,
  * plus Compose, Hilt and navigation. Add a dependency here only when this feature needs
  * something none of the others do.
@@ -48,7 +48,7 @@ BUILD_GRADLE = """/**
  * `internal`, which is what makes the module boundary real rather than decorative.
  */
 plugins {
-    id("minion.android.feature")
+    id("mockserver.android.feature")
 }
 
 android {
@@ -74,10 +74,10 @@ data object __NAME__Route : AppRoute
 CONTRACT = """package __PKG__
 
 import androidx.annotation.StringRes
-import com.minion.scaffold.core.common.error.DomainError
-import com.minion.scaffold.core.common.mvi.UiEffect
-import com.minion.scaffold.core.common.mvi.UiIntent
-import com.minion.scaffold.core.common.mvi.UiState
+import com.rio.mockserver.core.common.error.DomainError
+import com.rio.mockserver.core.common.mvi.UiEffect
+import com.rio.mockserver.core.common.mvi.UiIntent
+import com.rio.mockserver.core.common.mvi.UiState
 import __DOMAIN_PKG__.__NAME__
 
 /**
@@ -132,9 +132,9 @@ VIEWMODEL = """package __PKG__
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.minion.scaffold.core.common.result.onFailure
-import com.minion.scaffold.core.common.result.onSuccess
-import com.minion.scaffold.core.ui.mvi.MviViewModel
+import com.rio.mockserver.core.common.result.onFailure
+import com.rio.mockserver.core.common.result.onSuccess
+import com.rio.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import __PKG__.__NAME__State.ContentState
@@ -233,11 +233,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.minion.scaffold.core.common.error.DomainError
-import com.minion.scaffold.core.designsystem.theme.AppSpacing
-import com.minion.scaffold.core.designsystem.theme.AppTheme
-import com.minion.scaffold.core.ui.error.toMessageRes
-import com.minion.scaffold.core.ui.mvi.ObserveAsEvents
+import com.rio.mockserver.core.common.error.DomainError
+import com.rio.mockserver.core.designsystem.theme.AppSpacing
+import com.rio.mockserver.core.designsystem.theme.AppTheme
+import com.rio.mockserver.core.ui.error.toMessageRes
+import com.rio.mockserver.core.ui.mvi.ObserveAsEvents
 import kotlinx.coroutines.launch
 import __FEATURE_PKG__.R
 import __PKG__.__NAME__State.ContentState
@@ -401,7 +401,7 @@ NAVIGATION = """package __PKG__
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.minion.scaffold.core.navigation.__NAME__Route
+import com.rio.mockserver.core.navigation.__NAME__Route
 
 /**
  * This module's entire public surface.
@@ -437,7 +437,7 @@ internal data class __NAME__(
 
 REPOSITORY = """package __PKG__
 
-import com.minion.scaffold.core.common.result.AppResult
+import com.rio.mockserver.core.common.result.AppResult
 
 /**
  * What the __NAME__ feature needs from the outside world, stated in the domain's own terms.
@@ -455,7 +455,7 @@ internal interface __NAME__Repository {
 
 USECASE = """package __PKG__
 
-import com.minion.scaffold.core.common.result.AppResult
+import com.rio.mockserver.core.common.result.AppResult
 import javax.inject.Inject
 
 /**
@@ -534,9 +534,9 @@ internal fun __NAME__Dto.toDomain(): __NAME__ = __NAME__(
 
 REPOSITORY_IMPL = """package __PKG__
 
-import com.minion.scaffold.core.common.result.AppResult
-import com.minion.scaffold.core.common.result.map
-import com.minion.scaffold.core.network.error.safeCall
+import com.rio.mockserver.core.common.result.AppResult
+import com.rio.mockserver.core.common.result.map
+import com.rio.mockserver.core.network.error.safeCall
 import __DOMAIN_PKG__.__NAME__
 import __DOMAIN_PKG__.__NAME__Repository
 import javax.inject.Inject
@@ -564,7 +564,7 @@ internal class __NAME__RepositoryImpl @Inject constructor(
 
 REPOSITORY_IMPL_STUB = """package __PKG__
 
-import com.minion.scaffold.core.common.result.AppResult
+import com.rio.mockserver.core.common.result.AppResult
 import __DOMAIN_PKG__.__NAME__
 import __DOMAIN_PKG__.__NAME__Repository
 import javax.inject.Inject
@@ -655,9 +655,9 @@ STRINGS = """<?xml version="1.0" encoding="utf-8"?>
 TEST = """package __PKG__
 
 import app.cash.turbine.test
-import com.minion.scaffold.core.common.error.DomainError
-import com.minion.scaffold.core.common.result.AppResult
-import com.minion.scaffold.core.testing.MainDispatcherRule
+import com.rio.mockserver.core.common.error.DomainError
+import com.rio.mockserver.core.common.result.AppResult
+import com.rio.mockserver.core.testing.MainDispatcherRule
 import __DOMAIN_PKG__.__NAME__
 import __USECASE_PKG__.Get__PLURAL__UseCase
 import androidx.lifecycle.SavedStateHandle

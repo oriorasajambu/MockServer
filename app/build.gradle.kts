@@ -2,19 +2,19 @@
  * The host. Nav graph, DI aggregation, `Application`, `MainActivity` — nothing else.
  *
  * Everything shared with the library modules (compileSdk, Java level, desugaring, Compose, Hilt,
- * Showkase, test wiring) lives in the `minion.android.application` convention so this file and
- * `minion.android.library` cannot drift apart. What stays here is what is genuinely unique to
+ * Showkase, test wiring) lives in the `mockserver.android.application` convention so this file and
+ * `mockserver.android.library` cannot drift apart. What stays here is what is genuinely unique to
  * the application: identity, versioning, environment constants, and the module graph.
  */
 plugins {
-    id("minion.android.application")
+    id("mockserver.android.application")
 }
 
 android {
-    namespace = "com.minion.scaffold"
+    namespace = "com.rio.mockserver"
 
     defaultConfig {
-        applicationId = "com.minion.scaffold"
+        applicationId = "com.rio.mockserver"
         versionCode = 1
         versionName = "1.0"
     }

@@ -160,7 +160,7 @@ kotlin-serializable = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 # Plugins defined by this project
-minion-android-library = { id = "minion.android.library" }
+mockserver-android-library = { id = "mockserver.android.library" }
 
 [bundles]
 jetpack = [

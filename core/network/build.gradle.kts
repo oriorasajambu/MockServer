@@ -12,12 +12,12 @@
  * reads a `BuildConfig` — that is what would quietly make it app-specific.
  */
 plugins {
-    id("minion.android.library")
-    id("minion.android.hilt")
+    id("mockserver.android.library")
+    id("mockserver.android.hilt")
 }
 
 android {
-    namespace = "com.minion.scaffold.core.network"
+    namespace = "com.rio.mockserver.core.network"
 }
 
 dependencies {

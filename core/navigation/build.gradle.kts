@@ -10,9 +10,9 @@
  * id instead.
  */
 plugins {
-    id("minion.jvm.library")
+    id("mockserver.jvm.library")
     // Applied here rather than in the convention: this is the only pure-Kotlin module that
-    // declares @Serializable types, and putting the plugin in minion.jvm.library would force it
+    // declares @Serializable types, and putting the plugin in mockserver.jvm.library would force it
     // on :core:common and :core:domain, which do not need it.
     alias(libs.plugins.kotlin.serializable)
 }

@@ -26,7 +26,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AndroidScaffold"
+rootProject.name = "MockServer"
 
 // The only module that may see both a feature and a repository implementation: it assembles the
 // navigation graph and the DI graph, and does nothing else.
