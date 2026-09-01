@@ -4,14 +4,12 @@ import org.gradle.api.artifacts.VersionCatalogsExtension
  * The convention every `:feature:*` module applies: Compose + Hilt + navigation + the MVI plumbing.
  *
  * A feature module gets `:core:common`, `:core:domain`, `:core:navigation`, `:core:designsystem`,
- * `:core:ui` (which carries the `MviViewModel` base) and `:core:network` for free.
+ * and `:core:ui` (which carries the `MviViewModel` base) for free.
  *
- * `:core:network` is here because a feature owns its whole vertical slice: its `*Api`, its DTOs,
- * its mappers and its repository implementation, all `internal`, bound by an `internal` Hilt
- * module. What it gets from `:core:network` is the shared `Retrofit` and the error boundary
- * (`safeCall`), not another feature's data. `:core:data` is deliberately absent — that module is
- * for data genuinely shared between features, and a feature reaching into it would be reaching
- * past the repository interface it is supposed to depend on.
+ * There is no `:core:network` in this app: it makes no outbound HTTP calls, so a feature has no
+ * `*Api` and no wire DTOs of its own. Everything a feature needs arrives through a repository
+ * interface declared in `:core:domain`. `:core:data` is deliberately absent from this list —
+ * a feature depending on it would be reaching past that interface to the implementation.
  *
  * `:core:navigation` is how a feature reaches another feature's screen without depending on it —
  * both sides know only the route contract.
@@ -30,7 +28,6 @@ dependencies {
     add("implementation", project(":core:navigation"))
     add("implementation", project(":core:designsystem"))
     add("implementation", project(":core:ui"))
-    add("implementation", project(":core:network"))
 
     add("implementation", libs.findBundle("lifecycle").get())
     add("implementation", libs.findLibrary("androidx-lifecycle-runtime-compose").get())

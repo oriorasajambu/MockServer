@@ -4,17 +4,35 @@
 
   These live in :core:ui rather than :app because the mapping function lives here, and a string
   resource and the code that references it should not be able to drift into different modules.
+
+  Tone: say what happened and what to do about it. This is a developer tool, so naming the actual
+  port or pattern is more useful than a reassuring generality.
 -->
 <resources>
-    <string name="error_no_internet">No internet connection. Check your network and try again.</string>
-    <string name="error_timeout">The request took too long. Try again.</string>
-    <string name="error_unauthorized">Your session has expired. Please sign in again.</string>
-    <string name="error_not_found">We couldn\'t find what you were looking for.</string>
-    <string name="error_server">Something went wrong on our end. Try again shortly.</string>
-    <string name="error_empty_cache">Nothing saved on this device yet. Connect to load it.</string>
+    <string name="error_port_unavailable">Ports %1$d–%2$d are all in use. Pick a different port in Settings.</string>
+    <string name="error_bind_failed">The server could not open a socket. Check that Wi‑Fi or the hotspot is on.</string>
+    <string name="error_pattern_unnamed_param">%1$s has a capture with no name. Write it as {id}.</string>
+    <string name="error_pattern_tail_not_last">%1$s uses ** before the end. A tail wildcard can only be the last segment.</string>
+    <string name="error_pattern_unbalanced">%1$s has an unmatched brace.</string>
+    <string name="error_pattern_duplicate_param">%1$s uses the same capture name twice.</string>
+    <string name="error_import_parse">That file could not be parsed.</string>
+    <string name="error_import_parse_at">That file could not be parsed at %1$s.</string>
+    <string name="error_import_unsupported">That file is not an OpenAPI, Postman or HAR document.</string>
+    <string name="error_persistence">Saving failed. Your change was not written.</string>
     <string name="error_disk_full">Your device is out of storage.</string>
-    <string name="error_invalid_email">Enter a valid email address.</string>
-    <string name="error_invalid_password">Your password doesn\'t meet the requirements.</string>
-    <string name="error_invalid_name">Enter a name.</string>
+    <string name="error_file_access">That file could not be opened.</string>
+    <string name="error_not_found">That item no longer exists.</string>
+    <string name="error_invalid_port">Enter a port between 1024 and 65535.</string>
+    <string name="error_invalid_collection_name">Enter a collection name.</string>
+    <string name="error_invalid_base_path">Enter a base path, for example /api/v1.</string>
+    <string name="error_invalid_route_name">Enter a route name.</string>
+    <string name="error_invalid_status_code">Enter a status code between 100 and 599.</string>
+    <string name="error_invalid_response_body">The body is not valid JSON, and Content-Type says it is.</string>
+    <string name="error_invalid_matcher">This matcher needs a name and a value.</string>
+    <string name="error_invalid_probability">Enter a probability between 0 and 100%.</string>
+    <string name="error_invalid_delay">Enter a delay between 0 and 60000 ms.</string>
+    <string name="error_cors_credentials_wildcard">Credentials cannot be allowed with origin *. Browsers reject that combination — name the origins instead.</string>
+    <string name="error_invalid_log_capacity">Enter a log size between 50 and 2000 entries.</string>
+    <string name="error_invalid_api_key_header">Enter a header name, for example X-Mock-Key.</string>
     <string name="error_unknown">Something went wrong. Try again.</string>
 </resources>
