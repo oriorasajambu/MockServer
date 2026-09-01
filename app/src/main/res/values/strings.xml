@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  App-level strings only: the launcher label and anything else that belongs to the shell.
+
+  Screen copy lives in the feature module that shows it, and error copy lives in :core:ui next to
+  the mapping that resolves it. Keeping strings beside the code that uses them is what stops this
+  file from becoming a thousand-line dumping ground nobody can safely delete from.
+-->
+<resources>
+    <string name="app_name">Android Scaffold</string>
+</resources>

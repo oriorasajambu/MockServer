@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only launcher for the Showkase browser.
+
+  A separate home-screen icon rather than a button inside the app: the catalog is a developer tool,
+  and a developer entry point placed in the product UI is how it ends up shipping. Declared only in
+  the debug source set, so it cannot reach release.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <activity
+            android:name=".showkase.ShowkaseLauncherActivity"
+            android:exported="true"
+            android:label="@string/showkase_browser_name"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

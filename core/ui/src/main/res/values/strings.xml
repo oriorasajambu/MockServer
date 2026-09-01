@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The user-facing text for every DomainError, resolved by DomainError.toMessageRes().
+
+  These live in :core:ui rather than :app because the mapping function lives here, and a string
+  resource and the code that references it should not be able to drift into different modules.
+-->
+<resources>
+    <string name="error_no_internet">No internet connection. Check your network and try again.</string>
+    <string name="error_timeout">The request took too long. Try again.</string>
+    <string name="error_unauthorized">Your session has expired. Please sign in again.</string>
+    <string name="error_not_found">We couldn\'t find what you were looking for.</string>
+    <string name="error_server">Something went wrong on our end. Try again shortly.</string>
+    <string name="error_empty_cache">Nothing saved on this device yet. Connect to load it.</string>
+    <string name="error_disk_full">Your device is out of storage.</string>
+    <string name="error_invalid_email">Enter a valid email address.</string>
+    <string name="error_invalid_password">Your password doesn\'t meet the requirements.</string>
+    <string name="error_invalid_name">Enter a name.</string>
+    <string name="error_unknown">Something went wrong. Try again.</string>
+</resources>

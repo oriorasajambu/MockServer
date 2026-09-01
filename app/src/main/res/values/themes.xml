@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The XML theme exists only for the window before Compose draws.
+
+  Everything the app renders is styled by AppTheme in :core:designsystem. What is left here is the
+  handful of attributes the system reads before the first frame: the splash screen, and the window
+  background that shows through until setContent runs.
+-->
+<resources>
+
+    <!--
+      The launch theme, named in AndroidManifest.xml. installSplashScreen() swaps it for
+      postSplashScreenTheme once the activity is ready — which is why MainActivity must call that
+      before super.onCreate().
+    -->
+    <style name="Theme.Scaffold.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+        <item name="postSplashScreenTheme">@style/Theme.Scaffold</item>
+    </style>
+
+    <!-- The theme the window keeps after the splash. Compose supplies everything visible. -->
+    <style name="Theme.Scaffold" parent="android:Theme.Material.Light.NoActionBar" />
+
+</resources>

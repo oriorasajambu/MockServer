@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug source set: this label never reaches a release build. -->
+<resources>
+    <string name="showkase_browser_name">Scaffold Components</string>
+</resources>
