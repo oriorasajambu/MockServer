@@ -1,5 +1,6 @@
 package com.minion.mockserver.core.ui.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -9,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -28,11 +30,20 @@ import com.minion.mockserver.core.ui.R
  * everybody notices in use. It also fixes the back affordance in one place: a full-screen
  * destination gets an arrow, a tab does not.
  *
+ * That same distinction drives the rest of the bar, which is why this is one component and not
+ * two. [onBack] is what separates a **tab root** from a **pushed screen**, and the design gives
+ * them different chrome: a tab wears its title at `headlineSmall` over a faded rule, because it
+ * is the top of a section and the rule is where the section starts; a pushed screen wears
+ * `titleMedium` with an optional [subtitle] beneath, because it is describing one object and the
+ * subtitle is that object's identity.
+ *
  * **The insets are deliberately zeroed.** The host `Scaffold` in the nav graph has already
  * consumed the status bar for its own content padding, so a toolbar that consumed them again
  * would sit a status bar's height too low on every screen.
  *
  * @param onBack `null` on a bottom-bar tab, which has nowhere to go back to
+ * @param subtitle the second line on a pushed screen — a route path, a collection name. Ignored
+ *   on a tab root, which has no object to name.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,24 +51,57 @@ fun AppToolbar(
     title: String,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
+    subtitle: String? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    TopAppBar(
-        title = { Text(text = title, maxLines = 1, overflow = TextOverflow.MiddleEllipsis) },
-        modifier = modifier,
-        navigationIcon = {
-            if (onBack != null) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.toolbar_back),
+    val isTabRoot = onBack == null
+
+    Column(modifier = modifier) {
+        TopAppBar(
+            title = {
+                Column {
+                    Text(
+                        text = title,
+                        style = if (isTabRoot) {
+                            MaterialTheme.typography.headlineSmall
+                        } else {
+                            MaterialTheme.typography.titleMedium
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.MiddleEllipsis,
                     )
+                    // Middle-ellipsised rather than end-ellipsised: a subtitle here is usually a
+                    // path, and the tail of a path is the part that identifies it.
+                    if (!isTabRoot && subtitle != null) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.MiddleEllipsis,
+                        )
+                    }
                 }
-            }
-        },
-        actions = actions,
-        windowInsets = WindowInsets(0),
-    )
+            },
+            navigationIcon = {
+                if (onBack != null) {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.toolbar_back),
+                        )
+                    }
+                }
+            },
+            actions = actions,
+            windowInsets = WindowInsets(0),
+        )
+        // Only under a tab root. A pushed screen is already bounded by the back arrow and the
+        // screen it came from; a rule there would be a second edge saying the same thing.
+        if (isTabRoot) {
+            FadedDivider()
+        }
+    }
 }
 
 /**
@@ -74,13 +118,21 @@ fun AppScaffold(
     title: String,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
+    subtitle: String? = null,
     actions: @Composable RowScope.() -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = { AppToolbar(title = title, onBack = onBack, actions = actions) },
+        topBar = {
+            AppToolbar(
+                title = title,
+                onBack = onBack,
+                subtitle = subtitle,
+                actions = actions,
+            )
+        },
         floatingActionButton = floatingActionButton,
         content = content,
     )
@@ -90,7 +142,7 @@ fun AppScaffold(
 @Composable
 internal fun AppToolbarPreview() {
     AppTheme {
-        AppToolbar(title = "Orders API", onBack = {})
+        AppToolbar(title = "Orders API", onBack = {}, subtitle = "/api/v1/orders/{id}")
     }
 }
 

@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,6 +30,7 @@ import com.minion.mockserver.core.domain.model.MockRoute
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.EmptyState
 import com.minion.mockserver.core.ui.component.ExportActionRow
+import com.minion.mockserver.core.ui.component.FlatDivider
 import com.minion.mockserver.core.ui.component.RouteRow
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -209,7 +209,7 @@ internal fun CollectionDetailContent(
                                 onIntent(CollectionDetailIntent.DuplicateRoute(route.id))
                             },
                         )
-                        HorizontalDivider()
+                        FlatDivider()
                     }
                 }
             }

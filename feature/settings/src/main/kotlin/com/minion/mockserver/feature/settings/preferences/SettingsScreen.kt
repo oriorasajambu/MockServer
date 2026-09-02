@@ -12,7 +12,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -33,6 +32,7 @@ import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.ExportActionRow
+import com.minion.mockserver.core.ui.component.FadedDivider
 import com.minion.mockserver.core.ui.component.LabelledTextField
 import com.minion.mockserver.core.ui.component.SectionTitle
 import com.minion.mockserver.core.ui.component.ToggleRow
@@ -112,17 +112,17 @@ internal fun SettingsContent(
             }
 
             ServerSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
+            FadedDivider()
             AccessSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
+            FadedDivider()
             ChaosSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
+            FadedDivider()
             TrafficLogSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
+            FadedDivider()
             UnmatchedSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
+            FadedDivider()
             DataSection(onIntent = onIntent)
-            HorizontalDivider()
+            FadedDivider()
             BatterySection(onIntent = onIntent)
         }
     }

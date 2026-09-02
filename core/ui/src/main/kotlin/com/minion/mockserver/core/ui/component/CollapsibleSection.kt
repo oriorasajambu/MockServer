@@ -2,7 +2,6 @@ package com.minion.mockserver.core.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,7 +39,7 @@ fun CollapsibleSection(
         if (isExpanded) {
             content()
         }
-        HorizontalDivider()
+        FadedDivider()
     }
 }
 

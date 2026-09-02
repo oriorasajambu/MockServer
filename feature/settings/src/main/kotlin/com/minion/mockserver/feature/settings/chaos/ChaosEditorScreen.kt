@@ -11,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,6 +27,7 @@ import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.domain.model.DelaySpec
 import com.minion.mockserver.core.ui.component.AppScaffold
+import com.minion.mockserver.core.ui.component.FlatDivider
 import com.minion.mockserver.core.ui.component.LabelledTextField
 import com.minion.mockserver.core.ui.component.ProbabilitySlider
 import com.minion.mockserver.core.ui.error.toMessageRes
@@ -112,7 +112,7 @@ internal fun ChaosEditorContent(
                         }
                     }
                 }
-                HorizontalDivider()
+                FlatDivider()
             }
         }
     }

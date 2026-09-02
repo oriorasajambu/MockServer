@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -39,6 +38,7 @@ import com.minion.mockserver.core.domain.model.HttpMethodFilter
 import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.EmptyState
+import com.minion.mockserver.core.ui.component.FlatDivider
 import com.minion.mockserver.core.ui.component.TrafficRow
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -155,7 +155,7 @@ internal fun TrafficContent(
                                 entry = entry,
                                 onClick = { onIntent(TrafficIntent.OpenEntry(entry.id)) },
                             )
-                            HorizontalDivider()
+                            FlatDivider()
                         }
                     }
                 }

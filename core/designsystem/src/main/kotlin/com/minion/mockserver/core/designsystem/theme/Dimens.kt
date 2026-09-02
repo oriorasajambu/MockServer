@@ -66,6 +66,19 @@ object Dimens {
     val switchSmallWidth = 30.dp
     val switchSmallHeight = 18.dp
 
+    /**
+     * Gap between the toggle thumb and the edge of its track.
+     *
+     * Named rather than derived because the two sizes are not a scale of each other: the small
+     * toggle keeps a proportionally larger thumb, which is what stops it reading as a dash at
+     * 18dp tall.
+     */
+    val switchThumbInset = 3.dp
+    val switchSmallThumbInset = 2.dp
+
+    /** An icon inside a badge, a callout or a dialog header's circle. */
+    val iconSmall = 18.dp
+
     /** The tinted circle carrying a dialog or sheet header's icon. */
     val dialogIconSize = 34.dp
 
@@ -98,6 +111,26 @@ object Dimens {
 
     /** Width of the coloured method badge, so paths in a list all start at the same x. */
     val methodBadgeWidth = 56.dp
+
+    /**
+     * A hairline rule. Thinner than [spaceQuarter], which is a gap, not a stroke.
+     */
+    val hairline = 1.dp
+
+    /**
+     * How far a freestanding rule takes to fade in from transparent at each end.
+     *
+     * One of Nocturne's signatures: rules do not stop cleanly, they dissolve. Only freestanding
+     * rules fade — a divider between two list rows stays flat, because a fade there would read as
+     * a rendering fault rather than as a choice.
+     */
+    val dividerFadeLength = 48.dp
+
+    /** The state dot on the server screen, and the unsaved-changes mark on an editor tab. */
+    val stateDotSize = 8.dp
+
+    /** The ring around a running state dot. Absent when stopped — the glow *is* the signal. */
+    val stateDotGlowSize = 18.dp
 
     // ── Surfaces ─────────────────────────────────────────────────────────────────────────────
 

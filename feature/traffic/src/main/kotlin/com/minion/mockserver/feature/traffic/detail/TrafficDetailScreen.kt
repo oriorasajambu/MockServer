@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
@@ -30,6 +29,7 @@ import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.BodyBlock
 import com.minion.mockserver.core.ui.component.EmptyState
+import com.minion.mockserver.core.ui.component.FadedDivider
 import com.minion.mockserver.core.ui.component.HeaderTable
 import com.minion.mockserver.core.ui.component.MethodPill
 import com.minion.mockserver.core.ui.component.StatusBadge
@@ -249,7 +249,7 @@ private fun Header(
             }
         }
 
-        HorizontalDivider()
+        FadedDivider()
     }
 }
 

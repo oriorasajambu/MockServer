@@ -9,10 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +29,8 @@ import com.minion.mockserver.core.domain.model.MockCollection
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.CollectionRow
 import com.minion.mockserver.core.ui.component.EmptyState
+import com.minion.mockserver.core.ui.component.FlatDivider
+import com.minion.mockserver.core.ui.component.MockSwitch
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
 import com.minion.mockserver.core.ui.util.showToast
@@ -98,7 +98,7 @@ internal fun CollectionsContent(
                         onToggle = { onIntent(CollectionsIntent.ToggleCollection(collection.id, it)) },
                         onEdit = { onIntent(CollectionsIntent.EditCollection(collection.id)) },
                     )
-                    HorizontalDivider()
+                    FlatDivider()
                 }
             }
         }
@@ -144,7 +144,7 @@ private fun CollectionDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(stringResource(R.string.collections_cors))
-                    Switch(
+                    MockSwitch(
                         checked = draft.corsEnabled,
                         onCheckedChange = { onIntent(CollectionsIntent.UpdateDraftCors(it)) },
                     )
@@ -162,7 +162,7 @@ private fun CollectionDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(stringResource(R.string.collections_credentials))
-                        Switch(
+                        MockSwitch(
                             checked = draft.allowCredentials,
                             onCheckedChange = { onIntent(CollectionsIntent.UpdateDraftCredentials(it)) },
                         )

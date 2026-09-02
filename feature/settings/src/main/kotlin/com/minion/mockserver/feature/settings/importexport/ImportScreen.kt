@@ -14,7 +14,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -34,6 +33,8 @@ import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ImportConflict
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.EmptyState
+import com.minion.mockserver.core.ui.component.FadedDivider
+import com.minion.mockserver.core.ui.component.FlatDivider
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
 import com.minion.mockserver.core.ui.util.showToast
@@ -179,7 +180,7 @@ internal fun ImportContent(
                     }
                 }
 
-                HorizontalDivider()
+                FadedDivider()
 
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(items = preview.routes, key = { it.route.id }) { imported ->
@@ -223,7 +224,7 @@ internal fun ImportContent(
                                 }
                             }
                         }
-                        HorizontalDivider()
+                        FlatDivider()
                     }
                 }
 
