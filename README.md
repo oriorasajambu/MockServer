@@ -10,17 +10,20 @@ It exists to build client UIs before a backend does, to trigger error states on 
 demo an integration with no network at all.
 
 ```bash
-./gradlew build          # compiles everything, runs unit tests, compiles androidTest, lints
-./gradlew testDebugUnitTest
+./gradlew build     # compiles every module, runs all 171 tests, lints, builds the release APK
 ```
 
-Built from the specification in `SPEC-1.md`. Where the code departs from it, the KDoc at that
-point says so and why.
+**Use `build`, not `testDebugUnitTest`.** The whole suite lives in the pure-Kotlin modules, which
+expose `test` rather than `testDebugUnitTest`; the Android modules have no tests at all. So
+`./gradlew testDebugUnitTest` reports success having run *nothing*. See §4.
+
+Built from the specification in [`docs/finished/SPEC-1.md`](docs/finished/SPEC-1.md). Where the
+code departs from it, the KDoc at that point says so and why.
 
 One departure is too diffuse to annotate at a point: the package is **`com.minion.mockserver`**,
 not the `com.rio.mockserver` the spec's tree shows. That was settled in review, after the spec was
-written. `SPEC-1.md` is left as it was authored rather than back-edited, so it stays the document
-the work was quoted against.
+written. The spec is left as it was authored rather than back-edited, so it stays the document the
+work was quoted against.
 
 ---
 
@@ -35,7 +38,7 @@ the work was quoted against.
 | **Traffic inspector** | In-memory live log, auto-follow, filters, full-text search, cURL and HAR export |
 | **Chaos** | Delay, injected error statuses, connection resets, truncated bodies — seeded, so failures replay |
 | **Import** | OpenAPI 3.0/3.1 (JSON and YAML), Postman v2.1, HAR 1.2 |
-| **Export** | Native JSON, Postman v2.1, HAR 1.2, cURL |
+| **Export** | Native JSON, Postman v2.1, HAR 1.2, cURL — to the share sheet or to a file |
 | **Discovery** | Ranked address list, QR code, mDNS/NSD advertisement |
 | **Access control** | Optional API-key header |
 
@@ -57,7 +60,8 @@ matchers, WebSocket/SSE, scenario state machines, tablet or landscape layouts.
 ├── :core:importexport    Pure Kotlin. OpenAPI / Postman / HAR / native wire formats.
 ├── :core:navigation      Pure Kotlin. @Serializable route contracts only.
 ├── :core:designsystem    AppTheme, colour/type/shape tokens, Dimens.
-├── :core:ui              MviViewModel, ObserveAsEvents, DomainError → @StringRes, shared widgets.
+├── :core:ui              MviViewModel, ObserveAsEvents, DomainError → @StringRes, and the
+│                         shared widget library every screen is assembled from.
 ├── :core:data            Room, DataStore, the foreground service, NSD, QR, repository impls.
 ├── :core:testing         MainDispatcherRule, fakes. Consumed via testImplementation.
 │
@@ -151,8 +155,14 @@ is lying to you.
 ## 4. Testing
 
 ```bash
-./gradlew testDebugUnitTest
+./gradlew build     # or ./gradlew test for the suite alone
 ```
+
+**`testDebugUnitTest` runs zero tests, and says nothing about it.** Every test in this project
+lives in a module that applies `mockserver.jvm.library`, and a JVM module exposes `test`, not
+`testDebugUnitTest`. The Android modules have no tests, so the task finds nothing to do and exits
+green. It is the one command that can make an untested tree look tested — confirm a real run by
+counting `**/build/test-results/**/TEST-*.xml`, which should be 12 suites.
 
 171 tests, all on the JVM, split the way SPEC §14 asks:
 
@@ -234,6 +244,12 @@ it. `e.message` never reaches state — it is developer text, frequently `null`,
   invalidated by a configuration change, so text goes stale after a locale switch.
 - **Give every `LazyColumn` item a stable `key`.** Without one, inserting at the top — which the
   traffic log does constantly — recomposes every row.
+- **A `Row` that runs out of width squeezes; it does not overflow.** A `TextButton` compressed to
+  sixty dips breaks its label mid-word down a four-line column, and a weighted `Text` beside three
+  fixed-width controls shreds a path into stacked fragments. This bit three separate rows here, and
+  Compose warns about none of it. Either give the text `maxLines = 1` with an overflow, or use a
+  `FlowRow` so the row wraps — and remember that a longer translation or a larger font scale turns
+  a row that fits today into one that does not.
 - **A bare `}` in a regex compiles on the JVM and throws on a device.** The JVM engine treats it
   as a literal; Android's ICU engine calls it a syntax error. Every unit test passes and the app
   crashes on launch of whichever screen holds the pattern. Escape both braces: `\}\}`, not `}}`.
