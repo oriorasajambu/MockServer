@@ -1,4 +1,4 @@
-package com.minion.mockserver.feature.traffic
+package com.minion.mockserver.feature.traffic.detail
 
 import com.minion.mockserver.core.common.mvi.UiEffect
 import com.minion.mockserver.core.common.mvi.UiIntent

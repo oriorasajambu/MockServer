@@ -1,4 +1,4 @@
-package com.minion.mockserver.feature.server
+package com.minion.mockserver.feature.server.status
 
 import com.minion.mockserver.core.common.error.DomainError
 import com.minion.mockserver.core.common.mvi.UiEffect

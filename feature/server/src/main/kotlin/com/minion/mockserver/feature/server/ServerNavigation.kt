@@ -5,6 +5,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.minion.mockserver.core.navigation.QrRoute
 import com.minion.mockserver.core.navigation.ServerRoute
+import com.minion.mockserver.feature.server.qr.QrScreen
+import com.minion.mockserver.feature.server.status.ServerScreen
 
 /**
  * This module's entire public API.

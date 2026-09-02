@@ -1,4 +1,4 @@
-package com.minion.mockserver.feature.server
+package com.minion.mockserver.feature.server.status
 
 import androidx.lifecycle.viewModelScope
 import com.minion.mockserver.core.common.result.AppResult

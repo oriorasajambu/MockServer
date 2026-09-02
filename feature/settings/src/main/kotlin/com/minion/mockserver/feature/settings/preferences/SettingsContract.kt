@@ -1,4 +1,4 @@
-package com.minion.mockserver.feature.settings
+package com.minion.mockserver.feature.settings.preferences
 
 import com.minion.mockserver.core.common.error.DomainError
 import com.minion.mockserver.core.common.mvi.UiEffect

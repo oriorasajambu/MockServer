@@ -1,5 +1,6 @@
-package com.minion.mockserver.feature.traffic
+package com.minion.mockserver.feature.traffic.detail
 
+import com.minion.mockserver.feature.traffic.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

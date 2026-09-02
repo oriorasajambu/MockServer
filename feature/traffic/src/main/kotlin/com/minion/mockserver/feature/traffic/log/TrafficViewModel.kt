@@ -1,4 +1,4 @@
-package com.minion.mockserver.feature.traffic
+package com.minion.mockserver.feature.traffic.log
 
 import androidx.lifecycle.viewModelScope
 import com.minion.mockserver.core.common.config.AppConstants

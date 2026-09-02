@@ -1,5 +1,6 @@
-package com.minion.mockserver.feature.server
+package com.minion.mockserver.feature.server.status
 
+import com.minion.mockserver.feature.server.R
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement

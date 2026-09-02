@@ -1,4 +1,4 @@
-package com.minion.mockserver.feature.traffic
+package com.minion.mockserver.feature.traffic.log
 
 import com.minion.mockserver.core.common.error.DomainError
 import com.minion.mockserver.core.common.mvi.UiEffect

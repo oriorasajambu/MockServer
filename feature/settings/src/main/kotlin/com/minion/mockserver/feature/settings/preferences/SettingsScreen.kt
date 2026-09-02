@@ -1,5 +1,6 @@
-package com.minion.mockserver.feature.settings
+package com.minion.mockserver.feature.settings.preferences
 
+import com.minion.mockserver.feature.settings.R
 import android.content.Intent
 import android.provider.Settings as AndroidSettings
 import androidx.compose.foundation.horizontalScroll

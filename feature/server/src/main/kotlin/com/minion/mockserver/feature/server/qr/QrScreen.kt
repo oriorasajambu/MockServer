@@ -1,5 +1,6 @@
-package com.minion.mockserver.feature.server
+package com.minion.mockserver.feature.server.qr
 
+import com.minion.mockserver.feature.server.R
 import android.app.Activity
 import android.view.WindowManager
 import androidx.compose.foundation.Image

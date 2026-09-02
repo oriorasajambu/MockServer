@@ -1,4 +1,4 @@
-package com.minion.mockserver.feature.server
+package com.minion.mockserver.feature.server.status
 
 import android.content.Context
 import com.minion.mockserver.core.data.discovery.NsdAdvertiser

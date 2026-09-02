@@ -82,6 +82,23 @@ exercised on a plain JVM with no device and no emulator.
 **Everything in a feature module is `internal` except the navigation entry point.** A feature's
 public API is `fun NavGraphBuilder.serverScreen(...)` and nothing else.
 
+**One package per screen, and only `<Feature>Navigation.kt` at the module root.** Each package
+holds that screen's three files — `<Screen>Contract.kt`, `<Screen>ViewModel.kt`,
+`<Screen>Screen.kt` — plus whatever platform seam it alone needs:
+
+```
+:feature:traffic                  :feature:server            :feature:settings
+├── TrafficNavigation.kt          ├── ServerNavigation.kt     ├── SettingsNavigation.kt
+├── log/                          ├── status/                 ├── preferences/
+└── detail/                       └── qr/                     ├── chaos/
+                                                              └── importexport/
+```
+
+The package is named for the screen, not for the module, so `:feature:server`'s main screen lives
+in `status/` rather than in `server.server`. Flat modules were the alternative and they do not
+survive a second screen: the root fills with `XContract`, `XViewModel`, `XScreen`, `YContract`…
+and nothing says which three belong together.
+
 **Bindings live with their implementations.** Each has its own `internal @Module`; a central
 `:core:di` would have to depend on every feature, inverting the direction the graph enforces.
 

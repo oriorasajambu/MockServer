@@ -1,4 +1,4 @@
-package com.minion.mockserver.feature.settings
+package com.minion.mockserver.feature.settings.preferences
 
 import android.content.Context
 import com.minion.mockserver.core.data.service.MockServerService

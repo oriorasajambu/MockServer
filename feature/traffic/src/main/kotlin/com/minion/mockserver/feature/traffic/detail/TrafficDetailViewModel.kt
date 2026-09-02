@@ -1,4 +1,4 @@
-package com.minion.mockserver.feature.traffic
+package com.minion.mockserver.feature.traffic.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
