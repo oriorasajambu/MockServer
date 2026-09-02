@@ -97,6 +97,7 @@ fun AppNavHost(
                 onNavigateToCollection = { id -> navController.navigate(CollectionDetailRoute(id)) },
             )
             collectionDetailScreen(
+                onNavigateBack = navController::popBackStack,
                 onNavigateToEditor = { routeId ->
                     val collectionId = navController.currentCollectionId() ?: return@collectionDetailScreen
                     navController.navigate(RouteEditorRoute(collectionId, routeId))
@@ -118,6 +119,7 @@ fun AppNavHost(
                 },
             )
             trafficDetailScreen(
+                onNavigateBack = navController::popBackStack,
                 onNavigateToRouteEditor = { entryId ->
                     navController.navigate(
                         RouteEditorRoute(collectionId = "", routeId = null, prefillFromEntryId = entryId),
@@ -131,8 +133,9 @@ fun AppNavHost(
             )
             importScreen(
                 onNavigateToCollection = { id -> navController.navigate(CollectionDetailRoute(id)) },
+                onNavigateBack = navController::popBackStack,
             )
-            chaosEditorScreen()
+            chaosEditorScreen(onNavigateBack = navController::popBackStack)
         }
     }
 }

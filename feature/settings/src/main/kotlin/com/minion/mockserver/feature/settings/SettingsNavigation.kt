@@ -21,10 +21,18 @@ fun NavGraphBuilder.settingsScreen(
     }
 }
 
-fun NavGraphBuilder.importScreen(onNavigateToCollection: (String) -> Unit) {
-    composable<ImportRoute> { ImportScreen(onNavigateToCollection = onNavigateToCollection) }
+fun NavGraphBuilder.importScreen(
+    onNavigateToCollection: (String) -> Unit,
+    onNavigateBack: () -> Unit,
+) {
+    composable<ImportRoute> {
+        ImportScreen(
+            onNavigateToCollection = onNavigateToCollection,
+            onNavigateBack = onNavigateBack,
+        )
+    }
 }
 
-fun NavGraphBuilder.chaosEditorScreen() {
-    composable<ChaosEditorRoute> { ChaosEditorScreen() }
+fun NavGraphBuilder.chaosEditorScreen(onNavigateBack: () -> Unit) {
+    composable<ChaosEditorRoute> { ChaosEditorScreen(onNavigateBack = onNavigateBack) }
 }

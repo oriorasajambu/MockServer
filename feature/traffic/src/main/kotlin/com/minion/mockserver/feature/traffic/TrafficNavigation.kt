@@ -19,8 +19,14 @@ fun NavGraphBuilder.trafficScreen(
 }
 
 /** The full-screen detail for one entry. */
-fun NavGraphBuilder.trafficDetailScreen(onNavigateToRouteEditor: (String) -> Unit) {
+fun NavGraphBuilder.trafficDetailScreen(
+    onNavigateToRouteEditor: (String) -> Unit,
+    onNavigateBack: () -> Unit,
+) {
     composable<TrafficDetailRoute> {
-        TrafficDetailScreen(onNavigateToRouteEditor = onNavigateToRouteEditor)
+        TrafficDetailScreen(
+            onNavigateToRouteEditor = onNavigateToRouteEditor,
+            onNavigateBack = onNavigateBack,
+        )
     }
 }

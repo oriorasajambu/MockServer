@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.TrafficEntry
+import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.BodyBlock
 import com.minion.mockserver.core.ui.component.EmptyState
 import com.minion.mockserver.core.ui.component.HeaderTable
@@ -42,6 +43,7 @@ import com.minion.mockserver.core.ui.util.showToast
 @Composable
 internal fun TrafficDetailScreen(
     onNavigateToRouteEditor: (String) -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TrafficDetailViewModel = hiltViewModel(),
 ) {
@@ -61,7 +63,12 @@ internal fun TrafficDetailScreen(
         }
     }
 
-    TrafficDetailContent(state = state, onIntent = viewModel::onIntent, modifier = modifier)
+    TrafficDetailContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onNavigateBack = onNavigateBack,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -69,86 +76,93 @@ internal fun TrafficDetailContent(
     state: TrafficDetailState,
     onIntent: (TrafficDetailIntent) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateBack: () -> Unit = {},
 ) {
-    val entry = state.entry
-    if (entry == null) {
-        EmptyState(
-            title = stringResource(R.string.traffic_detail_gone_title),
-            description = stringResource(R.string.traffic_detail_gone_body),
-            modifier = modifier,
-        )
-        return
-    }
-
-    Column(modifier = modifier.fillMaxSize()) {
-        Header(entry = entry, onIntent = onIntent)
-
-        TabRow(selectedTabIndex = state.selectedTab.ordinal) {
-            TrafficDetailState.Tab.entries.forEach { tab ->
-                Tab(
-                    selected = state.selectedTab == tab,
-                    onClick = { onIntent(TrafficDetailIntent.SelectTab(tab)) },
-                    text = {
-                        Text(
-                            when (tab) {
-                                TrafficDetailState.Tab.REQUEST ->
-                                    stringResource(R.string.traffic_detail_request)
-
-                                TrafficDetailState.Tab.RESPONSE ->
-                                    stringResource(R.string.traffic_detail_response)
-                            },
-                        )
-                    },
-                )
-            }
+    AppScaffold(
+        title = stringResource(R.string.traffic_detail_title),
+        modifier = modifier,
+        onBack = onNavigateBack,
+    ) { padding ->
+        val entry = state.entry
+        if (entry == null) {
+            EmptyState(
+                title = stringResource(R.string.traffic_detail_gone_title),
+                description = stringResource(R.string.traffic_detail_gone_body),
+                modifier = Modifier.padding(padding),
+            )
+            return@AppScaffold
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(Dimens.space),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
-        ) {
-            when (state.selectedTab) {
-                TrafficDetailState.Tab.REQUEST -> {
-                    HeaderTable(
-                        title = stringResource(R.string.traffic_detail_headers),
-                        headers = entry.requestHeaders.mapValues { it.value.joinToString(", ") },
-                    )
-                    BodyBlock(
-                        body = entry.requestBody,
-                        byteCount = entry.requestByteCount,
-                        truncated = entry.requestTruncated,
-                        prettyPrint = state.isPrettyPrinted,
-                    )
-                }
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Header(entry = entry, onIntent = onIntent)
 
-                TrafficDetailState.Tab.RESPONSE -> {
-                    HeaderTable(
-                        title = stringResource(R.string.traffic_detail_headers),
-                        headers = entry.responseHeaders,
-                    )
-                    BodyBlock(
-                        body = entry.responseBody,
-                        byteCount = entry.responseBody?.length ?: 0,
-                        truncated = entry.responseTruncated,
-                        prettyPrint = state.isPrettyPrinted,
+            TabRow(selectedTabIndex = state.selectedTab.ordinal) {
+                TrafficDetailState.Tab.entries.forEach { tab ->
+                    Tab(
+                        selected = state.selectedTab == tab,
+                        onClick = { onIntent(TrafficDetailIntent.SelectTab(tab)) },
+                        text = {
+                            Text(
+                                when (tab) {
+                                    TrafficDetailState.Tab.REQUEST ->
+                                        stringResource(R.string.traffic_detail_request)
+
+                                    TrafficDetailState.Tab.RESPONSE ->
+                                        stringResource(R.string.traffic_detail_response)
+                                },
+                            )
+                        },
                     )
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-                TextButton(onClick = { onIntent(TrafficDetailIntent.TogglePrettyPrint) }) {
-                    Text(
-                        stringResource(
-                            if (state.isPrettyPrinted) R.string.traffic_detail_raw
-                            else R.string.traffic_detail_pretty,
-                        ),
-                    )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(Dimens.space),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
+            ) {
+                when (state.selectedTab) {
+                    TrafficDetailState.Tab.REQUEST -> {
+                        HeaderTable(
+                            title = stringResource(R.string.traffic_detail_headers),
+                            headers = entry.requestHeaders.mapValues { it.value.joinToString(", ") },
+                        )
+                        BodyBlock(
+                            body = entry.requestBody,
+                            byteCount = entry.requestByteCount,
+                            truncated = entry.requestTruncated,
+                            prettyPrint = state.isPrettyPrinted,
+                        )
+                    }
+
+                    TrafficDetailState.Tab.RESPONSE -> {
+                        HeaderTable(
+                            title = stringResource(R.string.traffic_detail_headers),
+                            headers = entry.responseHeaders,
+                        )
+                        BodyBlock(
+                            body = entry.responseBody,
+                            byteCount = entry.responseBody?.length ?: 0,
+                            truncated = entry.responseTruncated,
+                            prettyPrint = state.isPrettyPrinted,
+                        )
+                    }
                 }
-                TextButton(onClick = { onIntent(TrafficDetailIntent.CopyBody) }) {
-                    Text(stringResource(R.string.traffic_detail_copy_body))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+                    TextButton(onClick = { onIntent(TrafficDetailIntent.TogglePrettyPrint) }) {
+                        Text(
+                            stringResource(
+                                if (state.isPrettyPrinted) R.string.traffic_detail_raw
+                                else R.string.traffic_detail_pretty,
+                            ),
+                        )
+                    }
+                    TextButton(onClick = { onIntent(TrafficDetailIntent.CopyBody) }) {
+                        Text(stringResource(R.string.traffic_detail_copy_body))
+                    }
                 }
             }
         }

@@ -8,27 +8,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
+import androidx.compose.ui.text.input.ImeAction
+import com.minion.mockserver.core.ui.component.AppScaffold
+import com.minion.mockserver.core.ui.component.LabelledTextField
+import com.minion.mockserver.core.ui.component.ProbabilitySlider
 import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.domain.model.DelaySpec
 import com.minion.mockserver.core.ui.error.toMessageRes
@@ -37,11 +36,17 @@ import com.minion.mockserver.feature.settings.R
 /** The chaos profile editor (SPEC §6). */
 @Composable
 internal fun ChaosEditorScreen(
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ChaosEditorViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ChaosEditorContent(state = state, onIntent = viewModel::onIntent, modifier = modifier)
+    ChaosEditorContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onNavigateBack = onNavigateBack,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -49,15 +54,31 @@ internal fun ChaosEditorContent(
     state: ChaosEditorState,
     onIntent: (ChaosEditorIntent) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateBack: () -> Unit = {},
 ) {
     val editing = state.editing
     if (editing != null) {
-        ProfileForm(profile = editing, error = state.error, onIntent = onIntent, modifier = modifier)
+        // Back out of the form returns to the list, not out of the screen: the profile being
+        // edited is unsaved, and a back arrow that discarded it silently would be a trap.
+        AppScaffold(
+            title = stringResource(R.string.chaos_edit_title),
+            modifier = modifier,
+            onBack = { onIntent(ChaosEditorIntent.Cancel) },
+        ) { padding ->
+            ProfileForm(
+                profile = editing,
+                error = state.error,
+                onIntent = onIntent,
+                modifier = Modifier.padding(padding),
+            )
+        }
         return
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
+    AppScaffold(
+        title = stringResource(R.string.chaos_title),
+        modifier = modifier,
+        onBack = onNavigateBack,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { onIntent(ChaosEditorIntent.NewProfile) },
@@ -111,22 +132,18 @@ private fun ProfileForm(
             .padding(Dimens.space),
         verticalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
     ) {
-        OutlinedTextField(
+        LabelledTextField(
             value = profile.name,
             onValueChange = { onIntent(ChaosEditorIntent.UpdateName(it)) },
-            label = { Text(stringResource(R.string.chaos_name)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.chaos_name),
         )
 
-        OutlinedTextField(
+        LabelledTextField(
             value = (profile.delay as? DelaySpec.Fixed)?.millis?.toString().orEmpty(),
             onValueChange = { onIntent(ChaosEditorIntent.UpdateFixedDelay(it.toLongOrNull())) },
-            label = { Text(stringResource(R.string.chaos_delay)) },
-            supportingText = { Text(stringResource(R.string.chaos_delay_help)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.chaos_delay),
+            hint = stringResource(R.string.chaos_delay_help),
+            numeric = true,
         )
 
         ProbabilitySlider(
@@ -143,15 +160,13 @@ private fun ProfileForm(
             onChange = { onIntent(ChaosEditorIntent.UpdateResetProbability(it)) },
         )
 
-        OutlinedTextField(
+        LabelledTextField(
             value = profile.connectionReset.dropAfterBytes.toString(),
             onValueChange = {
                 it.toIntOrNull()?.let { bytes -> onIntent(ChaosEditorIntent.UpdateResetBytes(bytes)) }
             },
-            label = { Text(stringResource(R.string.chaos_reset_bytes)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.chaos_reset_bytes),
+            numeric = true,
         )
 
         ProbabilitySlider(
@@ -161,17 +176,18 @@ private fun ProfileForm(
             onChange = { onIntent(ChaosEditorIntent.UpdateMalformedProbability(it)) },
         )
 
-        OutlinedTextField(
+        // The last field in the form, so its action key closes the keyboard rather than
+        // pointing at a field that is not there.
+        LabelledTextField(
             value = profile.malformedBody.truncateAtPercent.toString(),
             onValueChange = {
                 it.toIntOrNull()?.let { percent ->
                     onIntent(ChaosEditorIntent.UpdateMalformedPercent(percent))
                 }
             },
-            label = { Text(stringResource(R.string.chaos_malformed_percent)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.chaos_malformed_percent),
+            numeric = true,
+            imeAction = ImeAction.Done,
         )
 
         // Only one failure mode fires per request, and this is the one place that ordering is
@@ -204,31 +220,6 @@ private fun ProfileForm(
                 Text(stringResource(R.string.chaos_cancel))
             }
         }
-    }
-}
-
-@Composable
-private fun ProbabilitySlider(
-    label: String,
-    help: String,
-    value: Double,
-    onChange: (Double) -> Unit,
-) {
-    Column {
-        Text(
-            text = stringResource(R.string.chaos_percent, label, (value * PERCENT).toInt()),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Slider(
-            value = value.toFloat(),
-            onValueChange = { onChange(it.toDouble()) },
-            valueRange = 0f..1f,
-        )
-        Text(
-            text = help,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

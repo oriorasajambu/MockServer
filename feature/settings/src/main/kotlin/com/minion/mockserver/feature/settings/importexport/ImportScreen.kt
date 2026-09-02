@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ImportConflict
+import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.EmptyState
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -46,6 +47,7 @@ import com.minion.mockserver.feature.settings.R
 @Composable
 internal fun ImportScreen(
     onNavigateToCollection: (String) -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ImportViewModel = hiltViewModel(),
 ) {
@@ -82,7 +84,12 @@ internal fun ImportScreen(
         }
     }
 
-    ImportContent(state = state, onIntent = viewModel::onIntent, modifier = modifier)
+    ImportContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onNavigateBack = onNavigateBack,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -90,126 +97,133 @@ internal fun ImportContent(
     state: ImportState,
     onIntent: (ImportIntent) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateBack: () -> Unit = {},
 ) {
     val preview = state.preview
 
-    when {
-        state.isParsing -> Column(
-            modifier = modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            CircularProgressIndicator()
-            Text(
-                text = stringResource(R.string.import_parsing),
-                modifier = Modifier.padding(top = Dimens.space),
-            )
-        }
-
-        preview == null -> EmptyState(
-            title = stringResource(R.string.import_title),
-            description = stringResource(R.string.import_body),
-            actionLabel = stringResource(R.string.import_pick),
-            onAction = { onIntent(ImportIntent.PickFile) },
-            modifier = modifier,
-        )
-
-        else -> Column(modifier = modifier.fillMaxSize()) {
-            Column(modifier = Modifier.padding(Dimens.space)) {
+    AppScaffold(
+        title = stringResource(R.string.import_title),
+        modifier = modifier,
+        onBack = onNavigateBack,
+    ) { padding ->
+        when {
+            state.isParsing -> Column(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                CircularProgressIndicator()
                 Text(
-                    text = stringResource(
-                        R.string.import_found,
-                        preview.routes.size,
-                        preview.format.name,
-                    ),
-                    style = MaterialTheme.typography.titleSmall,
+                    text = stringResource(R.string.import_parsing),
+                    modifier = Modifier.padding(top = Dimens.space),
                 )
-
-                if (preview.needsBodyCount > 0) {
-                    // The visible gap, rather than a synthesised body full of "string" (§9.1).
-                    Text(
-                        text = stringResource(R.string.import_needs_body, preview.needsBodyCount),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.tertiary,
-                    )
-                }
-
-                preview.warnings.forEach { warning ->
-                    Text(
-                        text = warning,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-
-                TargetPicker(state = state, onIntent = onIntent)
-
-                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-                    TextButton(onClick = { onIntent(ImportIntent.SelectAll) }) {
-                        Text(stringResource(R.string.import_select_all))
-                    }
-                    TextButton(onClick = { onIntent(ImportIntent.SelectNone) }) {
-                        Text(stringResource(R.string.import_select_none))
-                    }
-                }
             }
 
-            HorizontalDivider()
+            preview == null -> EmptyState(
+                title = stringResource(R.string.import_title),
+                description = stringResource(R.string.import_body),
+                actionLabel = stringResource(R.string.import_pick),
+                onAction = { onIntent(ImportIntent.PickFile) },
+                modifier = Modifier.padding(padding),
+            )
 
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(items = preview.routes, key = { it.route.id }) { imported ->
-                    val conflict = state.conflicts
-                        .firstOrNull { it.incoming.route.id == imported.route.id }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Dimens.space, vertical = Dimens.spaceSmall),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Checkbox(
-                            checked = imported.route.id in state.selectedRouteIds,
-                            onCheckedChange = { onIntent(ImportIntent.ToggleRoute(imported.route.id)) },
+            else -> Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                Column(modifier = Modifier.padding(Dimens.space)) {
+                    Text(
+                        text = stringResource(
+                            R.string.import_found,
+                            preview.routes.size,
+                            preview.format.name,
+                        ),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+
+                    if (preview.needsBodyCount > 0) {
+                        // The visible gap, rather than a synthesised body full of "string" (§9.1).
+                        Text(
+                            text = stringResource(R.string.import_needs_body, preview.needsBodyCount),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.tertiary,
                         )
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = imported.label,
-                                style = MaterialTheme.typography.bodyMedium
-                                    .copy(fontFamily = FontFamily.Monospace),
-                            )
-                            if (imported.route.needsBody) {
-                                Text(
-                                    text = stringResource(R.string.import_no_example),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                )
-                            }
-                            conflict?.let {
-                                ConflictResolver(
-                                    conflict = it,
-                                    onResolve = { resolution ->
-                                        onIntent(
-                                            ImportIntent.ResolveConflict(
-                                                imported.route.id,
-                                                resolution,
-                                            ),
-                                        )
-                                    },
-                                )
-                            }
+                    }
+
+                    preview.warnings.forEach { warning ->
+                        Text(
+                            text = warning,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    TargetPicker(state = state, onIntent = onIntent)
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+                        TextButton(onClick = { onIntent(ImportIntent.SelectAll) }) {
+                            Text(stringResource(R.string.import_select_all))
+                        }
+                        TextButton(onClick = { onIntent(ImportIntent.SelectNone) }) {
+                            Text(stringResource(R.string.import_select_none))
                         }
                     }
-                    HorizontalDivider()
                 }
-            }
 
-            Button(
-                onClick = { onIntent(ImportIntent.Commit) },
-                enabled = state.canCommit,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimens.space),
-            ) {
-                Text(stringResource(R.string.import_commit, state.selectedCount))
+                HorizontalDivider()
+
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    items(items = preview.routes, key = { it.route.id }) { imported ->
+                        val conflict = state.conflicts
+                            .firstOrNull { it.incoming.route.id == imported.route.id }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = Dimens.space, vertical = Dimens.spaceSmall),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(
+                                checked = imported.route.id in state.selectedRouteIds,
+                                onCheckedChange = { onIntent(ImportIntent.ToggleRoute(imported.route.id)) },
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = imported.label,
+                                    style = MaterialTheme.typography.bodyMedium
+                                        .copy(fontFamily = FontFamily.Monospace),
+                                )
+                                if (imported.route.needsBody) {
+                                    Text(
+                                        text = stringResource(R.string.import_no_example),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                    )
+                                }
+                                conflict?.let {
+                                    ConflictResolver(
+                                        conflict = it,
+                                        onResolve = { resolution ->
+                                            onIntent(
+                                                ImportIntent.ResolveConflict(
+                                                    imported.route.id,
+                                                    resolution,
+                                                ),
+                                            )
+                                        },
+                                    )
+                                }
+                            }
+                        }
+                        HorizontalDivider()
+                    }
+                }
+
+                Button(
+                    onClick = { onIntent(ImportIntent.Commit) },
+                    enabled = state.canCommit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Dimens.space),
+                ) {
+                    Text(stringResource(R.string.import_commit, state.selectedCount))
+                }
             }
         }
     }

@@ -41,7 +41,13 @@ import com.minion.mockserver.core.domain.model.HttpMethodFilter
 import com.minion.mockserver.core.domain.model.RequestMatcher
 import com.minion.mockserver.core.domain.model.StringOp
 import com.minion.mockserver.core.domain.usecase.route.RouteValidation
+import com.minion.mockserver.core.ui.component.AppScaffold
+import com.minion.mockserver.core.ui.component.CollapsibleSection
+import com.minion.mockserver.core.ui.component.MatcherAdder
+import com.minion.mockserver.core.ui.component.ValidationWarnings
 import com.minion.mockserver.core.ui.component.JsonEditor
+import com.minion.mockserver.core.ui.component.StatusPicker
+import com.minion.mockserver.core.ui.R as UiR
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
 import com.minion.mockserver.core.ui.util.clipboardText
@@ -120,193 +126,208 @@ internal fun RouteEditorContent(
     onIntent: (RouteEditorIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(Dimens.space),
-        verticalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
-    ) {
-        Header(state = state)
-
-        Section(
-            title = stringResource(R.string.editor_section_request),
-            section = RouteEditorState.Section.REQUEST,
-            state = state,
-            onIntent = onIntent,
+    AppScaffold(
+        title = stringResource(
+            if (state.isNew) R.string.editor_title_new else R.string.editor_title_edit,
+        ),
+        modifier = modifier,
+        // Through the intent, not straight out: the editor asks about unsaved changes first, and
+        // a toolbar arrow that bypassed that would discard work the system back button protects.
+        onBack = { onIntent(RouteEditorIntent.AttemptBack) },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(Dimens.space),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
         ) {
-            OutlinedTextField(
-                value = state.route.name,
-                onValueChange = { onIntent(RouteEditorIntent.UpdateName(it)) },
-                label = { Text(stringResource(R.string.editor_name_label)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
+            Header(state = state)
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+            CollapsibleSection(
+                title = stringResource(R.string.editor_section_request),
+                isExpanded = RouteEditorState.Section.REQUEST in state.expandedSections,
+                onToggle = {
+                    onIntent(RouteEditorIntent.ToggleSection(RouteEditorState.Section.REQUEST))
+                },
             ) {
-                HttpMethodFilter.entries.forEach { method ->
-                    FilterChip(
-                        selected = state.route.method == method,
-                        onClick = { onIntent(RouteEditorIntent.UpdateMethod(method)) },
-                        label = { Text(method.name) },
-                    )
-                }
-            }
+                OutlinedTextField(
+                    value = state.route.name,
+                    onValueChange = { onIntent(RouteEditorIntent.UpdateName(it)) },
+                    label = { Text(stringResource(R.string.editor_name_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
 
-            OutlinedTextField(
-                value = state.route.pathPattern,
-                onValueChange = { onIntent(RouteEditorIntent.UpdatePath(it)) },
-                label = { Text(stringResource(R.string.editor_path_label)) },
-                supportingText = { Text(stringResource(R.string.editor_path_help)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-            )
-
-            // Offered, not applied (SPEC §4.5). A request that missed usually carries one or two
-            // segments that look like ids, and turning them into captures by hand on a phone
-            // keyboard — brace, name, brace, in the middle of a path — is the slowest edit here.
-            if (state.pathParameterSuggestions.isNotEmpty()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
                 ) {
-                    state.pathParameterSuggestions.forEach { suggestion ->
-                        AssistChip(
-                            onClick = {
-                                onIntent(RouteEditorIntent.ParameteriseSegment(suggestion.index))
-                            },
-                            label = {
-                                Text(
-                                    stringResource(
-                                        R.string.editor_parameterise,
-                                        suggestion.segment,
-                                        suggestion.name,
-                                    ),
-                                )
-                            },
+                    HttpMethodFilter.entries.forEach { method ->
+                        FilterChip(
+                            selected = state.route.method == method,
+                            onClick = { onIntent(RouteEditorIntent.UpdateMethod(method)) },
+                            label = { Text(method.name) },
                         )
                     }
                 }
-            }
 
-            // The whole URL a client would call, base path included — the thing that is otherwise
-            // assembled in someone's head from three fields on two screens.
-            Text(
-                text = state.resolvedUrlPreview,
-                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-
-        Section(
-            title = stringResource(R.string.editor_section_matchers),
-            section = RouteEditorState.Section.MATCHERS,
-            state = state,
-            onIntent = onIntent,
-        ) {
-            state.route.matchers.forEachIndexed { index, matcher ->
-                Row(
+                OutlinedTextField(
+                    value = state.route.pathPattern,
+                    onValueChange = { onIntent(RouteEditorIntent.UpdatePath(it)) },
+                    label = { Text(stringResource(R.string.editor_path_label)) },
+                    supportingText = { Text(stringResource(R.string.editor_path_help)) },
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = matcher.describe(),
-                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                    )
-                    TextButton(onClick = { onIntent(RouteEditorIntent.RemoveMatcher(index)) }) {
-                        Text(stringResource(R.string.editor_remove))
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                )
+
+                // Offered, not applied (SPEC §4.5). A request that missed usually carries one or two
+                // segments that look like ids, and turning them into captures by hand on a phone
+                // keyboard — brace, name, brace, in the middle of a path — is the slowest edit here.
+                if (state.pathParameterSuggestions.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+                    ) {
+                        state.pathParameterSuggestions.forEach { suggestion ->
+                            AssistChip(
+                                onClick = {
+                                    onIntent(RouteEditorIntent.ParameteriseSegment(suggestion.index))
+                                },
+                                label = {
+                                    Text(
+                                        stringResource(
+                                            R.string.editor_parameterise,
+                                            suggestion.segment,
+                                            suggestion.name,
+                                        ),
+                                    )
+                                },
+                            )
+                        }
                     }
                 }
+
+                // The whole URL a client would call, base path included — the thing that is otherwise
+                // assembled in someone's head from three fields on two screens.
+                Text(
+                    text = state.resolvedUrlPreview,
+                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
-            MatcherAdder(onAdd = { onIntent(RouteEditorIntent.AddMatcher(it)) })
-        }
 
-        Section(
-            title = stringResource(R.string.editor_section_response),
-            section = RouteEditorState.Section.RESPONSE,
-            state = state,
-            onIntent = onIntent,
-        ) {
-            StatusPicker(
-                statusCode = state.route.response.statusCode,
-                onSelect = { onIntent(RouteEditorIntent.UpdateStatus(it)) },
-            )
-
-            if (state.alternateResponses.isNotEmpty()) {
-                Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-                ) {
-                    state.alternateResponses.forEach { alternate ->
-                        AssistChip(
-                            onClick = { onIntent(RouteEditorIntent.ApplyAlternate(alternate.statusCode)) },
-                            label = {
-                                Text(
-                                    stringResource(
-                                        R.string.editor_alternate,
-                                        alternate.statusCode,
-                                    ),
-                                )
-                            },
+            CollapsibleSection(
+                title = stringResource(R.string.editor_section_matchers),
+                isExpanded = RouteEditorState.Section.MATCHERS in state.expandedSections,
+                onToggle = {
+                    onIntent(RouteEditorIntent.ToggleSection(RouteEditorState.Section.MATCHERS))
+                },
+            ) {
+                state.route.matchers.forEachIndexed { index, matcher ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = matcher.describe(),
+                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                         )
+                        TextButton(onClick = { onIntent(RouteEditorIntent.RemoveMatcher(index)) }) {
+                            Text(stringResource(R.string.editor_remove))
+                        }
                     }
                 }
+                MatcherAdder(onAdd = { onIntent(RouteEditorIntent.AddMatcher(it)) })
             }
 
-            JsonEditor(
-                value = state.bodyText,
-                onValueChange = { onIntent(RouteEditorIntent.UpdateBody(it)) },
-                error = state.validation.errors
-                    .firstOrNull()
-                    ?.let { stringResource(it.toMessageRes()) },
-                clipboardPreview = state.clipboardPreview,
-                onPaste = { onIntent(RouteEditorIntent.PasteFromClipboard) },
-                onPrettify = { onIntent(RouteEditorIntent.PrettifyBody) },
-            )
-        }
-
-        Section(
-            title = stringResource(R.string.editor_section_chaos),
-            section = RouteEditorState.Section.CHAOS,
-            state = state,
-            onIntent = onIntent,
-        ) {
-            OutlinedTextField(
-                value = state.route.response.delayMillisOverride?.toString().orEmpty(),
-                onValueChange = { onIntent(RouteEditorIntent.UpdateDelay(it.toLongOrNull())) },
-                label = { Text(stringResource(R.string.editor_delay_label)) },
-                supportingText = { Text(stringResource(R.string.editor_delay_help)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                ),
-            )
-        }
-
-        Warnings(warnings = state.validation.warnings)
-
-        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-            Button(
-                onClick = { onIntent(RouteEditorIntent.Save) },
-                enabled = state.canSave,
-                modifier = Modifier.weight(1f),
+            CollapsibleSection(
+                title = stringResource(R.string.editor_section_response),
+                isExpanded = RouteEditorState.Section.RESPONSE in state.expandedSections,
+                onToggle = {
+                    onIntent(RouteEditorIntent.ToggleSection(RouteEditorState.Section.RESPONSE))
+                },
             ) {
-                Text(stringResource(R.string.editor_save))
+                StatusPicker(
+                    statusCode = state.route.response.statusCode,
+                    onSelect = { onIntent(RouteEditorIntent.UpdateStatus(it)) },
+                )
+
+                if (state.alternateResponses.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+                    ) {
+                        state.alternateResponses.forEach { alternate ->
+                            AssistChip(
+                                onClick = { onIntent(RouteEditorIntent.ApplyAlternate(alternate.statusCode)) },
+                                label = {
+                                    Text(
+                                        stringResource(
+                                            R.string.editor_alternate,
+                                            alternate.statusCode,
+                                        ),
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+
+                JsonEditor(
+                    value = state.bodyText,
+                    onValueChange = { onIntent(RouteEditorIntent.UpdateBody(it)) },
+                    error = state.validation.errors
+                        .firstOrNull()
+                        ?.let { stringResource(it.toMessageRes()) },
+                    clipboardPreview = state.clipboardPreview,
+                    onPaste = { onIntent(RouteEditorIntent.PasteFromClipboard) },
+                    onPrettify = { onIntent(RouteEditorIntent.PrettifyBody) },
+                )
             }
-            OutlinedButton(
-                onClick = { onIntent(RouteEditorIntent.TestRoute) },
-                modifier = Modifier.weight(1f),
+
+            CollapsibleSection(
+                title = stringResource(R.string.editor_section_chaos),
+                isExpanded = RouteEditorState.Section.CHAOS in state.expandedSections,
+                onToggle = {
+                    onIntent(RouteEditorIntent.ToggleSection(RouteEditorState.Section.CHAOS))
+                },
             ) {
-                Text(stringResource(R.string.editor_test))
+                OutlinedTextField(
+                    value = state.route.response.delayMillisOverride?.toString().orEmpty(),
+                    onValueChange = { onIntent(RouteEditorIntent.UpdateDelay(it.toLongOrNull())) },
+                    label = { Text(stringResource(R.string.editor_delay_label)) },
+                    supportingText = { Text(stringResource(R.string.editor_delay_help)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                    ),
+                )
+            }
+
+            ValidationWarnings(warnings = state.validation.warnings)
+
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+                Button(
+                    onClick = { onIntent(RouteEditorIntent.Save) },
+                    enabled = state.canSave,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(stringResource(R.string.editor_save))
+                }
+                OutlinedButton(
+                    onClick = { onIntent(RouteEditorIntent.TestRoute) },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(stringResource(R.string.editor_test))
+                }
             }
         }
     }
@@ -325,7 +346,7 @@ private fun Header(state: RouteEditorState) {
             if (state.isShadowed) {
                 AssistChip(
                     onClick = {},
-                    label = { Text(stringResource(R.string.routes_shadowed)) },
+                    label = { Text(stringResource(UiR.string.routes_shadowed)) },
                 )
             }
         }
@@ -339,142 +360,12 @@ private fun Header(state: RouteEditorState) {
     }
 }
 
-@Composable
-private fun Section(
-    title: String,
-    section: RouteEditorState.Section,
-    state: RouteEditorState,
-    onIntent: (RouteEditorIntent) -> Unit,
-    content: @Composable () -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-        TextButton(onClick = { onIntent(RouteEditorIntent.ToggleSection(section)) }) {
-            Text(title, style = MaterialTheme.typography.titleSmall)
-        }
-        if (section in state.expandedSections) {
-            content()
-        }
-        HorizontalDivider()
-    }
-}
-
-/** Common codes pinned, because those are the ones anyone actually mocks (SPEC §10.2). */
-@Composable
-private fun StatusPicker(statusCode: Int, onSelect: (Int) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-        ) {
-            PINNED_STATUSES.forEach { code ->
-                FilterChip(
-                    selected = statusCode == code,
-                    onClick = { onSelect(code) },
-                    label = { Text(code.toString()) },
-                )
-            }
-        }
-        OutlinedTextField(
-            value = statusCode.toString(),
-            onValueChange = { it.toIntOrNull()?.let(onSelect) },
-            label = { Text(stringResource(R.string.editor_status_label)) },
-            singleLine = true,
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-            ),
-        )
-    }
-}
-
-@Composable
-private fun MatcherAdder(onAdd: (RequestMatcher) -> Unit) {
-    var name by remember { mutableStateOf("") }
-    var value by remember { mutableStateOf("") }
-    var isHeader by remember { mutableStateOf(true) }
-
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-            FilterChip(
-                selected = isHeader,
-                onClick = { isHeader = true },
-                label = { Text(stringResource(R.string.editor_matcher_header)) },
-            )
-            FilterChip(
-                selected = !isHeader,
-                onClick = { isHeader = false },
-                label = { Text(stringResource(R.string.editor_matcher_query)) },
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text(stringResource(R.string.editor_matcher_name)) },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
-            OutlinedTextField(
-                value = value,
-                onValueChange = { value = it },
-                label = { Text(stringResource(R.string.editor_matcher_value)) },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
-        }
-        TextButton(
-            onClick = {
-                if (name.isBlank()) return@TextButton
-                onAdd(
-                    if (isHeader) {
-                        RequestMatcher.Header(name, StringOp.EQUALS, value)
-                    } else {
-                        RequestMatcher.Query(name, StringOp.EQUALS, value)
-                    },
-                )
-                name = ""
-                value = ""
-            },
-        ) {
-            Text(stringResource(R.string.editor_add_matcher))
-        }
-    }
-}
-
-/** Warnings are advisory and never block Save — that distinction is the whole point of them. */
-@Composable
-private fun Warnings(warnings: List<RouteValidation.Warning>) {
-    if (warnings.isEmpty()) return
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceHalf)) {
-        warnings.forEach { warning ->
-            Text(
-                text = warning.describe(),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.tertiary,
-            )
-        }
-    }
-}
-
-@Composable
-private fun RouteValidation.Warning.describe(): String = when (this) {
-    is RouteValidation.Warning.UnquotedPlaceholder ->
-        stringResource(R.string.editor_warn_unquoted, placeholder)
-
-    is RouteValidation.Warning.ReservedHeader ->
-        stringResource(R.string.editor_warn_reserved_header, name)
-
-    is RouteValidation.Warning.LongDelay -> stringResource(R.string.editor_warn_long_delay, millis)
-    is RouteValidation.Warning.UnknownPathPlaceholder ->
-        stringResource(R.string.editor_warn_unknown_placeholder, name)
-}
-
 private fun RequestMatcher.describe(): String = when (this) {
     is RequestMatcher.Header -> "header $name ${op.name.lowercase()} $value"
     is RequestMatcher.Query -> "query $name ${op.name.lowercase()} $value"
     is RequestMatcher.BodySubset -> "body contains $json"
 }
 
-private val PINNED_STATUSES = listOf(200, 201, 204, 400, 401, 403, 404, 409, 422, 429, 500, 503)
 
 @Preview
 @Composable

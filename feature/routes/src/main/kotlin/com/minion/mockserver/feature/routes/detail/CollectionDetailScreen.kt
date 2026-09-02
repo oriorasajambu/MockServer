@@ -14,7 +14,6 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,6 +34,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.MockRoute
+import com.minion.mockserver.core.ui.component.AppScaffold
+import com.minion.mockserver.core.ui.component.RouteRow
 import com.minion.mockserver.core.ui.component.EmptyState
 import com.minion.mockserver.core.ui.component.MethodBadge
 import com.minion.mockserver.core.ui.component.StatusPill
@@ -49,6 +50,7 @@ import com.minion.mockserver.feature.routes.R
 @Composable
 internal fun CollectionDetailScreen(
     onNavigateToEditor: (String?) -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CollectionDetailViewModel = hiltViewModel(),
 ) {
@@ -79,7 +81,12 @@ internal fun CollectionDetailScreen(
         }
     }
 
-    CollectionDetailContent(state = state, onIntent = viewModel::onIntent, modifier = modifier)
+    CollectionDetailContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onNavigateBack = onNavigateBack,
+        modifier = modifier,
+    )
 
     lossWarnings?.let { warnings ->
         AlertDialog(
@@ -114,9 +121,14 @@ internal fun CollectionDetailContent(
     state: CollectionDetailState,
     onIntent: (CollectionDetailIntent) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateBack: () -> Unit = {},
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
+    AppScaffold(
+        // The collection's own name, so the back stack reads as a path rather than as three
+        // screens all called "Routes".
+        title = state.collectionName,
+        modifier = modifier,
+        onBack = onNavigateBack,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { onIntent(CollectionDetailIntent.NewRoute) },
@@ -177,62 +189,6 @@ internal fun CollectionDetailContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun RouteRow(
-    route: MockRoute,
-    isShadowed: Boolean,
-    onOpen: () -> Unit,
-    onToggle: (Boolean) -> Unit,
-    onDuplicate: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onOpen)
-            .padding(Dimens.space),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-    ) {
-        MethodBadge(route.method.name)
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = route.pathPattern,
-                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-            )
-            Text(
-                text = route.name,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceHalf)) {
-                if (isShadowed) {
-                    AssistChip(
-                        onClick = onOpen,
-                        label = { Text(stringResource(R.string.routes_shadowed)) },
-                    )
-                }
-                if (route.needsBody) {
-                    AssistChip(
-                        onClick = onOpen,
-                        label = { Text(stringResource(R.string.routes_needs_body)) },
-                    )
-                }
-                if (route.hasChaosOverride) {
-                    AssistChip(
-                        onClick = onOpen,
-                        label = { Text(stringResource(R.string.routes_chaos)) },
-                    )
-                }
-            }
-        }
-
-        StatusPill(route.response.statusCode)
-        TextButton(onClick = onDuplicate) { Text(stringResource(R.string.routes_duplicate)) }
-        Switch(checked = route.isEnabled, onCheckedChange = onToggle)
     }
 }
 

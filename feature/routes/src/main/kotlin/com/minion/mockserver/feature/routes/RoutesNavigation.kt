@@ -21,9 +21,15 @@ fun NavGraphBuilder.collectionsScreen(onNavigateToCollection: (String) -> Unit) 
     }
 }
 
-fun NavGraphBuilder.collectionDetailScreen(onNavigateToEditor: (String?) -> Unit) {
+fun NavGraphBuilder.collectionDetailScreen(
+    onNavigateToEditor: (String?) -> Unit,
+    onNavigateBack: () -> Unit,
+) {
     composable<CollectionDetailRoute> {
-        CollectionDetailScreen(onNavigateToEditor = onNavigateToEditor)
+        CollectionDetailScreen(
+            onNavigateToEditor = onNavigateToEditor,
+            onNavigateBack = onNavigateBack,
+        )
     }
 }
 

@@ -14,7 +14,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,6 +31,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.MockCollection
+import com.minion.mockserver.core.ui.component.AppScaffold
+import com.minion.mockserver.core.ui.component.CollectionRow
 import com.minion.mockserver.core.ui.component.EmptyState
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -70,8 +71,9 @@ internal fun CollectionsContent(
     onIntent: (CollectionsIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
+    AppScaffold(
+        title = stringResource(R.string.collections_title),
+        modifier = modifier,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { onIntent(CollectionsIntent.NewCollection) },
@@ -107,49 +109,6 @@ internal fun CollectionsContent(
 
     state.editing?.let { draft ->
         CollectionDialog(draft = draft, onIntent = onIntent)
-    }
-}
-
-@Composable
-private fun CollectionRow(
-    collection: MockCollection,
-    routeCount: Int,
-    needsBodyCount: Int,
-    onOpen: () -> Unit,
-    onToggle: (Boolean) -> Unit,
-    onEdit: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onOpen)
-            .padding(Dimens.space),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(collection.name, style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = collection.basePath,
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = stringResource(R.string.collections_route_count, routeCount),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            // The visible gap an import leaves rather than a body full of "string" (SPEC §9.1).
-            if (needsBodyCount > 0) {
-                Text(
-                    text = stringResource(R.string.collections_needs_body, needsBodyCount),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.tertiary,
-                )
-            }
-        }
-        TextButton(onClick = onEdit) { Text(stringResource(R.string.collections_edit)) }
-        Switch(checked = collection.isEnabled, onCheckedChange = onToggle)
     }
 }
 

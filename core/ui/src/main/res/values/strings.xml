@@ -44,6 +44,26 @@
     <string name="chaos_banner_title">Chaos: ON</string>
     <string name="chaos_banner_body">Responses may be delayed, replaced with errors, truncated or cut off — profile \"%1$s\".</string>
 
+    <!-- The matcher builder and the route editor's warnings. -->
+    <string name="editor_matcher_header">Header</string>
+    <string name="editor_matcher_query">Query</string>
+    <string name="editor_matcher_name">Name</string>
+    <string name="editor_matcher_value">Value</string>
+    <string name="editor_add_matcher">Add matcher</string>
+    <string name="editor_warn_unquoted">%1$s is not inside quotes — the response will not be valid JSON unless the value is a number or a boolean.</string>
+    <string name="editor_warn_reserved_header">%1$s is set by the server and your value will be ignored.</string>
+    <string name="editor_warn_long_delay">A %1$d ms delay is long enough to look like a hang.</string>
+    <string name="editor_warn_unknown_placeholder">The path has no capture named %1$s, so it will render empty.</string>
+
+    <!-- The collection and route rows. -->
+    <string name="collections_edit">Edit</string>
+    <string name="collections_route_count">%1$d routes</string>
+    <string name="collections_needs_body">%1$d need bodies</string>
+    <string name="routes_duplicate">Duplicate</string>
+    <string name="routes_shadowed">Shadowed</string>
+    <string name="routes_needs_body">Needs body</string>
+    <string name="routes_chaos">Chaos</string>
+
     <!-- The live-log row: duration, and the one-word reason a row is not a plain match. -->
     <string name="traffic_duration">%1$d ms</string>
     <string name="traffic_chaos">chaos</string>
@@ -58,6 +78,10 @@
     <string name="body_binary">Binary, %1$d bytes — not stored as text</string>
     <string name="body_none">No body</string>
     <string name="body_truncated">Truncated — the body was longer than the log keeps</string>
+
+    <string name="toolbar_back">Back</string>
+    <string name="status_picker_label">Status code</string>
+    <string name="probability_percent">%1$s: %2$d%%</string>
 
     <!-- The address block: the hero of the server screen. -->
     <string name="server_copy">Copy</string>

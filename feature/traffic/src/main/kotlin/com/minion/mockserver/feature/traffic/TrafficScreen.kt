@@ -36,6 +36,7 @@ import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.ui.component.EmptyState
+import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.TrafficRow
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -108,54 +109,59 @@ internal fun TrafficContent(
         if (state.isFollowing && state.entries.isNotEmpty()) listState.animateScrollToItem(0)
     }
 
-    Column(modifier = modifier.fillMaxSize()) {
-        SearchAndFilters(state = state, onIntent = onIntent)
+    AppScaffold(
+        title = stringResource(R.string.traffic_title),
+        modifier = modifier,
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                SearchAndFilters(state = state, onIntent = onIntent)
 
-        if (state.droppedCount > 0) {
-            Text(
-                text = stringResource(R.string.traffic_dropped, state.droppedCount),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(horizontal = Dimens.space),
-            )
-        }
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            when {
-                state.isEmpty -> EmptyState(
-                    title = stringResource(R.string.traffic_empty_title),
-                    description = stringResource(R.string.traffic_empty_body),
+            if (state.droppedCount > 0) {
+                Text(
+                    text = stringResource(R.string.traffic_dropped, state.droppedCount),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(horizontal = Dimens.space),
                 )
-
-                state.isFilteredEmpty -> EmptyState(
-                    title = stringResource(R.string.traffic_filtered_empty_title),
-                    description = stringResource(R.string.traffic_filtered_empty_body),
-                    actionLabel = stringResource(R.string.traffic_clear_filters),
-                    onAction = { onIntent(TrafficIntent.ClearFilters) },
-                )
-
-                else -> LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                    // A stable key, so inserting at the top shifts positions without recomposing
-                    // every row below it — which at 50 req/s is the difference between a smooth
-                    // list and a stuttering one.
-                    items(items = state.entries, key = { it.id }) { entry ->
-                        TrafficRow(
-                            entry = entry,
-                            onClick = { onIntent(TrafficIntent.OpenEntry(entry.id)) },
-                        )
-                        HorizontalDivider()
-                    }
-                }
             }
 
-            if (!state.isFollowing && state.newEntryCount > 0) {
-                AssistChip(
-                    onClick = { onIntent(TrafficIntent.ResumeFollow) },
-                    label = { Text(stringResource(R.string.traffic_new_entries, state.newEntryCount)) },
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(Dimens.spaceSmall),
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    state.isEmpty -> EmptyState(
+                        title = stringResource(R.string.traffic_empty_title),
+                        description = stringResource(R.string.traffic_empty_body),
+                    )
+
+                    state.isFilteredEmpty -> EmptyState(
+                        title = stringResource(R.string.traffic_filtered_empty_title),
+                        description = stringResource(R.string.traffic_filtered_empty_body),
+                        actionLabel = stringResource(R.string.traffic_clear_filters),
+                        onAction = { onIntent(TrafficIntent.ClearFilters) },
+                    )
+
+                    else -> LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                        // A stable key, so inserting at the top shifts positions without recomposing
+                        // every row below it — which at 50 req/s is the difference between a smooth
+                        // list and a stuttering one.
+                        items(items = state.entries, key = { it.id }) { entry ->
+                            TrafficRow(
+                                entry = entry,
+                                onClick = { onIntent(TrafficIntent.OpenEntry(entry.id)) },
+                            )
+                            HorizontalDivider()
+                        }
+                    }
+                }
+
+                if (!state.isFollowing && state.newEntryCount > 0) {
+                    AssistChip(
+                        onClick = { onIntent(TrafficIntent.ResumeFollow) },
+                        label = { Text(stringResource(R.string.traffic_new_entries, state.newEntryCount)) },
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(Dimens.spaceSmall),
+                    )
+                }
             }
         }
     }

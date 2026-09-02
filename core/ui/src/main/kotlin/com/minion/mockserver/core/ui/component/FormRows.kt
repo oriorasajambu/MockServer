@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -12,7 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import com.minion.mockserver.core.designsystem.theme.AppTheme
@@ -55,8 +59,13 @@ fun ToggleRow(
  * are the same at every call site, and the fourth is the one that gets forgotten. A port field
  * that opens the alphabetic keyboard is a small daily tax on a phone.
  *
+ * The IME action is part of that: without one the keyboard shows a newline key on a field that
+ * cannot take a newline, and every field in a form becomes a reach for the dismiss gesture.
+ * [ImeAction.Next] moves to the field below, [ImeAction.Done] closes the keyboard.
+ *
  * @param hint shown under the field; `null` leaves the supporting slot empty
  * @param numeric whether to ask for the numeric keyboard
+ * @param imeAction what the keyboard's action key does — `Next` for any field with one after it
  */
 @Composable
 fun LabelledTextField(
@@ -67,7 +76,9 @@ fun LabelledTextField(
     hint: String? = null,
     isError: Boolean = false,
     numeric: Boolean = false,
+    imeAction: ImeAction = ImeAction.Next,
 ) {
+    val focusManager = LocalFocusManager.current
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -77,6 +88,11 @@ fun LabelledTextField(
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = if (numeric) KeyboardType.Number else KeyboardType.Text,
+            imeAction = imeAction,
+        ),
+        keyboardActions = KeyboardActions(
+            onNext = { focusManager.moveFocus(FocusDirection.Down) },
+            onDone = { focusManager.clearFocus() },
         ),
         modifier = modifier.fillMaxWidth(),
     )

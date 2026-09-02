@@ -2,6 +2,7 @@
 <!-- Copy for Settings, the import flow, and the chaos profile editor. -->
 <resources>
 
+    <string name="settings_title">Settings</string>
     <string name="settings_section_server">Server</string>
     <string name="settings_section_access">Access</string>
     <string name="settings_section_chaos">Chaos</string>
@@ -64,6 +65,8 @@
     <string name="import_done">Imported %1$d routes</string>
 
     <!-- Chaos -->
+    <string name="chaos_title">Chaos profiles</string>
+    <string name="chaos_edit_title">Edit profile</string>
     <string name="chaos_new">New profile</string>
     <string name="chaos_delete">Delete</string>
     <string name="chaos_name">Name</string>
@@ -77,7 +80,6 @@
     <string name="chaos_malformed_probability">Send a truncated body</string>
     <string name="chaos_malformed_help">Content-Length still declares the full length, so a strict client reports an incomplete body.</string>
     <string name="chaos_malformed_percent">Percent of the body sent</string>
-    <string name="chaos_percent">%1$s: %2$d%%</string>
     <string name="chaos_precedence_note">At most one of these three fires per request, in the order shown. A delay applies as well as whichever one fires.</string>
     <string name="chaos_summary">errors %1$d%%, resets %2$d%%, truncated %3$d%%</string>
     <string name="chaos_summary_off">No chaos</string>

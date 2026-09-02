@@ -35,6 +35,7 @@ import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.ui.component.LabelledTextField
+import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.SectionTitle
 import com.minion.mockserver.core.ui.component.ToggleRow
 import com.minion.mockserver.core.ui.error.toMessageRes
@@ -94,164 +95,170 @@ internal fun SettingsContent(
     onIntent: (SettingsIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(Dimens.space),
-        verticalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
-    ) {
-        if (state.showRestartPrompt) {
-            RestartPrompt(state = state, onIntent = onIntent)
-        }
+    AppScaffold(
+        title = stringResource(R.string.settings_title),
+        modifier = modifier,
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(Dimens.space),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
+        ) {
+            if (state.showRestartPrompt) {
+                RestartPrompt(state = state, onIntent = onIntent)
+            }
 
-        SectionTitle(stringResource(R.string.settings_section_server))
+            SectionTitle(stringResource(R.string.settings_section_server))
 
-        LabelledTextField(
-            value = state.portInput,
-            onValueChange = { onIntent(SettingsIntent.UpdatePort(it)) },
-            label = stringResource(R.string.settings_port),
-            hint = stringResource(R.string.settings_port_help),
-            isError = state.error != null,
-            numeric = true,
-        )
-
-        HorizontalDivider()
-        SectionTitle(stringResource(R.string.settings_section_access))
-
-        ToggleRow(
-            label = stringResource(R.string.settings_api_key),
-            checked = state.settings.apiKeyEnabled,
-            onCheckedChange = { onIntent(SettingsIntent.SetApiKeyEnabled(it)) },
-        )
-        if (state.settings.apiKeyEnabled) {
             LabelledTextField(
-                value = state.settings.apiKeyHeaderName,
-                onValueChange = { onIntent(SettingsIntent.UpdateApiKeyHeader(it)) },
-                label = stringResource(R.string.settings_api_key_header),
+                value = state.portInput,
+                onValueChange = { onIntent(SettingsIntent.UpdatePort(it)) },
+                label = stringResource(R.string.settings_port),
+                hint = stringResource(R.string.settings_port_help),
+                isError = state.error != null,
+                numeric = true,
             )
+
+            HorizontalDivider()
+            SectionTitle(stringResource(R.string.settings_section_access))
+
+            ToggleRow(
+                label = stringResource(R.string.settings_api_key),
+                checked = state.settings.apiKeyEnabled,
+                onCheckedChange = { onIntent(SettingsIntent.SetApiKeyEnabled(it)) },
+            )
+            if (state.settings.apiKeyEnabled) {
+                LabelledTextField(
+                    value = state.settings.apiKeyHeaderName,
+                    onValueChange = { onIntent(SettingsIntent.UpdateApiKeyHeader(it)) },
+                    label = stringResource(R.string.settings_api_key_header),
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = state.settings.apiKeyValue,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                    )
+                    TextButton(onClick = { onIntent(SettingsIntent.GenerateApiKey) }) {
+                        Text(stringResource(R.string.settings_regenerate))
+                    }
+                }
+            }
+
+            HorizontalDivider()
+            SectionTitle(stringResource(R.string.settings_section_chaos))
+
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+            ) {
+                state.chaosProfiles.forEach { profile ->
+                    FilterChip(
+                        selected = state.settings.globalChaosProfileId == profile.id ||
+                            (state.settings.globalChaosProfileId == null && profile.id == ChaosProfile.NONE_ID),
+                        onClick = {
+                            onIntent(
+                                SettingsIntent.SelectChaosProfile(
+                                    profile.id.takeIf { it != ChaosProfile.NONE_ID },
+                                ),
+                            )
+                        },
+                        label = { Text(profile.name) },
+                    )
+                }
+            }
+            TextButton(onClick = { onIntent(SettingsIntent.OpenChaosEditor) }) {
+                Text(stringResource(R.string.settings_edit_profiles))
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(
-                    text = state.settings.apiKeyValue,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                )
-                TextButton(onClick = { onIntent(SettingsIntent.GenerateApiKey) }) {
+                Column {
+                    Text(stringResource(R.string.settings_seed), style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = state.settings.chaosSeed.toString(),
+                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                TextButton(onClick = { onIntent(SettingsIntent.RegenerateChaosSeed) }) {
                     Text(stringResource(R.string.settings_regenerate))
                 }
             }
-        }
+            Text(
+                text = stringResource(R.string.settings_seed_help),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-        HorizontalDivider()
-        SectionTitle(stringResource(R.string.settings_section_chaos))
+            HorizontalDivider()
+            SectionTitle(stringResource(R.string.settings_section_traffic))
 
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-        ) {
-            state.chaosProfiles.forEach { profile ->
-                FilterChip(
-                    selected = state.settings.globalChaosProfileId == profile.id ||
-                        (state.settings.globalChaosProfileId == null && profile.id == ChaosProfile.NONE_ID),
-                    onClick = {
-                        onIntent(
-                            SettingsIntent.SelectChaosProfile(
-                                profile.id.takeIf { it != ChaosProfile.NONE_ID },
-                            ),
-                        )
-                    },
-                    label = { Text(profile.name) },
-                )
+            LabelledTextField(
+                value = state.logCapacityInput,
+                onValueChange = { onIntent(SettingsIntent.UpdateLogCapacity(it)) },
+                label = stringResource(R.string.settings_log_capacity),
+                hint = stringResource(R.string.settings_log_capacity_help),
+                numeric = true,
+            )
+
+            HorizontalDivider()
+            SectionTitle(stringResource(R.string.settings_section_unmatched))
+
+            OutlinedTextField(
+                value = state.settings.unmatchedResponse.statusCode.toString(),
+                onValueChange = {
+                    it.toIntOrNull()?.let { status -> onIntent(SettingsIntent.UpdateUnmatchedStatus(status)) }
+                },
+                label = { Text(stringResource(R.string.settings_unmatched_status)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = state.settings.unmatchedResponse.body,
+                onValueChange = { onIntent(SettingsIntent.UpdateUnmatchedBody(it)) },
+                label = { Text(stringResource(R.string.settings_unmatched_body)) },
+                supportingText = { Text(stringResource(R.string.settings_unmatched_help)) },
+                textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            HorizontalDivider()
+            SectionTitle(stringResource(R.string.settings_section_data))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+                Button(onClick = { onIntent(SettingsIntent.OpenImport) }) {
+                    Text(stringResource(R.string.settings_import))
+                }
+                TextButton(onClick = { onIntent(SettingsIntent.ExportAll) }) {
+                    Text(stringResource(R.string.settings_export_share))
+                }
+                TextButton(onClick = { onIntent(SettingsIntent.SaveExportToFile) }) {
+                    Text(stringResource(R.string.settings_export_save))
+                }
             }
-        }
-        TextButton(onClick = { onIntent(SettingsIntent.OpenChaosEditor) }) {
-            Text(stringResource(R.string.settings_edit_profiles))
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column {
-                Text(stringResource(R.string.settings_seed), style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    text = state.settings.chaosSeed.toString(),
-                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            HorizontalDivider()
+            SectionTitle(stringResource(R.string.settings_section_battery))
+
+            Text(
+                text = stringResource(R.string.settings_battery_help),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            TextButton(onClick = { onIntent(SettingsIntent.OpenBatterySettings) }) {
+                Text(stringResource(R.string.settings_battery_action))
             }
-            TextButton(onClick = { onIntent(SettingsIntent.RegenerateChaosSeed) }) {
-                Text(stringResource(R.string.settings_regenerate))
-            }
-        }
-        Text(
-            text = stringResource(R.string.settings_seed_help),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        HorizontalDivider()
-        SectionTitle(stringResource(R.string.settings_section_traffic))
-
-        LabelledTextField(
-            value = state.logCapacityInput,
-            onValueChange = { onIntent(SettingsIntent.UpdateLogCapacity(it)) },
-            label = stringResource(R.string.settings_log_capacity),
-            hint = stringResource(R.string.settings_log_capacity_help),
-            numeric = true,
-        )
-
-        HorizontalDivider()
-        SectionTitle(stringResource(R.string.settings_section_unmatched))
-
-        OutlinedTextField(
-            value = state.settings.unmatchedResponse.statusCode.toString(),
-            onValueChange = {
-                it.toIntOrNull()?.let { status -> onIntent(SettingsIntent.UpdateUnmatchedStatus(status)) }
-            },
-            label = { Text(stringResource(R.string.settings_unmatched_status)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OutlinedTextField(
-            value = state.settings.unmatchedResponse.body,
-            onValueChange = { onIntent(SettingsIntent.UpdateUnmatchedBody(it)) },
-            label = { Text(stringResource(R.string.settings_unmatched_body)) },
-            supportingText = { Text(stringResource(R.string.settings_unmatched_help)) },
-            textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        HorizontalDivider()
-        SectionTitle(stringResource(R.string.settings_section_data))
-
-        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-            Button(onClick = { onIntent(SettingsIntent.OpenImport) }) {
-                Text(stringResource(R.string.settings_import))
-            }
-            TextButton(onClick = { onIntent(SettingsIntent.ExportAll) }) {
-                Text(stringResource(R.string.settings_export_share))
-            }
-            TextButton(onClick = { onIntent(SettingsIntent.SaveExportToFile) }) {
-                Text(stringResource(R.string.settings_export_save))
-            }
-        }
-
-        HorizontalDivider()
-        SectionTitle(stringResource(R.string.settings_section_battery))
-
-        Text(
-            text = stringResource(R.string.settings_battery_help),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        TextButton(onClick = { onIntent(SettingsIntent.OpenBatterySettings) }) {
-            Text(stringResource(R.string.settings_battery_action))
         }
     }
 }

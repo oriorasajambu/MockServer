@@ -2,6 +2,8 @@
 <!-- Copy for the Traffic tab and one entry's detail. -->
 <resources>
 
+    <string name="traffic_title">Traffic</string>
+    <string name="traffic_detail_title">Request</string>
     <string name="traffic_search_label">Search paths, headers and bodies</string>
     <string name="traffic_status_class">%1$dxx</string>
     <string name="traffic_unmatched_only">Unmatched</string>

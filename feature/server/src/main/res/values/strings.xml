@@ -9,6 +9,7 @@
     <string name="server_pause">Pause — refuse requests with 503</string>
     <string name="server_resume">Resume</string>
 
+    <string name="server_title">Server</string>
     <string name="server_copied">Copied</string>
     <string name="server_qr_close">Close</string>
     <string name="server_qr_description">QR code for %1$s</string>

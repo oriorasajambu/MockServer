@@ -40,6 +40,7 @@ import com.minion.mockserver.core.domain.model.BoundAddress
 import com.minion.mockserver.core.domain.model.NetworkAddress
 import com.minion.mockserver.core.domain.model.ServerStatus
 import com.minion.mockserver.core.ui.component.AddressBlock
+import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.ChaosBanner
 import com.minion.mockserver.core.ui.component.NoticeCard
 import com.minion.mockserver.core.ui.component.StatRow
@@ -118,77 +119,83 @@ internal fun ServerContent(
     onIntent: (ServerIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(Dimens.space),
-        verticalArrangement = Arrangement.spacedBy(Dimens.space),
-    ) {
-        AddressBlock(
-            primaryBaseUrl = state.primaryBaseUrl,
-            primaryAddress = state.primaryAddress,
-            loopbackUrl = state.loopbackUrl,
-            extraAddresses = state.addresses.drop(1),
-            boundPort = state.boundPort,
-            isExpanded = state.isAddressListExpanded,
-            advertisedName = state.advertisedName,
-            onCopy = { onIntent(ServerIntent.CopyAddress(it)) },
-            onShowQr = { onIntent(ServerIntent.ShowQr) },
-            onToggleExpanded = { onIntent(ServerIntent.ToggleAddressList) },
-        )
+    AppScaffold(
+        title = stringResource(R.string.server_title),
+        modifier = modifier,
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(Dimens.space),
+            verticalArrangement = Arrangement.spacedBy(Dimens.space),
+        ) {
+            AddressBlock(
+                primaryBaseUrl = state.primaryBaseUrl,
+                primaryAddress = state.primaryAddress,
+                loopbackUrl = state.loopbackUrl,
+                extraAddresses = state.addresses.drop(1),
+                boundPort = state.boundPort,
+                isExpanded = state.isAddressListExpanded,
+                advertisedName = state.advertisedName,
+                onCopy = { onIntent(ServerIntent.CopyAddress(it)) },
+                onShowQr = { onIntent(ServerIntent.ShowQr) },
+                onToggleExpanded = { onIntent(ServerIntent.ToggleAddressList) },
+            )
 
-        StartStopButton(state = state, onIntent = onIntent)
+            StartStopButton(state = state, onIntent = onIntent)
 
-        if (state.status.isRunning) {
-            OutlinedButton(
-                onClick = { onIntent(ServerIntent.TogglePause) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    stringResource(
-                        if (state.isPaused) R.string.server_resume else R.string.server_pause,
-                    ),
+            if (state.status.isRunning) {
+                OutlinedButton(
+                    onClick = { onIntent(ServerIntent.TogglePause) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        stringResource(
+                            if (state.isPaused) R.string.server_resume else R.string.server_pause,
+                        ),
+                    )
+                }
+            }
+
+            if (state.didFallBack) {
+                FallbackNotice(state = state, onIntent = onIntent)
+            }
+
+            state.activeChaosProfileName?.let { ChaosBanner(profileName = it) }
+
+            if (!state.isApiKeyEnabled) {
+                OpenAccessNote()
+            }
+
+            // The server runs without the notification; what is lost is stated plainly (SPEC §13):
+            // the ability to stop it without opening the app, and a signal to the system that the
+            // process is doing something the user asked for.
+            if (state.showNotificationWarning) {
+                NoticeCard(
+                    title = stringResource(R.string.server_notification_off_title),
+                    body = stringResource(R.string.server_notification_off_body),
+                    actionLabel = stringResource(R.string.server_notification_off_action),
+                    onAction = { onIntent(ServerIntent.OpenNotificationSettings) },
                 )
             }
+
+            // Never on first launch: this appears only once the app has detected it was killed while
+            // the server was running (SPEC §8.2).
+            if (state.showBatteryOptimisationCard) {
+                NoticeCard(
+                    title = stringResource(R.string.server_battery_title),
+                    body = stringResource(R.string.server_battery_body),
+                    actionLabel = stringResource(R.string.server_battery_action),
+                    onAction = { onIntent(ServerIntent.RequestBatteryExemption) },
+                    dismissLabel = stringResource(R.string.server_battery_dismiss),
+                    onDismiss = { onIntent(ServerIntent.DismissBatteryCard) },
+                )
+            }
+
+            Stats(state = state)
         }
-
-        if (state.didFallBack) {
-            FallbackNotice(state = state, onIntent = onIntent)
-        }
-
-        state.activeChaosProfileName?.let { ChaosBanner(profileName = it) }
-
-        if (!state.isApiKeyEnabled) {
-            OpenAccessNote()
-        }
-
-        // The server runs without the notification; what is lost is stated plainly (SPEC §13):
-        // the ability to stop it without opening the app, and a signal to the system that the
-        // process is doing something the user asked for.
-        if (state.showNotificationWarning) {
-            NoticeCard(
-                title = stringResource(R.string.server_notification_off_title),
-                body = stringResource(R.string.server_notification_off_body),
-                actionLabel = stringResource(R.string.server_notification_off_action),
-                onAction = { onIntent(ServerIntent.OpenNotificationSettings) },
-            )
-        }
-
-        // Never on first launch: this appears only once the app has detected it was killed while
-        // the server was running (SPEC §8.2).
-        if (state.showBatteryOptimisationCard) {
-            NoticeCard(
-                title = stringResource(R.string.server_battery_title),
-                body = stringResource(R.string.server_battery_body),
-                actionLabel = stringResource(R.string.server_battery_action),
-                onAction = { onIntent(ServerIntent.RequestBatteryExemption) },
-                dismissLabel = stringResource(R.string.server_battery_dismiss),
-                onDismiss = { onIntent(ServerIntent.DismissBatteryCard) },
-            )
-        }
-
-        Stats(state = state)
     }
 }
 
