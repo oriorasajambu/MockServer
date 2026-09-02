@@ -67,9 +67,19 @@ internal class RouteEditorViewModel @Inject constructor(
     /** The port the loopback test request goes to. */
     private var boundPort: Int = AppConstants.Server.DEFAULT_PORT
 
+    /**
+     * Where this route will be saved.
+     *
+     * Usually the route argument, but a draft built from a traffic entry arrives without one —
+     * see [prefillFromTraffic].
+     */
+    private var targetCollectionId: String = args.collectionId
+
     init {
+        // observeContext is started by loadRoute, not alongside it: a draft built from a traffic
+        // entry works out its own collection, and observing before that resolves would subscribe
+        // to the empty id and never re-subscribe.
         loadRoute()
-        observeContext()
     }
 
     override fun onIntent(intent: RouteEditorIntent) {
@@ -169,6 +179,7 @@ internal class RouteEditorViewModel @Inject constructor(
                     isNew = existing == null,
                 )
             }
+            observeContext()
             revalidate()
         }
     }
@@ -182,15 +193,25 @@ internal class RouteEditorViewModel @Inject constructor(
     private suspend fun prefillFromTraffic(entryId: String): MockRoute {
         val entry = observeTraffic().first().firstOrNull { it.id == entryId }
             ?: return MockRoute(id = idGenerator.newId(), collectionId = args.collectionId, name = "")
+
         val collections = collectionRepository.observeCollections().first()
-        return createFromTraffic(entry, collections).route.copy(collectionId = args.collectionId)
+        val draft = createFromTraffic(entry, collections)
+
+        // The route arrives from Traffic with no collection id — Traffic has no idea which
+        // collection a failed request belongs in. The draft's own answer (the collection whose
+        // base path is the longest prefix of the path) is the better one, and falls back to the
+        // first collection so the editor always has somewhere to save to.
+        targetCollectionId = args.collectionId.ifBlank {
+            draft.collection?.id ?: collections.firstOrNull()?.id.orEmpty()
+        }
+        return draft.route.copy(collectionId = targetCollectionId)
     }
 
     private fun observeContext() {
         viewModelScope.launch {
             combine(
-                collectionRepository.observeCollection(args.collectionId),
-                routeRepository.observeRoutes(args.collectionId),
+                collectionRepository.observeCollection(targetCollectionId),
+                routeRepository.observeRoutes(targetCollectionId),
                 observeAddresses(),
                 getSettings(),
                 serverRepository.status,

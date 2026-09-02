@@ -1,52 +1,17 @@
 package com.rio.mockserver.di
 
-import com.rio.mockserver.BuildConfig
-import com.rio.mockserver.core.common.dispatcher.DefaultDispatcher
-import com.rio.mockserver.core.common.dispatcher.IoDispatcher
-import com.rio.mockserver.core.common.dispatcher.MainDispatcher
-import com.rio.mockserver.core.network.BaseUrl
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-
 /**
- * Bindings that only the application can make: the ones that depend on which app this is, or on
- * the platform itself.
+ * There is nothing left for this module to bind, and that is the intended end state.
  *
- * The base URL is here rather than in `:core:network` because `BuildConfig` belongs to `:app`. A
- * core module reading the application's `BuildConfig` is how it quietly stops being reusable.
+ * The scaffold's version provided the base URL and the dispatchers. This app makes no outbound
+ * calls, so there is no base URL; and the dispatchers, the application scope, the clock and the
+ * id generator are all bound in `:core:data`'s `DispatcherModule`, beside the implementations
+ * they wrap.
  *
- * Feature bindings do NOT belong here. A repository implementation is bound by an `internal`
- * `@Module` inside the module that owns it — a central DI module would have to depend on every
- * feature, inverting the dependency direction the module graph exists to enforce.
+ * A binding belongs here only if it depends on *which app this is* — an application `BuildConfig`
+ * value, say. A core module reading `:app`'s `BuildConfig` is how it quietly stops being reusable,
+ * which is the whole reason this file exists as a place to put such things.
+ *
+ * The file is kept rather than deleted so the next person adding an app-specific binding has an
+ * obvious home for it, and this note explaining what does and does not belong.
  */
-@Module
-@InstallIn(SingletonComponent::class)
-object AppModule {
-
-    @Provides
-    @BaseUrl
-    fun provideBaseUrl(): String = BuildConfig.BASE_URL
-
-    /**
-     * The dispatchers, injected rather than referenced directly.
-     *
-     * A repository that calls `Dispatchers.IO` itself cannot be tested deterministically — the
-     * work escapes onto a real thread pool and `runTest` has nothing to advance. Injected, a test
-     * substitutes a `TestDispatcher` and controls it.
-     */
-    @Provides
-    @IoDispatcher
-    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
-
-    @Provides
-    @DefaultDispatcher
-    fun provideDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
-
-    @Provides
-    @MainDispatcher
-    fun provideMainDispatcher(): CoroutineDispatcher = Dispatchers.Main.immediate
-}

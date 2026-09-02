@@ -20,17 +20,12 @@ android {
     }
 
     buildTypes {
-        debug {
-            // :app is the only module that knows which environment it is talking to. :core:network
-            // receives this through the @BaseUrl qualifier and never reads BuildConfig itself —
-            // a library module reading the app's BuildConfig is how a "core" module quietly
-            // becomes app-specific.
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/\"")
-        }
         release {
+            // Off for now. The app is sideloaded to a known set of devices, and the first thing
+            // minification would break is Room's and kotlinx.serialization's generated code —
+            // worth turning on deliberately, with the rules written and tested, not by default.
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            buildConfigField("String", "BASE_URL", "\"https://example.com/\"")
         }
     }
 }
@@ -41,11 +36,17 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
-    implementation(project(":core:network"))
-    implementation(project(":core:data"))
 
-    // Features are added here as they are created — this is the one place that sees all of them.
-    // implementation(project(":feature:home"))
+    // :app is the only module that sees both the features and the implementations. It assembles
+    // the navigation graph and the DI graph, and does nothing else.
+    implementation(project(":core:data"))
+    implementation(project(":core:server"))
+    implementation(project(":core:importexport"))
+
+    implementation(project(":feature:server"))
+    implementation(project(":feature:routes"))
+    implementation(project(":feature:traffic"))
+    implementation(project(":feature:settings"))
 
     implementation(libs.androidx.splashscreen)
 

@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Cleartext HTTP, allowed for the emulator's host alias only.
+  Cleartext HTTP to loopback only.
 
-  minSdk 29 blocks cleartext by default, which is correct — but it also blocks the debug base URL
-  (http://10.0.2.2:8080), so the scaffold would fail its first request with no obvious cause.
+  This app serves cleartext by design — v1 has no TLS (SPEC §1.2) — but a network security config
+  has nothing to say about a socket the app *listens* on. It matters for exactly one outbound
+  call: "Test this route" (SPEC §10.2), which issues a request to the app's own server over
+  loopback. minSdk 29 blocks cleartext by default, so without this entry that button would fail
+  with a NetworkOnMainThread-shaped error that says nothing about cleartext.
 
-  Scoped to a literal address on purpose. Android's <domain> element does exact hostname or
+  Scoped to the loopback literals on purpose. Android's <domain> element does exact hostname or
   IP-literal matching and subdomain-suffix matching; it has no CIDR support, so an entry like
-  "192.168.0.0/16" silently matches nothing. If a real device on a LAN needs cleartext, add its
-  literal address here — do not widen this to a global base-config.
+  "192.168.0.0/16" silently matches nothing. Widening this to a global base-config would permit
+  cleartext to anywhere, which an app that makes no other outbound calls has no reason to do.
 -->
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
     </domain-config>
 </network-security-config>

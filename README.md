@@ -1,46 +1,62 @@
-# Android Scaffold
+# MockServer
 
-An empty, buildable starting point for Android apps: **Kotlin**, **Jetpack Compose**, **MVI**,
-**Clean Architecture**, **Hilt**, and a Gradle multi-module graph whose boundaries are enforced by
-the build rather than by code review.
+A portable HTTP mock server that runs on an Android phone.
 
-There are no features. That is the point — clone it, rename the package, and run
-`scripts/scaffold_feature.py` to generate the first vertical slice.
+An embedded Ktor CIO engine binds to a local port, so any device on the same Wi-Fi — or on the
+phone's hotspot — can call `http://<phone-ip>:<port>/...`, and other apps on the same device can
+call `http://localhost:<port>/...`. It keeps serving with the screen off.
+
+It exists to build client UIs before a backend does, to trigger error states on demand, and to
+demo an integration with no network at all.
 
 ```bash
-./gradlew build
+./gradlew build          # compiles everything, runs unit tests, compiles androidTest, lints
+./gradlew testDebugUnitTest
 ```
 
-- **UI** — Jetpack Compose, Material 3
-- **Architecture** — MVI (State / Intent / Effect) over Clean Architecture layers
-- **Async** — Coroutines + `StateFlow`; one-shot events over a buffered `Channel`
-- **DI** — Hilt, with bindings living beside the implementations they bind
-- **Network** — Retrofit + OkHttp + Gson; Chucker on debug builds only
-- **Testing** — JUnit + MockK + Turbine, with a shared `MainDispatcherRule`
-- **Previews** — Showkase, aggregating every `@Preview` into a browsable catalog
-
-> `docs/` holds product specifications for a different application (Cash Flow Manager) that were
-> in this repository before it became a scaffold. They are **not** scaffold documentation and
-> nothing here implements them.
+Built from the specification in `SPEC-1.md`. Where the code departs from it, the KDoc at that
+point says so and why.
 
 ---
 
-## 1. Module graph
+## 1. What it does
+
+| | |
+|---|---|
+| **Embedded server** | Ktor CIO on `0.0.0.0:<port>`, with auto-fallback over the next ten ports |
+| **Routes** | Collections with base-path prefixes; method, path pattern, header/query/body matchers |
+| **Matching** | Most-specific-wins scoring with a five-step tie-break, so resolution is total and deterministic |
+| **Responses** | Status, headers, static body with `{{path.x}}` / `{{query.x}}` / `{{header.x}}` placeholders |
+| **Traffic inspector** | In-memory live log, auto-follow, filters, full-text search, cURL and HAR export |
+| **Chaos** | Delay, injected error statuses, connection resets, truncated bodies — seeded, so failures replay |
+| **Import** | OpenAPI 3.0/3.1 (JSON and YAML), Postman v2.1, HAR 1.2 |
+| **Export** | Native JSON, Postman v2.1, HAR 1.2, cURL |
+| **Discovery** | Ranked address list, QR code, mDNS/NSD advertisement |
+| **Access control** | Optional API-key header |
+
+Not in v1: traffic interception of other apps, a browser admin UI, HTTPS, JSONPath or regex
+matchers, WebSocket/SSE, scenario state machines, tablet or landscape layouts.
+
+---
+
+## 2. Module graph
 
 ```
-:app                    Application, MainActivity, NavHost, DI aggregation — nothing else
+:app                     Application, MainActivity, NavHost, DI aggregation — nothing else
 │
-├── :core:common         Pure Kotlin. AppResult, DomainError, dispatcher qualifiers,
-│                        UiState/UiIntent/UiEffect markers. Depends on nothing.
-├── :core:domain         Pure Kotlin. Shared models, repository interfaces, use cases.
-├── :core:navigation     Pure Kotlin. @Serializable route contracts only.
-├── :core:designsystem   AppTheme, colour/type/shape tokens, dumb widgets.
-├── :core:ui             MviViewModel, ObserveAsEvents, DomainError → @StringRes.
-├── :core:network        Shared OkHttp/Retrofit, safeCall, error mapping.
-├── :core:data           Data shared between features (not a feature's own data layer).
-├── :core:testing        MainDispatcherRule, fakes. Consumed via testImplementation.
+├── :core:common          Pure Kotlin. AppResult, DomainError, safeCall, AppConstants, Logger.
+├── :core:domain          Pure Kotlin. Models, repository interfaces, use cases — the whole
+│                         matching and chaos decision surface.
+├── :core:server          Pure Kotlin. Ktor CIO engine and its adapters. The only module that
+│                         imports Ktor.
+├── :core:importexport    Pure Kotlin. OpenAPI / Postman / HAR / native wire formats.
+├── :core:navigation      Pure Kotlin. @Serializable route contracts only.
+├── :core:designsystem    AppTheme, colour/type/shape tokens, Dimens.
+├── :core:ui              MviViewModel, ObserveAsEvents, DomainError → @StringRes, shared widgets.
+├── :core:data            Room, DataStore, the foreground service, NSD, QR, repository impls.
+├── :core:testing         MainDispatcherRule, fakes. Consumed via testImplementation.
 │
-└── :feature:*           One module per screen area. Empty — generate the first one.
+└── :feature:{server,routes,traffic,settings}
 ```
 
 ### Dependency rules
@@ -52,121 +68,116 @@ There are no features. That is the point — clone it, rename the package, and r
 :core:common depends on nothing
 ```
 
-Three decisions do most of the work:
-
-**`:core:common`, `:core:domain` and `:core:navigation` apply `mockserver.jvm.library`, not the
-Android plugin.** "No Android imports in the domain layer" becomes a compile error instead of a
-review comment.
+**Four modules apply `mockserver.jvm.library` rather than the Android plugin**: `:core:common`,
+`:core:domain`, `:core:server` and `:core:importexport`. "No Android imports below the
+presentation layer" becomes a compile error instead of a review comment — and, more usefully, it
+means the matching pipeline, the chaos engine, the Ktor request path and every importer can be
+exercised on a plain JVM with no device and no emulator.
 
 **Everything in a feature module is `internal` except the navigation entry point.** A feature's
-public API is `fun NavGraphBuilder.homeScreen(...)` and nothing else. Without `internal`, `:app`
-can reach in and construct the ViewModel directly, and the module boundary is decorative.
+public API is `fun NavGraphBuilder.serverScreen(...)` and nothing else.
 
-**Bindings live with their implementations.** Each feature has its own `internal @Module`. A
-central `:core:di` would have to depend on every feature, inverting the direction the graph exists
-to enforce.
+**Bindings live with their implementations.** Each has its own `internal @Module`; a central
+`:core:di` would have to depend on every feature, inverting the direction the graph enforces.
 
----
-
-## 2. Convention plugins
-
-`build-logic/` is an included build compiled before anything else configures. Module build files
-apply one plugin and set a namespace; everything else is centralised, so twelve modules cannot
-drift apart.
-
-| Plugin | Applies to | Provides |
-|---|---|---|
-| `mockserver.android.application` | `:app` | `com.android.application`, compileSdk/minSdk/Java level, desugaring, Compose, Hilt, Showkase, test wiring |
-| `mockserver.android.library` | every Android library | the same, minus Compose; plus the `check` → `compileDebugAndroidTestKotlin` guard |
-| `mockserver.android.library.compose` | modules that draw | Compose BOM + bundles, Showkase processor |
-| `mockserver.android.hilt` | data-layer modules | Hilt + KSP, without dragging in Compose |
-| `mockserver.android.feature` | every `:feature:*` | Compose + Hilt + navigation + the core modules a feature may see |
-| `mockserver.jvm.library` | pure-Kotlin modules | `kotlin-jvm` only — deliberately no Android plugin |
-
-`check` depends on `compileDebugAndroidTestKotlin` on purpose. Neither `testDebugUnitTest` nor
-`assembleDebug` builds `androidTest` sources, so they can stop compiling with a green board and
-nobody finds out for weeks.
-
-Dependency versions live in `gradle/libs.versions.toml`, shared by both builds.
+Three features depend on `:core:data`, which is the one documented exception to a feature seeing
+an implementation module: starting the foreground service, encoding a QR bitmap, opening battery
+settings and issuing a loopback test request are platform mechanisms with no domain meaning, so
+there is no repository interface for them to hide behind.
 
 ---
 
-## 3. The MVI contract
+## 3. The parts worth understanding first
 
-Every feature declares exactly three types.
+### The domain owns every decision
 
-```kotlin
-// State — what the UI renders. Flat data class, safe defaults for every field.
-internal data class HomeState(
-    val content: ContentState = ContentState.Loading,
-    val query: String = "",
-) : UiState {
-    sealed interface ContentState {
-        data object Loading : ContentState
-        data class Success(val items: List<Article>) : ContentState
-        data object Empty : ContentState
-        data class Failure(val error: DomainError) : ContentState
-    }
-}
+`HandleMockRequestUseCase` is the single entry point the Ktor engine calls. It runs the whole
+SPEC §4.1 pipeline — pause, API key, CORS preflight, the 5 MB ceiling, matching, chaos,
+placeholder rendering — and hands the transport a `ResponsePlan`: a status, headers, a body, how
+many bytes of it to write, what `Content-Length` should claim, and whether to kill the socket
+afterwards. `ResponseWriter` executes that and does no thinking of its own.
 
-// Intent — everything the user can do. Sealed, so `when` is exhaustive.
-internal sealed interface HomeIntent : UiIntent {
-    data object Load : HomeIntent
-    data class Select(val id: String) : HomeIntent
-}
+The transport is passed in as a lambda rather than the plan being returned, which keeps the one
+piece of ordering anybody would get wrong — delay, then write, then log, with the duration
+measured around the write but *excluding* the delay — inside the layer that can be unit-tested.
 
-// Effect — one-shot events that must not replay.
-internal sealed interface HomeEffect : UiEffect {
-    data class ShowError(val error: DomainError) : HomeEffect
-    data class NavigateToDetail(val id: String) : HomeEffect
-}
+### Editing a route never restarts the engine
+
+Routes live in an immutable `RoutingSnapshot` behind an `AtomicReference`. Saving compiles a new
+one off the main thread and swaps the reference; a request reads it once at entry and resolves
+entirely against that value. An in-flight request finishes under the rules it started with, the
+next one sees the new rules, and no keep-alive socket is dropped.
+
+Only the port, the bind address and the API key need a restart, and the Settings screen names
+which of them is stale rather than restarting silently.
+
+### The traffic log cannot slow the server down
+
+`offer` pushes onto a lock-free queue and pokes a conflated channel; a coroutine on
+`Dispatchers.Default` drains it into a ring buffer and publishes once per batch. On overflow the
+*oldest queued* entry is dropped and counted, and the count is shown in the UI — a log that
+silently loses entries is a log that quietly lies.
+
+### Chaos is recorded, not just applied
+
+Every traffic entry carries what chaos did. Without that, an injected 503 is indistinguishable
+from a bug in the mock rules, and the hour spent working that out is an hour of believing the tool
+is lying to you.
+
+---
+
+## 4. Testing
+
+```bash
+./gradlew testDebugUnitTest
 ```
 
-The mutually exclusive phases go in a nested `ContentState` rather than sibling booleans, because
-`isLoading = true` next to a non-empty list is a state the UI would have to decide what to do
-with — and this shape makes it unrepresentable.
+171 tests, all on the JVM, split the way SPEC §14 asks:
 
-**State or Effect?** Ask whether replaying it after a rotation would be wrong.
+**Unit tests over the pure-Kotlin modules** — path normalisation and pattern grammar, precedence,
+matcher semantics, the scoring arithmetic and every step of the tie-break chain, deep-subset body
+matching, placeholder resolution, and chaos with a fixed seed so the assertions are exact rather
+than statistical.
 
-| | |
-|---|---|
-| Toast, snackbar, navigation | Effect |
-| Loading flag, dialog visibility, list contents, text | State |
+**Ktor `testApplication`** — the wiring the unit tests cannot see: header and `Content-Length`
+emission, stage ordering, the API-key guard with its `OPTIONS` exemption, CORS precedence, `413`,
+`HEAD`, chaos reaching the wire, and a snapshot swap taking effect on the next request but not the
+one in flight.
 
-Storing a navigation flag in state means it fires again on every rotation. That bug is why
-`Channel` exists here.
+**Golden files** for every importer, because what breaks an importer is the shape real exports
+have: Postman writing a URL two ways in one file, a HAR repeating the same request eleven times, a
+spec that defines an operation and gives it no example.
 
-### The ViewModel
+Assert typed `DomainError` values, never message substrings — a substring assertion passes for the
+wrong reason the moment the copy is reworded.
 
-```kotlin
-@HiltViewModel
-internal class HomeViewModel @Inject constructor(
-    private val getArticles: GetArticlesUseCase,
-) : MviViewModel<HomeState, HomeIntent, HomeEffect>(HomeState()) {
+### Manual verification
 
-    override fun onIntent(intent: HomeIntent) {
-        when (intent) {                       // no `else` — adding a case must not compile
-            HomeIntent.Load -> load()
-            is HomeIntent.Select -> viewModelScope.launch {
-                emitEffect(HomeEffect.NavigateToDetail(intent.id))
-            }
-        }
-    }
+Not automated, and each of these has caught something a JVM test could not:
 
-    private fun load() = viewModelScope.launch {
-        getArticles()
-            .onSuccess { items -> reduce { copy(content = ContentState.Success(items)) } }
-            .onFailure { error ->
-                reduce { copy(content = ContentState.Failure(error)) }
-                emitEffect(HomeEffect.ShowError(error))
-            }
-    }
-}
-```
+- Screen-off endurance over an hour, with a client polling.
+- Serving a laptop over the phone's hotspot.
+- A Wi-Fi → hotspot transition while the server is running.
+- mDNS resolution from macOS and Linux.
+- Scanning the QR with a stock camera app.
+- Killing the app from the recents screen and checking the recovery card on next launch.
 
-`MviViewModel` (in `:core:ui`) owns the `MutableStateFlow` and the `Channel`, exposes only
-`state` and `effect`, and gives subclasses `reduce { }`, `currentState` and `emitEffect()`. No
-screen can write state directly.
+---
+
+## 5. Architecture conventions
+
+### MVI
+
+Every feature declares `State`, `Intent` and `Effect` in its `Contract.kt`. **State or Effect?**
+Ask whether replaying it after a rotation would be wrong — a toast, a snackbar or a navigation is
+an Effect; a loading flag, a dialog's visibility, list contents and text are State.
+
+`MviViewModel` (in `:core:ui`) owns the `MutableStateFlow` and the `Channel`, exposes only `state`
+and `effect`, and gives subclasses `reduce { }`, `currentState` and `emitEffect()`.
+
+Collect effects with `ObserveAsEvents`, never `LaunchedEffect(Unit) { flow.collect { } }`. The
+latter is scoped to composition, and a backgrounded screen stays composed — so a `navigate()`
+fires while the app is invisible and the user returns to the wrong screen.
 
 ### Errors
 
@@ -175,127 +186,32 @@ never `kotlin.Result` and never a raw `Throwable`.
 
 ```
 Exception ──► toDomainError() ──► DomainError ──► toMessageRes() ──► stringResource
-   :core:network                    everywhere              :core:ui        the composable
+  :core:common                      everywhere          :core:ui         the composable
 ```
 
-- `safeCall { }` is the boundary. It rethrows `CancellationException` **before** catching
-  `Throwable`, which is the line `runCatching` is missing — without it, cancelling a screen
-  mid-request turns into a spurious failure and structured concurrency breaks silently.
-- `DomainError` is sealed, so `when` needs no `else` and a new failure mode is a compile error at
-  every site that must handle it.
-- `e.message` never reaches state. It is developer text, frequently `null`, always untranslated.
-- Only the composable turns an error into words, via `stringResource(error.toMessageRes())`.
+`safeCall { }` is the boundary for repository work; it rethrows `CancellationException` **before**
+catching `Throwable`, which is the line `runCatching` is missing. The request path uses
+`respondCatching` instead: a throwing handler has to become a 500 on the wire plus a logged
+traffic entry, not an `AppResult` nobody is holding.
 
-### Collecting effects
-
-Use `ObserveAsEvents` from `:core:ui`, never `LaunchedEffect(Unit) { flow.collect { } }`. The
-latter is scoped to composition, and a backgrounded screen stays composed — so a `navigate()`
-fires while the app is invisible and the user comes back to the wrong screen. `ObserveAsEvents`
-uses `repeatOnLifecycle(STARTED)`; because effects go through a buffered `Channel`, events sent
-while stopped are held and delivered on resume.
+`DomainError` is sealed, so a new failure mode is a compile error at every site that must handle
+it. `e.message` never reaches state — it is developer text, frequently `null`, always untranslated.
 
 ---
 
-## 4. Adding a feature
+## 6. Things that will bite you
 
-### With the script
-
-```bash
-python scripts/scaffold_feature.py --name Home
-```
-
-Writes the whole slice — contract, ViewModel, screen with four previews, navigation entry point,
-domain model, repository interface, use case, DTO, Retrofit API, mapper, repository
-implementation, two Hilt modules, strings and a passing ViewModel test — then prints the three
-lines you still have to add. Useful flags: `--dry-run`, `--force`, `--no-remote`, `--no-tests`,
-`--plural People`.
-
-### By hand
-
-```
-feature/home/
-├── build.gradle.kts                     # id("mockserver.android.feature") + namespace. That's all.
-└── src/
-    ├── main/kotlin/com/rio/mockserver/feature/home/
-    │   ├── presentation/                # HomeContract, HomeViewModel, HomeScreen, HomeNavigation
-    │   ├── domain/                      # Article, ArticleRepository, GetArticlesUseCase
-    │   ├── data/                        # ArticleApi, ArticleDto, ArticleMapper, …RepositoryImpl
-    │   └── di/                          # internal @Module — @Binds beside the impl it binds
-    ├── main/res/values/strings.xml
-    └── test/kotlin/…/presentation/      # HomeViewModelTest
-```
-
-Layers stay **packages**, not sub-modules. Split into `:feature:home:data` / `:domain` / `:ui`
-only when separate teams own the layers — otherwise packages plus `internal` give identical
-enforcement with none of the Gradle overhead.
-
-Then three edits:
-
-1. `settings.gradle.kts` — `include(":feature:home")`
-2. `app/build.gradle.kts` — `implementation(project(":feature:home"))`
-3. `app/.../navigation/AppNavHost.kt` — `homeScreen(onNavigateToDetail = { … })`
-
-Routes go in `:core:navigation`, not the feature, so another feature can navigate here without
-depending on this module. Pass navigation **down as lambdas**; never hand a feature the
-`NavController`, or it can reach anywhere.
-
-Build order that works: contract first (it is the spec), then domain, data, DI, ViewModel,
-screen, navigation, tests.
-
----
-
-## 5. Testing
-
-```bash
-./gradlew build              # compiles everything, runs unit tests, compiles androidTest, lints
-./gradlew testDebugUnitTest  # unit tests only
-```
-
-`:core:testing` supplies `MainDispatcherRule` and re-exports JUnit, MockK, Turbine and
-`kotlinx-coroutines-test` as `api`, so a feature's tests get them from one dependency — which the
-feature convention adds automatically.
-
-`MainDispatcherRule` defaults to `StandardTestDispatcher`, which queues coroutines instead of
-running them eagerly, so tests control execution with `advanceUntilIdle()`. `UnconfinedTestDispatcher`
-would hide ordering bugs by making everything look synchronous.
-
-Assert typed `DomainError` values, never message substrings — a substring assertion passes for the
-wrong reason the moment the copy is reworded.
-
----
-
-## 6. Renaming for a new project
-
-Everything is under `com.rio.mockserver`. To rebrand:
-
-1. Replace `com.rio.mockserver` with your package across `*.kt`, `*.kts` and
-   `scripts/scaffold_feature.py` (`BASE_PACKAGE`).
-2. Move the source directories to match.
-3. `settings.gradle.kts` — `rootProject.name`.
-4. `app/build.gradle.kts` — `applicationId`.
-5. `app/src/main/res/values/strings.xml` — `app_name`; and `themes.xml` if you rename
-   `Theme.MockServer`.
-6. Replace the Material 3 baseline palette in `:core:designsystem` with your own tokens.
-
----
-
-## 7. Things that will bite you
-
+- **Kotlin block comments nest.** `/files/**` inside a KDoc opens a nested comment and the file
+  stops compiling several declarations later, with an error that points nowhere near the cause.
 - **`@ShowkaseRoot` must live in `src/main`, not `src/debug`.** KSP does not scan the debug source
-  set for annotations, so a root placed there compiles and silently generates nothing. Only the
-  processor is debug-scoped, so nothing reaches a release build either way.
-- **A `@Preview` that Showkase should catalog must be `internal`, not `private`** — Showkase
-  cannot call a private function. The compose convention sets `skipPrivatePreviews=true` so a
-  throwaway private preview does not fail the build; it just will not appear in the catalog.
-- **A type returned from a `@Provides` is part of that module's public surface.** Hilt generates
-  the component in `:app`, so the type must be on `:app`'s compile classpath — use `api`, not
-  `implementation`. This is why `:core:network` exposes the networking bundle as `api`, and why
-  Chucker is built inside `provideOkHttpClient` rather than provided: providing it would put a
-  debug-only library on every consumer's classpath.
+  set for annotations, so a root placed there compiles and silently generates nothing.
+- **A `@Preview` that Showkase should catalog must be `internal`, not `private`.**
+- **A type returned from a `@Provides` is part of that module's public surface**, because Hilt
+  generates the component in `:app` — use `api`, not `implementation`.
 - **Use `LocalResources.current`, not `LocalContext.current.getString()`.** A `Context` read is not
-  invalidated by a configuration change, so text goes stale after a locale switch. Lint fails the
-  build on this.
-- **Give every `LazyColumn` item a stable `key`.** Without one, inserting at the top shifts every
-  position and recomposes every row.
-- Default Gradle dependencies to `implementation`; reach for `api` only when a type appears in the
-  module's own public signatures.
+  invalidated by a configuration change, so text goes stale after a locale switch.
+- **Give every `LazyColumn` item a stable `key`.** Without one, inserting at the top — which the
+  traffic log does constantly — recomposes every row.
+- **Never call `android.util.Log` directly.** Use `Logger`, whose sink is installed only in debug
+  builds; a stray log line in a release build of a developer tool is likely printing somebody's
+  request bodies to logcat.
