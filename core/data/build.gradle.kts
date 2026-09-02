@@ -49,7 +49,6 @@ dependencies {
     implementation(libs.zxing.core)
 
     implementation(libs.androidx.core)
-    implementation(libs.androidx.lifecycle.service)
 
     testImplementation(libs.room.testing)
 }
