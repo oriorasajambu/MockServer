@@ -6,16 +6,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
@@ -40,55 +44,77 @@ fun RouteRow(
     onDuplicate: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen)
             .padding(Dimens.space),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spaceHalf),
     ) {
-        MethodBadge(route.method.name)
-
-        Column(modifier = Modifier.weight(PATH_WEIGHT)) {
+        // The pattern gets a line to itself, sharing it only with the badge and the status it
+        // answers with. Competing with the name, a duplicate button and a switch on one line left
+        // it about ninety dips wide, which turns `/api/v1/users/{userId}` into `/api/…erId}`.
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+        ) {
+            MethodBadge(route.method.name)
             Text(
                 text = route.pathPattern,
                 style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                maxLines = 1,
+                overflow = TextOverflow.MiddleEllipsis,
+                modifier = Modifier.weight(PATH_WEIGHT),
             )
-            Text(
-                text = route.name,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceHalf)) {
-                if (isShadowed) {
-                    AssistChip(
-                        onClick = onOpen,
-                        label = { Text(stringResource(R.string.routes_shadowed)) },
-                    )
-                }
-                if (route.needsBody) {
-                    AssistChip(
-                        onClick = onOpen,
-                        label = { Text(stringResource(R.string.routes_needs_body)) },
-                    )
-                }
-                if (route.hasChaosOverride) {
-                    AssistChip(
-                        onClick = onOpen,
-                        label = { Text(stringResource(R.string.routes_chaos)) },
-                    )
-                }
-            }
+            StatusPill(route.response.statusCode)
         }
 
-        StatusPill(route.response.statusCode)
-        TextButton(onClick = onDuplicate) { Text(stringResource(R.string.routes_duplicate)) }
-        Switch(checked = route.isEnabled, onCheckedChange = onToggle)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+        ) {
+            Column(modifier = Modifier.weight(PATH_WEIGHT)) {
+                Text(
+                    text = route.name,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceHalf)) {
+                    if (isShadowed) {
+                        AssistChip(
+                            onClick = onOpen,
+                            label = { Text(stringResource(R.string.routes_shadowed)) },
+                        )
+                    }
+                    if (route.needsBody) {
+                        AssistChip(
+                            onClick = onOpen,
+                            label = { Text(stringResource(R.string.routes_needs_body)) },
+                        )
+                    }
+                    if (route.hasChaosOverride) {
+                        AssistChip(
+                            onClick = onOpen,
+                            label = { Text(stringResource(R.string.routes_chaos)) },
+                        )
+                    }
+                }
+            }
+
+            IconButton(onClick = onDuplicate) {
+                Icon(
+                    imageVector = Icons.Default.ContentCopy,
+                    contentDescription = stringResource(R.string.routes_duplicate),
+                )
+            }
+            Switch(checked = route.isEnabled, onCheckedChange = onToggle)
+        }
     }
 }
 
-/** The path column takes what the badge, the pill and the controls leave. */
+/** The pattern takes what the badge and the status pill leave. */
 private const val PATH_WEIGHT = 1f
 
 @Preview

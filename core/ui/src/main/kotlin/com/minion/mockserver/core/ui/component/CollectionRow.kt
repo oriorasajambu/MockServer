@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
@@ -48,11 +49,20 @@ fun CollectionRow(
         horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
     ) {
         Column(modifier = Modifier.weight(NAME_WEIGHT)) {
-            Text(collection.name, style = MaterialTheme.typography.titleMedium)
+            // One line each: a long collection name in a row that also holds Edit and a switch
+            // has nowhere to wrap to, and wrapping there stacks it into a narrow column.
+            Text(
+                text = collection.name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Text(
                 text = collection.basePath,
                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.MiddleEllipsis,
             )
             Text(
                 text = pluralStringResource(
