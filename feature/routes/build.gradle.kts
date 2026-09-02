@@ -13,3 +13,9 @@ plugins {
 android {
     namespace = "com.rio.mockserver.feature.routes"
 }
+
+dependencies {
+    // "Test this route" issues a real loopback request through the running server, which is a
+    // platform mechanism with no domain meaning; see the note in :feature:server's build file.
+    implementation(project(":core:data"))
+}

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy for the Routes tab: collections, the route list, and the editor. -->
+<resources>
+
+    <!-- Collections -->
+    <string name="collections_new">New collection</string>
+    <string name="collections_edit">Edit</string>
+    <string name="collections_edit_title">Edit collection</string>
+    <string name="collections_save">Save</string>
+    <string name="collections_cancel">Cancel</string>
+    <string name="collections_name_label">Name</string>
+    <string name="collections_base_path_label">Base path</string>
+    <string name="collections_base_path_help">Every route in this collection hangs off this prefix, for example /api/v1.</string>
+    <string name="collections_cors">Allow browser access (CORS)</string>
+    <string name="collections_origins_label">Allowed origins, comma separated</string>
+    <string name="collections_credentials">Allow credentials</string>
+    <string name="collections_route_count">%1$d routes</string>
+    <string name="collections_needs_body">%1$d need bodies</string>
+    <string name="collections_empty_title">No collections yet</string>
+    <string name="collections_empty_body">A collection groups routes under a shared base path. Create one, or import an OpenAPI, Postman or HAR file from Settings.</string>
+
+    <!-- Route list -->
+    <string name="routes_new">New route</string>
+    <string name="routes_duplicate">Duplicate</string>
+    <string name="routes_shadowed">Shadowed</string>
+    <string name="routes_needs_body">Needs body</string>
+    <string name="routes_chaos">Chaos</string>
+    <string name="routes_needs_body_banner">%1$d routes were imported without a response body.</string>
+    <string name="routes_export_json">Export JSON</string>
+    <string name="routes_export_postman">Export Postman</string>
+    <string name="routes_export_anyway">Export anyway</string>
+    <string name="routes_cancel">Cancel</string>
+    <string name="routes_postman_loss_title">This export will lose some of your rules</string>
+    <string name="routes_empty_title">No routes in this collection</string>
+    <string name="routes_empty_body">Add a route, or send a request to the server and create one from the failure on the Traffic tab.</string>
+
+    <!-- Editor -->
+    <string name="editor_section_request">Request</string>
+    <string name="editor_section_matchers">Matchers</string>
+    <string name="editor_section_response">Response</string>
+    <string name="editor_section_chaos">Chaos</string>
+    <string name="editor_name_label">Name</string>
+    <string name="editor_path_label">Path</string>
+    <string name="editor_path_help">/users/{id} captures a segment. A trailing ** matches everything below.</string>
+    <string name="editor_status_label">Status code</string>
+    <string name="editor_alternate">Use %1$d</string>
+    <string name="editor_delay_label">Fixed delay (ms)</string>
+    <string name="editor_delay_help">Applies to this route only, and survives turning chaos off.</string>
+    <string name="editor_specificity">Specificity: %1$d</string>
+    <string name="editor_shadowed_help">Another route always beats this one, so it can never answer a request. Make its path or matchers more specific.</string>
+    <string name="editor_matcher_header">Header</string>
+    <string name="editor_matcher_query">Query</string>
+    <string name="editor_matcher_name">Name</string>
+    <string name="editor_matcher_value">Value</string>
+    <string name="editor_add_matcher">Add matcher</string>
+    <string name="editor_remove">Remove</string>
+    <string name="editor_save">Save</string>
+    <string name="editor_test">Test this route</string>
+    <string name="editor_unsaved_title">Discard changes?</string>
+    <string name="editor_unsaved_body">This route has edits that have not been saved.</string>
+    <string name="editor_discard">Discard</string>
+    <string name="editor_keep_editing">Keep editing</string>
+    <string name="editor_warn_unquoted">%1$s is not inside quotes — the response will not be valid JSON unless the value is a number or a boolean.</string>
+    <string name="editor_warn_reserved_header">%1$s is set by the server and your value will be ignored.</string>
+    <string name="editor_warn_long_delay">A %1$d ms delay is long enough to look like a hang.</string>
+    <string name="editor_warn_unknown_placeholder">The path has no capture named %1$s, so it will render empty.</string>
+
+</resources>
