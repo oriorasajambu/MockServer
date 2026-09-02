@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -23,7 +21,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
@@ -31,6 +28,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
+import com.minion.mockserver.core.designsystem.theme.MockColors
+import com.minion.mockserver.core.designsystem.theme.MockTheme
 import com.minion.mockserver.core.ui.R
 
 /**
@@ -79,8 +78,8 @@ fun JsonEditor(
             }
         }
 
-        val colours = MaterialTheme.colorScheme
-        val transformation = remember(colours) { JsonHighlighter(colours.toJsonPalette()) }
+        val jsonColours = MockTheme.colors
+        val transformation = remember(jsonColours) { JsonHighlighter(jsonColours.toJsonPalette()) }
 
         OutlinedTextField(
             value = value,
@@ -88,10 +87,7 @@ fun JsonEditor(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = Dimens.editorMinHeight),
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                fontFamily = FontFamily.Monospace,
-                fontSize = Dimens.monospaceTextSize,
-            ),
+            textStyle = MockTheme.typography.codeMedium,
             visualTransformation = transformation,
             isError = error != null,
             supportingText = error?.let { { Text(it) } },
@@ -107,7 +103,7 @@ fun JsonEditor(
             SYMBOLS.forEach { symbol ->
                 AssistChip(
                     onClick = { onValueChange(value.insert(symbol)) },
-                    label = { Text(symbol, fontFamily = FontFamily.Monospace) },
+                    label = { Text(symbol, style = MockTheme.typography.codeMedium) },
                 )
             }
         }
@@ -128,22 +124,22 @@ private fun TextFieldValue.insert(text: String): TextFieldValue {
 /** The colours a JSON token can take, resolved from the theme once per recomposition of the field. */
 private data class JsonPalette(
     val key: Color,
-    val string: Color,
-    val number: Color,
-    val literal: Color,
+    val value: Color,
     val punctuation: Color,
 )
 
 /**
- * Not `@Composable`: it reads plain properties off a [ColorScheme] that has already been
- * resolved, and it is called from inside `remember`, where a composable call is illegal.
+ * Not `@Composable`: it reads plain properties off a [MockColors] that has already been resolved,
+ * and it is called from inside `remember`, where a composable call is illegal.
+ *
+ * Strings, numbers and literals share one tint. Nocturne is a mono palette, so telling them apart
+ * would mean inventing two more hues, and the distinction that actually matters when reading a
+ * body is key from value — which this keeps.
  */
-private fun ColorScheme.toJsonPalette() = JsonPalette(
-    key = primary,
-    string = tertiary,
-    number = secondary,
-    literal = error,
-    punctuation = onSurfaceVariant,
+private fun MockColors.toJsonPalette() = JsonPalette(
+    key = jsonKey,
+    value = jsonValue,
+    punctuation = jsonPunctuation,
 )
 
 /**
@@ -169,7 +165,7 @@ private class JsonHighlighter(private val palette: JsonPalette) : VisualTransfor
                     // A string followed by a colon is a key; anything else is a value.
                     val isKey = source.nextNonSpace(end + 1) == ':'
                     addStyle(
-                        SpanStyle(color = if (isKey) palette.key else palette.string),
+                        SpanStyle(color = if (isKey) palette.key else palette.value),
                         index,
                         (end + 1).coerceAtMost(source.length),
                     )
@@ -179,17 +175,17 @@ private class JsonHighlighter(private val palette: JsonPalette) : VisualTransfor
                 source[index].isDigit() || (source[index] == '-' && source.getOrNull(index + 1)?.isDigit() == true) -> {
                     var end = index
                     while (end < source.length && (source[end].isDigit() || source[end] in ".eE+-")) end++
-                    addStyle(SpanStyle(color = palette.number), index, end)
+                    addStyle(SpanStyle(color = palette.value), index, end)
                     index = end
                 }
 
                 source.startsWith("true", index) || source.startsWith("null", index) -> {
-                    addStyle(SpanStyle(color = palette.literal), index, index + 4)
+                    addStyle(SpanStyle(color = palette.value), index, index + 4)
                     index += 4
                 }
 
                 source.startsWith("false", index) -> {
-                    addStyle(SpanStyle(color = palette.literal), index, index + 5)
+                    addStyle(SpanStyle(color = palette.value), index, index + 5)
                     index += 5
                 }
 

@@ -58,7 +58,7 @@ fun RouteRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
         ) {
-            MethodBadge(route.method.name)
+            MethodPill(route.method.name)
             Text(
                 text = route.pathPattern,
                 style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
@@ -66,7 +66,7 @@ fun RouteRow(
                 overflow = TextOverflow.MiddleEllipsis,
                 modifier = Modifier.weight(PATH_WEIGHT),
             )
-            StatusPill(route.response.statusCode)
+            StatusBadge(route.response.statusCode)
         }
 
         Row(

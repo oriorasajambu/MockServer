@@ -33,7 +33,7 @@ fun ChaosBanner(
             .fillMaxWidth()
             .background(
                 MaterialTheme.colorScheme.tertiaryContainer,
-                RoundedCornerShape(Dimens.cornerSmall),
+                RoundedCornerShape(Dimens.radiusSmall),
             )
             .padding(Dimens.spaceMedium),
     ) {

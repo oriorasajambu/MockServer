@@ -45,7 +45,7 @@ fun TrafficRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
     ) {
-        MethodBadge(entry.method)
+        MethodPill(entry.method)
 
         Column(modifier = Modifier.weight(PATH_WEIGHT)) {
             Text(
@@ -75,7 +75,7 @@ fun TrafficRow(
             }
         }
 
-        StatusPill(entry.statusCode)
+        StatusBadge(entry.statusCode)
     }
 }
 

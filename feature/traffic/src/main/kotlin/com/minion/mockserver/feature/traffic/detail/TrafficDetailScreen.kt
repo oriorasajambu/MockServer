@@ -31,8 +31,8 @@ import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.BodyBlock
 import com.minion.mockserver.core.ui.component.EmptyState
 import com.minion.mockserver.core.ui.component.HeaderTable
-import com.minion.mockserver.core.ui.component.MethodBadge
-import com.minion.mockserver.core.ui.component.StatusPill
+import com.minion.mockserver.core.ui.component.MethodPill
+import com.minion.mockserver.core.ui.component.StatusBadge
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
 import com.minion.mockserver.core.ui.util.copyToClipboard
 import com.minion.mockserver.core.ui.util.shareText
@@ -184,8 +184,8 @@ private fun Header(
         Row(
             horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
         ) {
-            MethodBadge(entry.method)
-            StatusPill(entry.statusCode)
+            MethodPill(entry.method)
+            StatusBadge(entry.statusCode)
             Text(
                 text = stringResource(UiR.string.traffic_duration, entry.durationMillis),
                 style = MaterialTheme.typography.labelMedium,
