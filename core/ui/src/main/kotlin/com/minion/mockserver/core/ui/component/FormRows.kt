@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -97,26 +96,6 @@ fun LabelledTextField(
     )
 }
 
-/**
- * A label and a read-only value.
- *
- * The value is monospaced and the label is not: these are counters and durations read at a
- * glance while they tick, and a proportional font makes every digit change the width of the row.
- */
-@Composable
-fun StatRow(label: String, value: String, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-        )
-    }
-}
-
 @Preview
 @Composable
 internal fun FormRowsPreview() {
@@ -133,7 +112,6 @@ internal fun FormRowsPreview() {
                 numeric = true,
             )
             ToggleRow(label = "Require an API key", checked = true, onCheckedChange = {})
-            StatRow(label = "Requests", value = "1284")
         }
     }
 }

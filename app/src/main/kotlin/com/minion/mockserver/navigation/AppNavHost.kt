@@ -89,6 +89,12 @@ fun AppNavHost(
             serverScreen(
                 onNavigateToQr = { url -> navController.navigate(QrRoute(url)) },
                 onNavigateToSettings = { navController.navigateToTab(BottomNavItem.SETTINGS) },
+                // Pushed rather than switched to as a tab: this is a drill-down from a counter,
+                // so back belongs on the Server tab the question was asked from, and a tab switch
+                // would restore the log's saved unfiltered state over the filter just asked for.
+                onNavigateToUnmatched = {
+                    navController.navigate(TrafficRoute(unmatchedOnly = true))
+                },
                 onRequestNotificationPermission = onRequestNotificationPermission,
             )
             qrScreen(onBack = navController::popBackStack)

@@ -1,6 +1,8 @@
 package com.minion.mockserver.feature.traffic.log
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.minion.mockserver.core.common.config.AppConstants
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
 import com.minion.mockserver.core.domain.usecase.route.GetRoutesUseCase
@@ -11,6 +13,7 @@ import com.minion.mockserver.core.domain.usecase.traffic.ClearTrafficUseCase
 import com.minion.mockserver.core.domain.usecase.traffic.ExportTrafficAsHarUseCase
 import com.minion.mockserver.core.domain.usecase.traffic.FormatEntryAsCurlUseCase
 import com.minion.mockserver.core.domain.usecase.traffic.ObserveTrafficUseCase
+import com.minion.mockserver.core.navigation.TrafficRoute
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
@@ -34,6 +37,7 @@ internal class TrafficViewModel @Inject constructor(
     private val getRoutes: GetRoutesUseCase,
     private val getSettings: GetServerSettingsUseCase,
     private val observeServerStatus: ObserveServerStatusUseCase,
+    savedStateHandle: SavedStateHandle,
 ) : MviViewModel<TrafficState, TrafficIntent, TrafficEffect>(TrafficState()) {
 
     /**
@@ -54,6 +58,12 @@ internal class TrafficViewModel @Inject constructor(
     private var routeIdsByCollection: Map<String, Set<String>> = emptyMap()
 
     init {
+        // Arriving from the Server tab's unmatched counter, the log opens already filtered.
+        // Seeded before the first collection rather than through an intent, so the list never
+        // paints unfiltered and then reflows to a shorter one under the reader.
+        if (savedStateHandle.toRoute<TrafficRoute>().unmatchedOnly) {
+            updateFilter { it.copy(unmatchedOnly = true) }
+        }
         observeEntries()
         observeBaseUrl()
         observeCollections()

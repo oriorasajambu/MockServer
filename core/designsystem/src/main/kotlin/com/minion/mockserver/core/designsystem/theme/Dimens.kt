@@ -86,9 +86,6 @@ object Dimens {
     val navPillWidth = 52.dp
     val navPillHeight = 26.dp
 
-    /** The start/stop button on the server screen — the app's one genuinely large control. */
-    val primaryActionHeight = 64.dp
-
     // ── Row metrics ──────────────────────────────────────────────────────────────────────────
 
     /** Height of a traffic-log row. Fixed, so the list scrolls without measuring every row. */

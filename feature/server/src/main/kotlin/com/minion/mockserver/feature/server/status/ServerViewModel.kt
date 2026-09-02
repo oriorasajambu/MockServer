@@ -75,6 +75,10 @@ internal class ServerViewModel @Inject constructor(
                 emitEffect(ServerEffect.NavigateToSettings)
             }
 
+            ServerIntent.ViewUnmatched -> viewModelScope.launch {
+                emitEffect(ServerEffect.NavigateToUnmatched)
+            }
+
             ServerIntent.OpenNotificationSettings -> viewModelScope.launch {
                 emitEffect(ServerEffect.OpenNotificationSettings)
             }

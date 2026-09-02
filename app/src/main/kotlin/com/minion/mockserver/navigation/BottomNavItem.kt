@@ -28,6 +28,6 @@ internal enum class BottomNavItem(
 ) {
     SERVER(ServerRoute, R.string.tab_server, Icons.Filled.PlayArrow),
     ROUTES(CollectionsRoute, R.string.tab_routes, Icons.AutoMirrored.Filled.List),
-    TRAFFIC(TrafficRoute, R.string.tab_traffic, Icons.Filled.Share),
+    TRAFFIC(TrafficRoute(), R.string.tab_traffic, Icons.Filled.Share),
     SETTINGS(SettingsRoute, R.string.tab_settings, Icons.Filled.Settings),
 }
