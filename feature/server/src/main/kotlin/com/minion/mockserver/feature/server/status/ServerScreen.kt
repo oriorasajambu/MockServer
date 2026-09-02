@@ -149,6 +149,7 @@ internal fun ServerContent(
                 boundPort = state.boundPort,
                 isExpanded = state.isAddressListExpanded,
                 advertisedName = state.advertisedName,
+                isRunning = state.status.isRunning,
                 onCopy = { onIntent(ServerIntent.CopyAddress(it)) },
                 onShowQr = { onIntent(ServerIntent.ShowQr) },
                 onToggleExpanded = { onIntent(ServerIntent.ToggleAddressList) },

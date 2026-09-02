@@ -109,6 +109,7 @@
     <string name="server_copy">Copy</string>
     <string name="server_qr">QR</string>
     <string name="server_interface">on %1$s</string>
+    <string name="server_interface_stopped">on %1$s — not listening yet</string>
     <plurals name="server_more_addresses">
         <item quantity="one">%1$d more address</item>
         <item quantity="other">%1$d more addresses</item>

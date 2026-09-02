@@ -11,8 +11,11 @@
     <string name="server_pause">Pause</string>
     <string name="server_resume">Resume</string>
     <string name="server_pause_note">Paused answers everything with 503 and keeps the port.</string>
-    <string name="server_start_note">Port %1$d · once started, anyone on %2$s can reach it</string>
-    <string name="server_start_note_local">Port %1$d · once started, apps on this phone can reach it</string>
+    <!-- Under the Start button. Deliberately does not mention who can reach the server: SPEC
+         8.6 requires a permanent, non-dismissible open-access note, and two sentences saying
+         the same thing one above the other read as a mistake. -->
+    <string name="server_start_note">Port %1$d · will listen on %2$s</string>
+    <string name="server_start_note_local">Port %1$d · apps on this phone only</string>
 
     <string name="server_title">Server</string>
 
