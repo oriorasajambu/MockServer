@@ -4,29 +4,43 @@ import androidx.compose.material3.Typography
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.minion.mockserver.core.designsystem.R
 
 /**
- * Interface type: Inter, at 400/500/600.
+ * Interface type: Inter, at the three weights the scale below actually asks for.
  *
- * TODO: bundle Inter as `res/font` resources and swap this for a `FontFamily(...)` over them.
- * The design calls for bundled files rather than Google Fonts at runtime — a downloadable font
- * arrives after first frame, so every screen would paint once in the fallback metrics and reflow.
- * Until the files land this resolves to the platform sans, which is close enough in metrics that
- * the scale below is still the right scale, but it is not the typeface the design specifies.
+ * Bundled as `res/font` rather than fetched through Google Fonts at runtime, which is the design's
+ * explicit call and the right one: a downloadable font arrives after first frame, so every screen
+ * would paint once in the fallback metrics and then reflow.
+ *
+ * Only 400/500/600 ship. A weight that is not here is *synthesised* by the platform — smeared
+ * outlines rather than the real cut — so if a call site ever needs Bold, add the file instead of
+ * letting `FontWeight.Bold` resolve to a faked SemiBold.
+ *
+ * These are the 18pt optical size. Inter ships three; 18pt is cut for text at interface sizes,
+ * which is everything here — the largest style in the app is a 26sp tab title.
  */
-internal val InterFontFamily = FontFamily.Default
+internal val InterFontFamily = FontFamily(
+    Font(R.font.inter_regular, FontWeight.Normal),
+    Font(R.font.inter_medium, FontWeight.Medium),
+    Font(R.font.inter_semibold, FontWeight.SemiBold),
+)
 
 /**
- * Machine type: JetBrains Mono, at 400/500/700.
+ * Machine type: JetBrains Mono, at 400 and 700.
  *
- * TODO: bundle as `res/font` alongside Inter. See [InterFontFamily] — same reasoning, and the
- * fallback matters more here, because the platform monospace has different advance widths and the
- * header grid and JSON block are laid out on the assumption that a column of values aligns.
+ * Bundling matters more here than for [InterFontFamily]. The header grid and the JSON block are
+ * laid out on the assumption that a column of values lines up, and that only holds if the advance
+ * widths are the ones the design was drawn against — the platform monospace's are not.
  */
-internal val MonoFontFamily = FontFamily.Monospace
+internal val MonoFontFamily = FontFamily(
+    Font(R.font.jetbrains_mono_regular, FontWeight.Normal),
+    Font(R.font.jetbrains_mono_bold, FontWeight.Bold),
+)
 
 /**
  * The type scale, exposed through `MaterialTheme.typography`.
