@@ -65,6 +65,17 @@
         <item quantity="one">%1$d needs a body</item>
         <item quantity="other">%1$d need bodies</item>
     </plurals>
+
+    <!-- "/api/v1 - 6 routes": the base path, then how much is under it. -->
+    <string name="collections_card_caption">%1$s · %2$s</string>
+    <plurals name="collections_view_all">
+        <item quantity="one">View the route</item>
+        <item quantity="other">View all %1$d routes</item>
+    </plurals>
+
+    <!-- A route's own chaos delay, shown on its preview line. -->
+    <string name="route_preview_delay">%1$dms</string>
+    <string name="route_preview_delay_range">%1$d–%2$dms</string>
     <string name="routes_duplicate">Duplicate</string>
     <string name="routes_shadowed">Shadowed</string>
     <string name="routes_needs_body">Needs body</string>

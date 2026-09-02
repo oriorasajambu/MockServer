@@ -5,6 +5,8 @@
     <!-- Collections -->
     <string name="collections_title">Routes</string>
     <string name="collections_new">New collection</string>
+    <!-- Beside the Routes title: how many routes will actually answer right now. -->
+    <string name="collections_live_count">%1$d of %2$d live</string>
     <string name="collections_edit_title">Edit collection</string>
     <string name="collections_save">Save</string>
     <string name="collections_cancel">Cancel</string>
