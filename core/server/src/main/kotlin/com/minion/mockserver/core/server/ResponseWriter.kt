@@ -1,7 +1,6 @@
 package com.minion.mockserver.core.server
 
 import com.minion.mockserver.core.domain.model.ResponsePlan
-import kotlin.coroutines.cancellation.CancellationException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
@@ -12,6 +11,7 @@ import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.writeFully
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Executes a [ResponsePlan] on the socket, and does no thinking of its own (SPEC §2.1).

@@ -128,7 +128,7 @@ internal object Mappers {
     }
 
     /**
-     * [decode] for a nullable column: a malformed value degrades to "no override" rather than to
+     * [Mappers.decode] for a nullable column: a malformed value degrades to "no override" rather than to
      * a fabricated default, because inventing a chaos profile nobody wrote would inject failures
      * into a route that never asked for them.
      */

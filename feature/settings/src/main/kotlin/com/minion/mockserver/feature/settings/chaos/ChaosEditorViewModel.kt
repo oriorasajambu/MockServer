@@ -1,7 +1,7 @@
 package com.minion.mockserver.feature.settings.chaos
 
-import com.minion.mockserver.core.common.config.AppConstants
 import androidx.lifecycle.viewModelScope
+import com.minion.mockserver.core.common.config.AppConstants
 import com.minion.mockserver.core.common.result.AppResult
 import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.domain.model.DelaySpec

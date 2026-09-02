@@ -3,9 +3,10 @@ package com.minion.mockserver.core.common.util
 /**
  * The app's logging seam.
  *
- * Pure Kotlin with a pluggable [sink], because `:core:common`, `:core:domain`, `:core:server` and
- * `:core:importexport` have no Android plugin and so cannot call `android.util.Log` — and giving
- * them one so they could would undo the boundary those modules exist to enforce.
+ * Pure Kotlin with a pluggable [Logger.sink], because `:core:common`, `:core:domain`,
+ * `:core:server` and `:core:importexport` have no Android plugin and so cannot call
+ * `android.util.Log` — and giving them one so they could would undo the boundary those modules
+ * exist to enforce.
  *
  * `:app` installs an Android sink at startup, gated on `BuildConfig.DEBUG`. Until it does, this
  * discards everything, which is the right default for a library module loaded by a test.
