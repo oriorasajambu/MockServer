@@ -172,7 +172,16 @@ class ValidateRouteUseCase @Inject constructor() {
         const val MIN_STATUS = 100
         const val MAX_STATUS = 599
         const val PATH_PREFIX = "path."
-        val PLACEHOLDER = Regex("""\{\{([^}]*)}}""")
+
+        /**
+         * Both braces escaped on both sides.
+         *
+         * A bare `}` is a literal on the JVM's regex engine and a syntax error on Android's ICU
+         * one, so the unescaped form compiled in every unit test and threw
+         * `PatternSyntaxException` on a device — in a `companion object` initialiser, which turns
+         * it into a crash the moment the route editor is opened.
+         */
+        val PLACEHOLDER = Regex("""\{\{([^}]*)\}\}""")
         val RESERVED = AppConstants.Request.RESERVED_RESPONSE_HEADERS
     }
 }

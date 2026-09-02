@@ -234,6 +234,13 @@ it. `e.message` never reaches state — it is developer text, frequently `null`,
   invalidated by a configuration change, so text goes stale after a locale switch.
 - **Give every `LazyColumn` item a stable `key`.** Without one, inserting at the top — which the
   traffic log does constantly — recomposes every row.
+- **A bare `}` in a regex compiles on the JVM and throws on a device.** The JVM engine treats it
+  as a literal; Android's ICU engine calls it a syntax error. Every unit test passes and the app
+  crashes on launch of whichever screen holds the pattern. Escape both braces: `\}\}`, not `}}`.
+- **`respondBytesWriter(contentLength = null)` selects chunked framing.** A body of unknown length
+  gets `Transfer-Encoding: chunked`, which both violates RFC 7230 §3.3.3 alongside a
+  `Content-Length` and terminates the body cleanly — quietly disabling the malformed-body chaos
+  mode. Declare the length on an `OutgoingContent` instead.
 - **Never call `android.util.Log` directly.** Use `Logger`, whose sink is installed only in debug
   builds; a stray log line in a release build of a developer tool is likely printing somebody's
   request bodies to logcat.

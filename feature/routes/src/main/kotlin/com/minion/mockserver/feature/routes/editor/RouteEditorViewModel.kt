@@ -14,6 +14,7 @@ import com.minion.mockserver.core.domain.model.RoutingSnapshot
 import com.minion.mockserver.core.domain.model.ServerStatus
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
+import com.minion.mockserver.core.domain.usecase.collection.SaveCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.route.CreateRouteFromTrafficUseCase
 import com.minion.mockserver.core.domain.usecase.route.GetRouteUseCase
 import com.minion.mockserver.core.domain.usecase.route.GetRoutesUseCase
@@ -48,6 +49,7 @@ internal class RouteEditorViewModel @Inject constructor(
     private val getRoutes: GetRoutesUseCase,
     private val getCollection: GetCollectionUseCase,
     private val getCollections: GetCollectionsUseCase,
+    private val saveCollection: SaveCollectionUseCase,
     private val saveRoute: SaveRouteUseCase,
     private val validateRoute: ValidateRouteUseCase,
     private val detectShadowed: DetectShadowedRoutesUseCase,
@@ -63,6 +65,17 @@ internal class RouteEditorViewModel @Inject constructor(
     private val args = savedStateHandle.toRoute<RouteEditorRoute>()
 
     private var collection: MockCollection? = null
+
+    /**
+     * A collection this draft needs but that does not exist yet (SPEC §4.5).
+     *
+     * Built, not written: entering the editor from a request that matched nothing should not
+     * leave a collection behind if the user backs out. It is persisted by [save], immediately
+     * before the route that needs it, and until then it is what validation, the specificity score
+     * and the URL preview all resolve against — so the editor works normally rather than sitting
+     * at "Specificity: 0" with a Save that fails.
+     */
+    private var pendingCollection: MockCollection? = null
     private var siblingRoutes: List<MockRoute> = emptyList()
 
     /** `http://192.168.1.45:8080` — the address half of the live URL preview. */
@@ -222,10 +235,22 @@ internal class RouteEditorViewModel @Inject constructor(
 
         // The route arrives from Traffic with no collection id — Traffic has no idea which
         // collection a failed request belongs in. The draft's own answer (the collection whose
-        // base path is the longest prefix of the path) is the better one, and falls back to the
-        // first collection so the editor always has somewhere to save to.
-        targetCollectionId = args.collectionId.ifBlank {
-            draft.collection?.id ?: collections.firstOrNull()?.id.orEmpty()
+        // base path is the longest prefix of the path) is the better one.
+        val existingId = args.collectionId.ifBlank { draft.collection?.id.orEmpty() }
+        targetCollectionId = existingId.ifBlank {
+            // Nothing fits — not even a first collection to fall back on, which is every
+            // request on a fresh install. The draft already suggested a name; a base path of
+            // "/" is what makes it fit, because a draft with no collection carries the whole
+            // request path in its own pattern.
+            val created = MockCollection(
+                id = idGenerator.newId(),
+                name = draft.suggestedCollectionName,
+                basePath = PathNormaliser.ROOT,
+                createdAt = 0L,
+            )
+            pendingCollection = created
+            collection = created
+            created.id
         }
         return draft.route.copy(collectionId = targetCollectionId)
     }
@@ -239,7 +264,8 @@ internal class RouteEditorViewModel @Inject constructor(
                 getSettings(),
                 observeServerStatus(),
             ) { collection, routes, addresses, settings, status ->
-                this@RouteEditorViewModel.collection = collection
+                // A pending collection is not in the repository yet, so its flow emits null.
+                this@RouteEditorViewModel.collection = collection ?: pendingCollection
                 this@RouteEditorViewModel.siblingRoutes = routes
                 boundPort = (status as? ServerStatus.Running)?.address?.port ?: settings.port
                 val host = addresses.firstOrNull()?.hostAddress ?: AppConstants.Server.LOOPBACK_HOST
@@ -335,6 +361,19 @@ internal class RouteEditorViewModel @Inject constructor(
         if (!currentState.canSave) return
         reduce { copy(isSaving = true) }
         viewModelScope.launch {
+            // Before the route, because the route's foreign key points at it.
+            val pending = pendingCollection
+            if (pending != null) {
+                when (val created = saveCollection(pending)) {
+                    is AppResult.Success -> pendingCollection = null
+                    is AppResult.Failure -> {
+                        reduce { copy(isSaving = false) }
+                        emitEffect(RouteEditorEffect.ShowError(created.error))
+                        return@launch
+                    }
+                }
+            }
+
             when (val result = saveRoute(currentState.route)) {
                 is AppResult.Success -> {
                     reduce { copy(isSaving = false, hasUnsavedChanges = false) }
