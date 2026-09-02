@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -38,6 +40,7 @@ import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.ChaosBanner
 import com.minion.mockserver.core.ui.component.NoticeCard
 import com.minion.mockserver.core.ui.component.OpenAccessNote
+import com.minion.mockserver.core.ui.component.StateDot
 import com.minion.mockserver.core.ui.component.StatRow
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -114,9 +117,29 @@ internal fun ServerContent(
     onIntent: (ServerIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val running = state.status.isRunning
     AppScaffold(
         title = stringResource(R.string.server_title),
         modifier = modifier,
+        actions = {
+            // The tab bar's status slot. The dot is decorative on its own — the ring is what
+            // carries "running" visually — so the state is spoken here rather than left to the
+            // colour, which a screen reader cannot see and a colourblind user may not separate.
+            val statusLabel = stringResource(
+                if (running) R.string.server_status_running else R.string.server_status_stopped,
+            )
+            StateDot(
+                color = if (running) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                glowing = running,
+                modifier = Modifier
+                    .padding(end = Dimens.space)
+                    .semantics { contentDescription = statusLabel },
+            )
+        },
     ) { padding ->
         Column(
             modifier = Modifier
