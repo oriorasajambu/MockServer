@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy for the Server tab. Lives with the screen that shows it. -->
+<resources>
+
+    <string name="server_start">Start server</string>
+    <string name="server_stop">Stop server</string>
+    <string name="server_starting">Starting…</string>
+    <string name="server_stopping">Stopping…</string>
+    <string name="server_pause">Pause — refuse requests with 503</string>
+    <string name="server_resume">Resume</string>
+
+    <string name="server_copy">Copy</string>
+    <string name="server_copied">Copied</string>
+    <string name="server_qr">QR</string>
+    <string name="server_qr_close">Close</string>
+    <string name="server_qr_description">QR code for %1$s</string>
+
+    <string name="server_interface">on %1$s</string>
+    <string name="server_more_addresses">%1$d more addresses</string>
+    <string name="server_hide_addresses">Hide other addresses</string>
+    <string name="server_vpn_note">VPN — clients on your LAN cannot reach this address</string>
+    <string name="server_advertised_as">Advertised as %1$s.local</string>
+
+    <string name="server_no_network">No network — localhost only</string>
+    <string name="server_no_network_detail">Connect to Wi‑Fi or turn on the hotspot to serve other devices. Apps on this phone can still reach the server.</string>
+
+    <string name="server_port_fallback">Port %1$d was in use — running on %2$d</string>
+    <string name="server_remember_port">Remember %1$d</string>
+
+    <string name="server_battery_title">The server was stopped in the background</string>
+    <string name="server_battery_body">Battery optimisation can kill the server while the screen is off. Exempting this app keeps a long session alive.</string>
+    <string name="server_battery_action">Open battery settings</string>
+    <string name="server_battery_dismiss">Not now</string>
+
+    <string name="server_stat_uptime">Uptime</string>
+    <string name="server_stat_requests">Requests</string>
+    <string name="server_stat_rate">Requests / min</string>
+    <string name="server_stat_rate_value">%1$d</string>
+    <string name="server_stat_unmatched">Unmatched</string>
+
+</resources>

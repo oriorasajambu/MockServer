@@ -3,22 +3,64 @@ package com.rio.mockserver.core.navigation
 import kotlinx.serialization.Serializable
 
 /**
- * Marker for every destination in the app.
+ * Every destination in the app (SPEC §10.1).
  *
- * Routes are declared here, in a module that owns no UI, so that a feature can navigate to
- * another feature's screen while depending only on the contract. `:feature:a` constructs a
- * [AppRoute]; `:feature:b` registers a composable for it; neither knows the other exists.
+ * Declared in a module that owns no UI, so a feature can navigate to another feature's screen
+ * while depending only on the contract. `:feature:traffic` constructs a [RouteEditorRoute];
+ * `:feature:routes` registers a composable for it; neither knows the other exists.
  *
- * Type-safe navigation (navigation-compose 2.8+) serialises these directly — no string route
- * templates, no argument keys to misspell, and `savedStateHandle.toRoute<T>()` in the ViewModel
- * gives back the same object.
- *
- * Route arguments must be ids and primitives, never domain models. A route carrying a `User`
- * would mean `:core:navigation` depends on `:core:domain`, and that the whole object had to
- * survive process death in the saved-state bundle.
+ * Arguments are ids and primitives only. A route carrying a `MockRoute` would make this module
+ * depend on `:core:domain`, and would require the whole object to survive process death in the
+ * saved-state bundle.
  */
 sealed interface AppRoute
 
-/** The start destination. Replace with the app's real entry screen. */
+/** Start/stop, the address block, the QR, and the live counters. The start destination. */
 @Serializable
-data object HomeRoute : AppRoute
+data object ServerRoute : AppRoute
+
+/** The collection list — the top level of the Routes tab. */
+@Serializable
+data object CollectionsRoute : AppRoute
+
+/** The routes inside one collection. */
+@Serializable
+data class CollectionDetailRoute(val collectionId: String) : AppRoute
+
+/**
+ * The route editor.
+ *
+ * [routeId] is null for a new route. [prefillFromEntryId] carries a traffic entry the draft is
+ * being built from (SPEC §4.5) — an id rather than the entry itself, because the log is in
+ * memory and the editor can read it back from there.
+ */
+@Serializable
+data class RouteEditorRoute(
+    val collectionId: String,
+    val routeId: String? = null,
+    val prefillFromEntryId: String? = null,
+) : AppRoute
+
+/** The live traffic log. */
+@Serializable
+data object TrafficRoute : AppRoute
+
+/** One traffic entry, request and response. */
+@Serializable
+data class TrafficDetailRoute(val entryId: String) : AppRoute
+
+/** Port, API key, chaos, log size, import/export. */
+@Serializable
+data object SettingsRoute : AppRoute
+
+/** The chaos profile editor. [profileId] is null for a new profile. */
+@Serializable
+data class ChaosEditorRoute(val profileId: String? = null) : AppRoute
+
+/** Pick a file, preview what is in it, resolve conflicts, commit. */
+@Serializable
+data object ImportRoute : AppRoute
+
+/** The full-screen QR code, with the brightness boosted. */
+@Serializable
+data class QrRoute(val url: String) : AppRoute

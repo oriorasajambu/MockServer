@@ -35,4 +35,14 @@
     <string name="error_invalid_log_capacity">Enter a log size between 50 and 2000 entries.</string>
     <string name="error_invalid_api_key_header">Enter a header name, for example X-Mock-Key.</string>
     <string name="error_unknown">Something went wrong. Try again.</string>
+
+    <!-- Shared components. Screen copy lives in the feature that shows it. -->
+    <string name="editor_paste">Paste JSON from clipboard</string>
+    <string name="editor_paste_preview">Paste: %1$s</string>
+    <string name="editor_format">Format</string>
+
+    <string name="chaos_banner_title">Chaos: ON</string>
+    <string name="chaos_banner_body">Responses may be delayed, replaced with errors, truncated or cut off — profile \"%1$s\".</string>
+
+    <string name="server_open_access_note">Anyone on this network can reach these endpoints.</string>
 </resources>
