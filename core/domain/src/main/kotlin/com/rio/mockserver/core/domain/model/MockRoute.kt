@@ -47,6 +47,16 @@ data class MockRoute(
      * can see beats a generated `{"name":"string"}` that looks real and tests nothing.
      */
     val needsBody: Boolean = false,
+
+    /**
+     * Other statuses the source defined for this operation (SPEC §9.1, §17.3).
+     *
+     * Kept on the route rather than imported as routes of their own: a 401 and a 200 for the same
+     * method and path are identically shaped, so one would shadow the other for every request and
+     * the list would fill with rules that can never win. The editor offers them as one-tap swaps
+     * instead, which is the same information without the dead rules.
+     */
+    val alternateResponses: List<AlternateResponse> = emptyList(),
 ) {
 
     /** Whether chaos is configured specifically for this route, for the list-row icon (SPEC §6.1). */

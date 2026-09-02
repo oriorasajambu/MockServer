@@ -115,6 +115,9 @@ class CommitImportUseCase @Inject constructor(
                 imported.route.copy(
                     id = replacementIds[imported.route.id] ?: imported.route.id,
                     collectionId = savedCollection.id,
+                    // The statuses the source defined but this route did not take, carried onto
+                    // the route so the editor can offer them long after the file is gone.
+                    alternateResponses = imported.alternateResponses,
                 )
             }
 

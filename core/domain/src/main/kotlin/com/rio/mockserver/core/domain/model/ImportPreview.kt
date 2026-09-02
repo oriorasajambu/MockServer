@@ -1,5 +1,7 @@
 package com.rio.mockserver.core.domain.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * What an import file turned out to contain, before anything is written (SPEC §9.1).
  *
@@ -52,7 +54,13 @@ data class ImportedRoute(
     val isSelected: Boolean = true,
 )
 
-/** A response the source defined that did not become the route's own. */
+/**
+ * A response the source defined that did not become the route's own.
+ *
+ * `@Serializable` because these outlive the import: they are stored on the route and offered in
+ * the editor long after the file that carried them is gone (SPEC §9.1, §17.3).
+ */
+@Serializable
 data class AlternateResponse(
     val statusCode: Int,
     val description: String,

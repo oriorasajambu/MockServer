@@ -1,5 +1,6 @@
 package com.rio.mockserver.core.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -67,9 +68,16 @@ data class RouteEntity(
     val isEnabled: Boolean,
     val createdAt: Long,
     val needsBody: Boolean,
+
+    /** The other statuses the source defined, as JSON. `[]` for a hand-written route. */
+    @ColumnInfo(defaultValue = EMPTY_JSON_ARRAY)
+    val alternatesJson: String,
 ) {
     companion object {
         const val TABLE = "routes"
+
+        /** Matches the migration's `DEFAULT`, so a v1 row reads back as "no alternates". */
+        const val EMPTY_JSON_ARRAY = "[]"
     }
 }
 

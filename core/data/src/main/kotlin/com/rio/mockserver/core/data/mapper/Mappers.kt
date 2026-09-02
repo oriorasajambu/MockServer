@@ -3,6 +3,7 @@ package com.rio.mockserver.core.data.mapper
 import com.rio.mockserver.core.data.local.entity.ChaosProfileEntity
 import com.rio.mockserver.core.data.local.entity.CollectionEntity
 import com.rio.mockserver.core.data.local.entity.RouteEntity
+import com.rio.mockserver.core.domain.model.AlternateResponse
 import com.rio.mockserver.core.domain.model.ChaosProfile
 import com.rio.mockserver.core.domain.model.ConnectionResetSpec
 import com.rio.mockserver.core.domain.model.CorsConfig
@@ -68,6 +69,7 @@ internal object Mappers {
         isEnabled = isEnabled,
         createdAt = createdAt,
         needsBody = needsBody,
+        alternateResponses = decode(alternatesJson, ALTERNATE_LIST, emptyList()),
     )
 
     fun MockRoute.toEntity(): RouteEntity = RouteEntity(
@@ -82,6 +84,7 @@ internal object Mappers {
         isEnabled = isEnabled,
         createdAt = createdAt,
         needsBody = needsBody,
+        alternatesJson = encode(alternateResponses, ALTERNATE_LIST),
     )
 
     // ---------------------------------------------------------------- chaos
@@ -107,6 +110,7 @@ internal object Mappers {
     // ---------------------------------------------------------------- plumbing
 
     private val MATCHER_LIST = ListSerializer(RequestMatcher.serializer())
+    private val ALTERNATE_LIST = ListSerializer(AlternateResponse.serializer())
 
     private fun <T> encode(
         value: T,

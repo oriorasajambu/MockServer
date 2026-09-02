@@ -2,6 +2,9 @@ package com.rio.mockserver.core.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 import com.rio.mockserver.core.data.local.dao.ChaosProfileDao
 import com.rio.mockserver.core.data.local.dao.CollectionDao
 import com.rio.mockserver.core.data.local.dao.RouteDao
@@ -38,6 +41,22 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         const val NAME = "mock_server.db"
-        const val VERSION = 1
+        const val VERSION = 2
+
+        /**
+         * Adds `routes.alternatesJson` (SPEC §9.1).
+         *
+         * Written out rather than allowed to fall back to a destructive migration: a v1 database
+         * holds hand-built collections, and the whole column is optional data an existing row is
+         * entitled to be empty of. `DEFAULT '[]'` is what makes the existing rows valid.
+         */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE `${RouteEntity.TABLE}` ADD COLUMN `alternatesJson` " +
+                        "TEXT NOT NULL DEFAULT '${RouteEntity.EMPTY_JSON_ARRAY}'",
+                )
+            }
+        }
     }
 }

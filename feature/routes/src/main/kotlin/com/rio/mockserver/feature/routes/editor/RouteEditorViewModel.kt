@@ -179,6 +179,10 @@ internal class RouteEditorViewModel @Inject constructor(
                     route = draft,
                     bodyText = TextFieldValue(draft.response.body),
                     isNew = existing == null,
+                    // Carried on the route since the import that created it (SPEC §9.1): the
+                    // other statuses the spec defined for this operation, offered as one-tap
+                    // swaps rather than as routes that would shadow each other.
+                    alternateResponses = draft.alternateResponses,
                 )
             }
             observeContext()
