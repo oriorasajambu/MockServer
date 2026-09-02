@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Text owned by the service and its notification.
+
+  It lives beside the code that shows it rather than in :app, for the same reason every other
+  module's strings do: a string and the code referencing it should not be able to drift into
+  different modules.
+-->
+<resources>
+
+    <string name="notification_channel_name">Mock server</string>
+    <string name="notification_channel_description">Shows the server address and live request count while the mock server is running.</string>
+
+    <string name="notification_starting_title">Starting mock server…</string>
+    <string name="notification_starting_text">Binding the port.</string>
+    <string name="notification_running_title">Mock server on port %1$d</string>
+    <string name="notification_restarted_text">Restarted after being stopped by the system.</string>
+
+    <plurals name="notification_request_count">
+        <item quantity="one">%1$d request served</item>
+        <item quantity="other">%1$d requests served</item>
+    </plurals>
+
+    <string name="notification_action_stop">Stop</string>
+    <string name="notification_action_pause">Pause</string>
+
+    <string name="service_description">Runs the local HTTP mock server.</string>
+    <string name="service_fgs_justification">Local HTTP mock server for developer testing; must remain reachable while the screen is off.</string>
+
+</resources>

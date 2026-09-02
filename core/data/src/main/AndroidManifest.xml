@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The permissions and the service declaration that running a local HTTP server needs (SPEC §8.1).
+
+  Declared in :core:data rather than in :app because the service and everything it touches live
+  here. The manifest merger folds this into the application's, so :app's manifest stays the
+  application shell it is meant to be.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Binding a listening socket. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Watching for the IP to change when Wi-Fi flips or a hotspot comes up (SPEC §8.5). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- The WifiLock that stops the radio parking with the screen off (SPEC §8.2). -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <!-- mDNS/DNS-SD advertisement is multicast (SPEC §8.5). -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- Android 13+. Denial does not stop the server; the app explains the consequence in-app. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+      Offered contextually from Settings, and surfaced automatically only after the app detects it
+      was killed while running (SPEC §8.2). Never asked for on first launch.
+    -->
+    <uses-permission
+        android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
+        tools:ignore="BatteryLife" />
+
+    <application>
+
+        <!--
+          `specialUse`, not `dataSync`. dataSync carries a cumulative ~6-hour daily runtime budget
+          on Android 15+, which would kill an all-day mock session partway through an afternoon
+          with nothing the user could act on. Internal distribution means the justification below
+          is never reviewed, but it is accurate either way.
+        -->
+        <service
+            android:name="com.rio.mockserver.core.data.service.MockServerService"
+            android:description="@string/service_description"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="@string/service_fgs_justification" />
+        </service>
+
+    </application>
+
+</manifest>
