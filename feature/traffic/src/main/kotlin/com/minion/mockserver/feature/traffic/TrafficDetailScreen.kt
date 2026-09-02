@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,16 +47,13 @@ internal fun TrafficDetailScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    // Resources, not `context.getString`: a Context read is not invalidated by a
-    // configuration change, so every string resolved through it goes stale after a locale
-    // switch and stays stale until the screen is recreated.
-    val resources = LocalResources.current
+    val copiedMessage = stringResource(R.string.traffic_copied)
 
     ObserveAsEvents(viewModel.effect) { effect ->
         when (effect) {
             is TrafficDetailEffect.CopiedToClipboard -> {
                 context.copyToClipboard(CLIPBOARD_LABEL, effect.text)
-                context.showToast(resources.getString(R.string.traffic_copied))
+                context.showToast(copiedMessage)
             }
 
             is TrafficDetailEffect.ShareText -> context.shareText(effect.text, effect.subject)

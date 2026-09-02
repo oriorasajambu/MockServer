@@ -64,9 +64,10 @@ internal fun RouteEditorScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    // Resources, not `context.getString`: a Context read is not invalidated by a
-    // configuration change, so every string resolved through it goes stale after a locale
-    // switch and stays stale until the screen is recreated.
+    // `stringResource` wherever the string is known at composition. These are not: the resource
+    // id comes from a `DomainError` that does not exist yet, or the arguments arrive with the
+    // effect. `LocalResources`, not `context.getString` — a Context read is not invalidated by a
+    // configuration change, so text resolved through it goes stale after a locale switch.
     val resources = LocalResources.current
     var showUnsavedDialog by remember { mutableStateOf(false) }
 

@@ -67,10 +67,13 @@ internal fun ServerScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    // Resources, not `context.getString`: a Context read is not invalidated by a
-    // configuration change, so every string resolved through it goes stale after a locale
-    // switch and stays stale until the screen is recreated.
+    // `stringResource` wherever the string is known at composition. These are not: the resource
+    // id comes from a `DomainError` that does not exist yet, or the arguments arrive with the
+    // effect. `LocalResources`, not `context.getString` — a Context read is not invalidated by a
+    // configuration change, so text resolved through it goes stale after a locale switch.
     val resources = LocalResources.current
+
+    val copiedMessage = stringResource(R.string.server_copied)
 
     // Re-read on every resume, not once: the user can turn notifications off in system settings
     // while this screen sits in the background, and the warning has to reflect what is true now
@@ -87,7 +90,7 @@ internal fun ServerScreen(
         when (effect) {
             is ServerEffect.CopiedToClipboard -> {
                 context.copyToClipboard(CLIPBOARD_LABEL, effect.label)
-                context.showToast(resources.getString(R.string.server_copied))
+                context.showToast(copiedMessage)
             }
 
             is ServerEffect.ShowError ->

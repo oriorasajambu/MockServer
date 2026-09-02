@@ -54,10 +54,13 @@ internal fun TrafficScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    // Resources, not `context.getString`: a Context read is not invalidated by a
-    // configuration change, so every string resolved through it goes stale after a locale
-    // switch and stays stale until the screen is recreated.
+    // `stringResource` wherever the string is known at composition. These are not: the resource
+    // id comes from a `DomainError` that does not exist yet, or the arguments arrive with the
+    // effect. `LocalResources`, not `context.getString` — a Context read is not invalidated by a
+    // configuration change, so text resolved through it goes stale after a locale switch.
     val resources = LocalResources.current
+
+    val copiedMessage = stringResource(R.string.traffic_copied)
 
     val saver = rememberDocumentSaver(
         onSaved = { fileName ->
@@ -70,7 +73,7 @@ internal fun TrafficScreen(
         when (effect) {
             is TrafficEffect.CopiedToClipboard -> {
                 context.copyToClipboard(CLIPBOARD_LABEL, effect.text)
-                context.showToast(resources.getString(R.string.traffic_copied))
+                context.showToast(copiedMessage)
             }
 
             is TrafficEffect.ShareText -> context.shareText(effect.text, effect.subject)
