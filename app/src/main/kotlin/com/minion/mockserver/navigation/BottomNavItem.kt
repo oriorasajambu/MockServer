@@ -2,7 +2,7 @@ package com.minion.mockserver.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
@@ -27,7 +27,7 @@ internal enum class BottomNavItem(
     val icon: ImageVector,
 ) {
     SERVER(ServerRoute, R.string.tab_server, Icons.Filled.PlayArrow),
-    ROUTES(CollectionsRoute, R.string.tab_routes, Icons.Filled.List),
+    ROUTES(CollectionsRoute, R.string.tab_routes, Icons.AutoMirrored.Filled.List),
     TRAFFIC(TrafficRoute, R.string.tab_traffic, Icons.Filled.Share),
     SETTINGS(SettingsRoute, R.string.tab_settings, Icons.Filled.Settings),
 }

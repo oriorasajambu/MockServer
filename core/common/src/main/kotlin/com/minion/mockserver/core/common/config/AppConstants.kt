@@ -96,6 +96,16 @@ object AppConstants {
 
         /** Body returned with an injected error, unless the profile overrides it. */
         const val DEFAULT_ERROR_BODY = """{"error":"Injected by chaos engine"}"""
+
+        /**
+         * A truncation percentage is a percentage.
+         *
+         * Held to this range in both places that touch it — the editor on the way in, the engine
+         * on the way out — because a stored 500 would otherwise sit in the database looking
+         * meaningful and get clamped silently on every request.
+         */
+        const val MIN_TRUNCATE_PERCENT = 0
+        const val MAX_TRUNCATE_PERCENT = 100
     }
 
     /** The in-memory traffic log (SPEC §7.1). */

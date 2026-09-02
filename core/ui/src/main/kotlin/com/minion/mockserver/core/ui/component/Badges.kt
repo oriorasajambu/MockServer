@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
+import com.minion.mockserver.core.domain.model.HttpMethodFilter
 
 /**
  * The coloured method label at the start of every route and traffic row.
@@ -34,17 +35,26 @@ fun MethodBadge(
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val container = when (method.uppercase()) {
-        "GET", "HEAD" -> scheme.surfaceVariant
-        "POST", "PUT", "PATCH" -> scheme.primaryContainer
-        "DELETE" -> scheme.errorContainer
-        else -> scheme.secondaryContainer
+    // Switched on the domain enum rather than on wire strings: the same seven method names were
+    // otherwise spelled out here, in the traffic filter's chips and in the request pipeline, and
+    // a typo in any of those is a silent mismatch rather than a compile error. `fromWire` maps
+    // anything unrecognised to ANY, which lands in the same neutral branch the `else` used to.
+    val filter = HttpMethodFilter.fromWire(method)
+    val container = when (filter) {
+        HttpMethodFilter.GET, HttpMethodFilter.HEAD -> scheme.surfaceVariant
+        HttpMethodFilter.POST, HttpMethodFilter.PUT, HttpMethodFilter.PATCH ->
+            scheme.primaryContainer
+
+        HttpMethodFilter.DELETE -> scheme.errorContainer
+        HttpMethodFilter.OPTIONS, HttpMethodFilter.ANY -> scheme.secondaryContainer
     }
-    val content = when (method.uppercase()) {
-        "GET", "HEAD" -> scheme.onSurfaceVariant
-        "POST", "PUT", "PATCH" -> scheme.onPrimaryContainer
-        "DELETE" -> scheme.onErrorContainer
-        else -> scheme.onSecondaryContainer
+    val content = when (filter) {
+        HttpMethodFilter.GET, HttpMethodFilter.HEAD -> scheme.onSurfaceVariant
+        HttpMethodFilter.POST, HttpMethodFilter.PUT, HttpMethodFilter.PATCH ->
+            scheme.onPrimaryContainer
+
+        HttpMethodFilter.DELETE -> scheme.onErrorContainer
+        HttpMethodFilter.OPTIONS, HttpMethodFilter.ANY -> scheme.onSecondaryContainer
     }
 
     Box(

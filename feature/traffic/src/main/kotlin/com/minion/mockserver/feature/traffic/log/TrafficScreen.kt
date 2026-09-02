@@ -31,10 +31,11 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
+import com.minion.mockserver.core.domain.model.HttpMethodFilter
 import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.EmptyState
@@ -267,7 +268,14 @@ private fun SearchAndFilters(
  * the end — `/api/v1/users/42` and `/api/v1/users/43` differ in the last two characters, and
  * end-ellipsis would render them identical.
  */
-private val METHODS = listOf("GET", "POST", "PUT", "PATCH", "DELETE")
+/** The methods worth a filter chip, named by the domain rather than respelled here. */
+private val METHODS = listOf(
+    HttpMethodFilter.GET,
+    HttpMethodFilter.POST,
+    HttpMethodFilter.PUT,
+    HttpMethodFilter.PATCH,
+    HttpMethodFilter.DELETE,
+).map { it.name }
 private val STATUS_CLASSES = listOf(2, 3, 4, 5)
 private const val CLIPBOARD_LABEL = "cURL"
 

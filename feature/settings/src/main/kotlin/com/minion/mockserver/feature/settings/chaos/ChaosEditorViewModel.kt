@@ -1,5 +1,6 @@
 package com.minion.mockserver.feature.settings.chaos
 
+import com.minion.mockserver.core.common.config.AppConstants
 import androidx.lifecycle.viewModelScope
 import com.minion.mockserver.core.common.result.AppResult
 import com.minion.mockserver.core.domain.model.ChaosProfile
@@ -58,7 +59,16 @@ internal class ChaosEditorViewModel @Inject constructor(
                 edit { copy(malformedBody = malformedBody.copy(probability = intent.probability)) }
 
             is ChaosEditorIntent.UpdateMalformedPercent ->
-                edit { copy(malformedBody = malformedBody.copy(truncateAtPercent = intent.percent)) }
+                edit {
+                    copy(
+                        malformedBody = malformedBody.copy(
+                            truncateAtPercent = intent.percent.coerceIn(
+                                AppConstants.Chaos.MIN_TRUNCATE_PERCENT,
+                                AppConstants.Chaos.MAX_TRUNCATE_PERCENT,
+                            ),
+                        ),
+                    )
+                }
 
             ChaosEditorIntent.Save -> save()
             ChaosEditorIntent.Cancel -> reduce { copy(editing = null, error = null) }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -82,7 +83,11 @@ internal class TrafficRepositoryImpl @Inject constructor(
             // recent requests are the ones being debugged.
             if (pending.poll() != null) {
                 pendingSize.decrementAndGet()
-                _droppedCount.value = _droppedCount.value + 1
+                // `update`, not `value = value + 1`: `offer` runs on the request path, which Ktor
+                // serves concurrently, and a read-modify-write there loses increments under
+                // exactly the load that produces drops — leaving the counter under-reporting the
+                // loss it exists to make visible.
+                _droppedCount.update { it + 1 }
             }
         }
         wake.trySend(Unit)

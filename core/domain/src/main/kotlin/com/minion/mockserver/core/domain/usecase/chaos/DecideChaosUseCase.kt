@@ -89,7 +89,12 @@ class DecideChaosUseCase @Inject constructor(
 
         val malformed = profile.malformedBody
         if (malformed.probability > 0.0 && random.nextDouble() < malformed.probability) {
-            return ChaosFailure.MalformedBody(malformed.truncateAtPercent.coerceIn(0, 100))
+            return ChaosFailure.MalformedBody(
+                malformed.truncateAtPercent.coerceIn(
+                    AppConstants.Chaos.MIN_TRUNCATE_PERCENT,
+                    AppConstants.Chaos.MAX_TRUNCATE_PERCENT,
+                ),
+            )
         }
 
         return null

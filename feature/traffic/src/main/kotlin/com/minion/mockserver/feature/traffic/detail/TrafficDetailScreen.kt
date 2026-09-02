@@ -12,7 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,7 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
@@ -97,7 +97,7 @@ internal fun TrafficDetailContent(
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             Header(entry = entry, onIntent = onIntent)
 
-            TabRow(selectedTabIndex = state.selectedTab.ordinal) {
+            PrimaryTabRow(selectedTabIndex = state.selectedTab.ordinal) {
                 TrafficDetailState.Tab.entries.forEach { tab ->
                     Tab(
                         selected = state.selectedTab == tab,

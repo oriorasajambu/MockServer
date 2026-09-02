@@ -243,7 +243,10 @@ class HandleMockRequestUseCase @Inject constructor(
                 }
             }
 
-            else -> {
+            // Enumerated rather than `else`, so a fourth failure mode is a compile error here
+            // instead of silently behaving as "no chaos" — which is how a chaos mode ends up
+            // shipped and doing nothing.
+            is ChaosFailure.ConnectionReset, is ChaosFailure.MalformedBody, null -> {
                 effectiveStatus = statusCode
                 effectiveBody = body
                 effectiveHeaders = headers
@@ -259,7 +262,7 @@ class HandleMockRequestUseCase @Inject constructor(
             when (val failure = chaos.failure) {
                 is ChaosFailure.ConnectionReset -> failure.bytesWritten.coerceIn(0, fullLength)
                 is ChaosFailure.MalformedBody -> fullLength * failure.truncateAtPercent / PERCENT
-                else -> fullLength
+                is ChaosFailure.ErrorInjected, null -> fullLength
             }
         }
 

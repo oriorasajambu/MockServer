@@ -1,6 +1,7 @@
 package com.minion.mockserver.core.server
 
 import com.minion.mockserver.core.domain.model.ResponsePlan
+import kotlin.coroutines.cancellation.CancellationException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
@@ -100,7 +101,7 @@ class ResponseWriter @Inject constructor() {
             block()
         } catch (e: ConnectionResetSignal) {
             throw e
-        } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+        } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
             runCatching {
