@@ -40,6 +40,23 @@ object PathNormaliser {
     }
 
     /**
+     * The path component of an absolute or relative URL, normalised.
+     *
+     * Import formats record what a client asked for, which is a full URL — the scheme and host
+     * name a server this app is standing in for, and carrying them into a pattern produces a
+     * route nothing can address. A URL with no scheme is treated as already being a path.
+     */
+    fun fromUrl(url: String): String {
+        val afterScheme = url.substringAfter(SCHEME_SEPARATOR, missingDelimiterValue = "")
+        val path = if (afterScheme.isEmpty()) {
+            url
+        } else {
+            "/" + afterScheme.substringAfter('/', missingDelimiterValue = "")
+        }
+        return normalise(path)
+    }
+
+    /**
      * Joins a collection base path to a route pattern.
      *
      * Both sides are normalised, so `/api/v1/` + `users` and `api/v1` + `/users` produce the same
@@ -104,4 +121,6 @@ object PathNormaliser {
 
     /** The path every empty or all-slashes input normalises to. */
     const val ROOT = "/"
+
+    private const val SCHEME_SEPARATOR = "://"
 }

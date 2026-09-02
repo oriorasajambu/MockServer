@@ -1,6 +1,7 @@
 package com.rio.mockserver.core.domain.model
 
 import com.rio.mockserver.core.common.config.AppConstants
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -12,6 +13,10 @@ import kotlinx.serialization.Serializable
  *
  * A sealed interface so v2 can add `BodyJsonPath` and `BodyRegex` without touching the scorer
  * beyond a point value (SPEC §15).
+ *
+ * Each case carries an explicit `@SerialName`. Without one the discriminator in an exported file
+ * would be the fully-qualified class name, so moving this file to another package would silently
+ * stop every already-exported collection from importing.
  */
 @Serializable
 sealed interface RequestMatcher {
@@ -21,6 +26,7 @@ sealed interface RequestMatcher {
 
     /** Constrains a request header. Name lookup is case-insensitive throughout (SPEC §13). */
     @Serializable
+    @SerialName("header")
     data class Header(
         val name: String,
         val op: StringOp,
@@ -38,6 +44,7 @@ sealed interface RequestMatcher {
      * which is not what anyone means by it (SPEC §13).
      */
     @Serializable
+    @SerialName("query")
     data class Query(
         val name: String,
         val op: StringOp,
@@ -55,6 +62,7 @@ sealed interface RequestMatcher {
      * thing a route can say about a request.
      */
     @Serializable
+    @SerialName("bodySubset")
     data class BodySubset(
         val json: String,
     ) : RequestMatcher {

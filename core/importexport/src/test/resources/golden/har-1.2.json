@@ -1,0 +1,93 @@
+{
+  "log": {
+    "version": "1.2",
+    "creator": { "name": "Chrome DevTools", "version": "120" },
+    "entries": [
+      {
+        "startedDateTime": "2026-01-02T03:04:05.000Z",
+        "time": 12.5,
+        "request": {
+          "method": "GET",
+          "url": "https://api.example.com/config?v=2",
+          "httpVersion": "HTTP/1.1",
+          "headers": [ { "name": "Accept", "value": "application/json" } ],
+          "queryString": [ { "name": "v", "value": "2" } ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Content-Encoding", "value": "gzip" },
+            { "name": "Date", "value": "Fri, 02 Jan 2026 03:04:05 GMT" }
+          ],
+          "cookies": [],
+          "content": { "size": 17, "mimeType": "application/json", "text": "{\"feature\":true}" },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 17
+        },
+        "cache": {},
+        "timings": { "send": 0, "wait": 12, "receive": 0.5 }
+      },
+      {
+        "startedDateTime": "2026-01-02T03:04:06.000Z",
+        "time": 3.0,
+        "request": {
+          "method": "GET",
+          "url": "https://api.example.com/config?v=2",
+          "httpVersion": "HTTP/1.1",
+          "headers": [],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [],
+          "cookies": [],
+          "content": { "size": 17, "mimeType": "application/json", "text": "{\"feature\":true}" },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 17
+        },
+        "cache": {},
+        "timings": { "send": 0, "wait": 3, "receive": 0 }
+      },
+      {
+        "startedDateTime": "2026-01-02T03:04:07.000Z",
+        "time": 40.0,
+        "request": {
+          "method": "GET",
+          "url": "https://api.example.com/assets/logo.png",
+          "httpVersion": "HTTP/1.1",
+          "headers": [],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [ { "name": "Content-Type", "value": "image/png" } ],
+          "cookies": [],
+          "content": { "size": 8192, "mimeType": "image/png" },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 8192
+        },
+        "cache": {},
+        "timings": { "send": 0, "wait": 40, "receive": 0 }
+      }
+    ]
+  }
+}

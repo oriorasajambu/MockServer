@@ -61,6 +61,23 @@ class PathNormaliserTest {
     }
 
     @Test
+    fun `fromUrl keeps only the path component`() {
+        // Import formats record full URLs; the scheme and host name a server this app replaces,
+        // and carrying them into a pattern produces a route nothing can address.
+        val cases = listOf(
+            "https://api.example.com/config?v=2" to "/config",
+            "http://10.0.0.5:8080/api/v1/users/" to "/api/v1/users",
+            "https://api.example.com" to "/",
+            "https://api.example.com/" to "/",
+            "/already/a/path" to "/already/a/path",
+            "/invoices/:id" to "/invoices/:id",
+        )
+        cases.forEach { (input, expected) ->
+            assertEquals(input, expected, PathNormaliser.fromUrl(input))
+        }
+    }
+
+    @Test
     fun `an empty base path mounts routes at the root`() {
         assertEquals("/users", PathNormaliser.join("/", "/users"))
         assertEquals("/", PathNormaliser.join("/", "/"))

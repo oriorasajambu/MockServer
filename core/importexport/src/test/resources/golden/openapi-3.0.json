@@ -1,0 +1,51 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Orders API", "version": "1.0.0" },
+  "servers": [ { "url": "https://api.example.com/api/v1" } ],
+  "paths": {
+    "/users/{id}": {
+      "get": {
+        "summary": "Fetch one user",
+        "operationId": "getUser",
+        "responses": {
+          "200": {
+            "description": "The user",
+            "content": {
+              "application/json": {
+                "example": { "id": 42, "name": "Ada" }
+              }
+            }
+          },
+          "404": {
+            "description": "No such user",
+            "content": {
+              "application/json": { "example": { "error": "not found" } }
+            }
+          }
+        }
+      },
+      "delete": {
+        "responses": {
+          "204": { "description": "Deleted" }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "summary": "Create a user",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "created": { "value": { "id": 43 } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

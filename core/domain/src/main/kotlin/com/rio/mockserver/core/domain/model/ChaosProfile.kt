@@ -1,6 +1,7 @@
 package com.rio.mockserver.core.domain.model
 
 import com.rio.mockserver.core.common.config.AppConstants
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -53,20 +54,29 @@ data class ChaosProfile(
     }
 }
 
-/** How long to wait before answering (SPEC §6.2 step 1). */
+/**
+ * How long to wait before answering (SPEC §6.2 step 1).
+ *
+ * Each case carries an explicit `@SerialName` for the same reason [RequestMatcher]'s do: the
+ * default discriminator is the fully-qualified class name, and a package move would then break
+ * every file already exported.
+ */
 @Serializable
 sealed interface DelaySpec {
 
     /** Answer as fast as the device can. */
     @Serializable
+    @SerialName("none")
     data object None : DelaySpec
 
     /** Always wait [millis]. */
     @Serializable
+    @SerialName("fixed")
     data class Fixed(val millis: Long) : DelaySpec
 
     /** Wait a uniformly-drawn number of millis in `[minMillis, maxMillis]`, inclusive. */
     @Serializable
+    @SerialName("random")
     data class Random(val minMillis: Long, val maxMillis: Long) : DelaySpec
 }
 
