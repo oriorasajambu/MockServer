@@ -65,6 +65,13 @@ object Dimens {
     /** Monospace body text: addresses, JSON, cURL. */
     val monospaceTextSize = 13.sp
 
-    /** The address on the server screen, which is read across a desk. */
-    val heroAddressTextSize = 22.sp
+    /**
+     * The address on the server screen, which is read across a desk — and typed into a laptop by
+     * hand, which is why it auto-sizes between these two rather than wrapping.
+     *
+     * A wrapped URL breaks after the colon and orphans the port on its own line, which is the one
+     * place it must not break.
+     */
+    val heroAddressMaxTextSize = 20.sp
+    val heroAddressMinTextSize = 13.sp
 }

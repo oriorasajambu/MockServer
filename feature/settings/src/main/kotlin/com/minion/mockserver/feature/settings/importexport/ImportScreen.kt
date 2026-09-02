@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -80,7 +81,13 @@ internal fun ImportScreen(
                 context.showToast(resources.getString(effect.error.toMessageRes()))
 
             is ImportEffect.ShowImported ->
-                context.showToast(resources.getString(R.string.import_done, effect.count))
+                context.showToast(
+                    resources.getQuantityString(
+                        R.plurals.import_done,
+                        effect.count,
+                        effect.count,
+                    ),
+                )
         }
     }
 
@@ -130,8 +137,9 @@ internal fun ImportContent(
             else -> Column(modifier = Modifier.fillMaxSize().padding(padding)) {
                 Column(modifier = Modifier.padding(Dimens.space)) {
                     Text(
-                        text = stringResource(
-                            R.string.import_found,
+                        text = pluralStringResource(
+                            R.plurals.import_found,
+                            preview.routes.size,
                             preview.routes.size,
                             preview.format.name,
                         ),
@@ -141,7 +149,11 @@ internal fun ImportContent(
                     if (preview.needsBodyCount > 0) {
                         // The visible gap, rather than a synthesised body full of "string" (§9.1).
                         Text(
-                            text = stringResource(R.string.import_needs_body, preview.needsBodyCount),
+                            text = pluralStringResource(
+                                R.plurals.import_needs_body,
+                                preview.needsBodyCount,
+                                preview.needsBodyCount,
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.tertiary,
                         )
@@ -222,7 +234,13 @@ internal fun ImportContent(
                         .fillMaxWidth()
                         .padding(Dimens.space),
                 ) {
-                    Text(stringResource(R.string.import_commit, state.selectedCount))
+                    Text(
+                        pluralStringResource(
+                            R.plurals.import_commit,
+                            state.selectedCount,
+                            state.selectedCount,
+                        ),
+                    )
                 }
             }
         }

@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,7 +46,7 @@ fun BodyBlock(
         Text(stringResource(R.string.body_title), style = MaterialTheme.typography.titleSmall)
         when {
             body == null && byteCount > 0 -> Text(
-                text = stringResource(R.string.body_binary, byteCount),
+                text = pluralStringResource(R.plurals.body_binary, byteCount, byteCount),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

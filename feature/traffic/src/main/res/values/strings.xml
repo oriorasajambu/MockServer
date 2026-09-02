@@ -13,8 +13,14 @@
     <string name="traffic_har_saved">Saved as %1$s</string>
     <string name="traffic_clear">Clear log</string>
     <string name="traffic_copied">Copied</string>
-    <string name="traffic_new_entries">%1$d new — jump to latest</string>
-    <string name="traffic_dropped">%1$d entries dropped — the log could not keep up</string>
+    <plurals name="traffic_new_entries">
+        <item quantity="one">%1$d new — jump to latest</item>
+        <item quantity="other">%1$d new — jump to latest</item>
+    </plurals>
+    <plurals name="traffic_dropped">
+        <item quantity="one">%1$d entry dropped — the log could not keep up</item>
+        <item quantity="other">%1$d entries dropped — the log could not keep up</item>
+    </plurals>
 
 
     <string name="traffic_empty_title">No requests yet</string>

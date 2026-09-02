@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -146,7 +147,11 @@ internal fun CollectionDetailContent(
                 )
                 if (state.needsBodyCount > 0) {
                     Text(
-                        text = stringResource(R.string.routes_needs_body_banner, state.needsBodyCount),
+                        text = pluralStringResource(
+                            R.plurals.routes_needs_body_banner,
+                            state.needsBodyCount,
+                            state.needsBodyCount,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.tertiary,
                     )

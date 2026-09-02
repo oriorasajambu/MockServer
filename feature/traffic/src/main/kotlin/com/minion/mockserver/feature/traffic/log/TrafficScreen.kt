@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -119,7 +120,11 @@ internal fun TrafficContent(
 
             if (state.droppedCount > 0) {
                 Text(
-                    text = stringResource(R.string.traffic_dropped, state.droppedCount),
+                    text = pluralStringResource(
+                        R.plurals.traffic_dropped,
+                        state.droppedCount,
+                        state.droppedCount,
+                    ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(horizontal = Dimens.space),
@@ -157,7 +162,15 @@ internal fun TrafficContent(
                 if (!state.isFollowing && state.newEntryCount > 0) {
                     AssistChip(
                         onClick = { onIntent(TrafficIntent.ResumeFollow) },
-                        label = { Text(stringResource(R.string.traffic_new_entries, state.newEntryCount)) },
+                        label = {
+                            Text(
+                                pluralStringResource(
+                                    R.plurals.traffic_new_entries,
+                                    state.newEntryCount,
+                                    state.newEntryCount,
+                                ),
+                            )
+                        },
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(Dimens.spaceSmall),

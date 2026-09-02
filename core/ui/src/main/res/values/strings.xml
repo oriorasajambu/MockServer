@@ -57,8 +57,14 @@
 
     <!-- The collection and route rows. -->
     <string name="collections_edit">Edit</string>
-    <string name="collections_route_count">%1$d routes</string>
-    <string name="collections_needs_body">%1$d need bodies</string>
+    <plurals name="collections_route_count">
+        <item quantity="one">%1$d route</item>
+        <item quantity="other">%1$d routes</item>
+    </plurals>
+    <plurals name="collections_needs_body">
+        <item quantity="one">%1$d needs a body</item>
+        <item quantity="other">%1$d need bodies</item>
+    </plurals>
     <string name="routes_duplicate">Duplicate</string>
     <string name="routes_shadowed">Shadowed</string>
     <string name="routes_needs_body">Needs body</string>
@@ -75,7 +81,10 @@
     <string name="traffic_errored">error</string>
 
     <string name="body_title">Body</string>
-    <string name="body_binary">Binary, %1$d bytes — not stored as text</string>
+    <plurals name="body_binary">
+        <item quantity="one">Binary, %1$d byte — not stored as text</item>
+        <item quantity="other">Binary, %1$d bytes — not stored as text</item>
+    </plurals>
     <string name="body_none">No body</string>
     <string name="body_truncated">Truncated — the body was longer than the log keeps</string>
 
@@ -87,9 +96,13 @@
     <string name="server_copy">Copy</string>
     <string name="server_qr">QR</string>
     <string name="server_interface">on %1$s</string>
-    <string name="server_more_addresses">%1$d more addresses</string>
+    <plurals name="server_more_addresses">
+        <item quantity="one">%1$d more address</item>
+        <item quantity="other">%1$d more addresses</item>
+    </plurals>
     <string name="server_hide_addresses">Hide other addresses</string>
     <string name="server_vpn_note">VPN — clients on your LAN cannot reach this address</string>
+    <string name="server_loopback_note">apps on this phone</string>
     <string name="server_advertised_as">Advertised as %1$s.local</string>
     <string name="server_no_network">No network — localhost only</string>
     <string name="server_no_network_detail">Connect to Wi‑Fi or turn on the hotspot to serve other devices. Apps on this phone can still reach the server.</string>

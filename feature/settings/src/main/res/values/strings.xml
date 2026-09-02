@@ -49,8 +49,14 @@
     <string name="import_body">Reads OpenAPI 3.0 and 3.1 (JSON or YAML), Postman v2.1 collections, and HAR captures. Nothing is written until you have seen what is in the file.</string>
     <string name="import_pick">Choose a file</string>
     <string name="import_parsing">Reading the file…</string>
-    <string name="import_found">%1$d routes found in a %2$s document</string>
-    <string name="import_needs_body">%1$d have no example response, and will be imported with an empty body.</string>
+    <plurals name="import_found">
+        <item quantity="one">%1$d route found in a %2$s document</item>
+        <item quantity="other">%1$d routes found in a %2$s document</item>
+    </plurals>
+    <plurals name="import_needs_body">
+        <item quantity="one">%1$d has no example response, and will be imported with an empty body.</item>
+        <item quantity="other">%1$d have no example response, and will be imported with an empty body.</item>
+    </plurals>
     <string name="import_no_example">No example response in the source</string>
     <string name="import_new_collection">New collection</string>
     <string name="import_collection_name">Collection name</string>
@@ -61,8 +67,14 @@
     <string name="import_skip">Skip</string>
     <string name="import_replace">Replace</string>
     <string name="import_keep_both">Keep both</string>
-    <string name="import_commit">Import %1$d routes</string>
-    <string name="import_done">Imported %1$d routes</string>
+    <plurals name="import_commit">
+        <item quantity="one">Import %1$d route</item>
+        <item quantity="other">Import %1$d routes</item>
+    </plurals>
+    <plurals name="import_done">
+        <item quantity="one">Imported %1$d route</item>
+        <item quantity="other">Imported %1$d routes</item>
+    </plurals>
 
     <!-- Chaos -->
     <string name="chaos_title">Chaos profiles</string>

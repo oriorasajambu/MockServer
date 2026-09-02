@@ -19,7 +19,10 @@
 
     <!-- Route list -->
     <string name="routes_new">New route</string>
-    <string name="routes_needs_body_banner">%1$d routes were imported without a response body.</string>
+    <plurals name="routes_needs_body_banner">
+        <item quantity="one">%1$d route was imported without a response body.</item>
+        <item quantity="other">%1$d routes were imported without a response body.</item>
+    </plurals>
     <string name="routes_export_json">Native JSON</string>
     <string name="routes_export_postman">Postman v2.1</string>
     <string name="routes_export_share">Share</string>

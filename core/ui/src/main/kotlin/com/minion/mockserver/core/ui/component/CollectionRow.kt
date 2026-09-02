@@ -13,6 +13,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,14 +55,22 @@ fun CollectionRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = stringResource(R.string.collections_route_count, routeCount),
+                text = pluralStringResource(
+                    R.plurals.collections_route_count,
+                    routeCount,
+                    routeCount,
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             // The visible gap an import leaves rather than a body full of "string" (SPEC §9.1).
             if (needsBodyCount > 0) {
                 Text(
-                    text = stringResource(R.string.collections_needs_body, needsBodyCount),
+                    text = pluralStringResource(
+                        R.plurals.collections_needs_body,
+                        needsBodyCount,
+                        needsBodyCount,
+                    ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.tertiary,
                 )
