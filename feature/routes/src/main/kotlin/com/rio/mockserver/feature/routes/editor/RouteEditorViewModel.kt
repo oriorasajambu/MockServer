@@ -12,14 +12,16 @@ import com.rio.mockserver.core.domain.model.MockRoute
 import com.rio.mockserver.core.domain.model.PathNormaliser
 import com.rio.mockserver.core.domain.model.RoutingSnapshot
 import com.rio.mockserver.core.domain.model.ServerStatus
-import com.rio.mockserver.core.domain.repository.CollectionRepository
-import com.rio.mockserver.core.domain.repository.MockServerRepository
-import com.rio.mockserver.core.domain.repository.RouteRepository
+import com.rio.mockserver.core.domain.usecase.collection.GetCollectionUseCase
+import com.rio.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
 import com.rio.mockserver.core.domain.usecase.route.CreateRouteFromTrafficUseCase
+import com.rio.mockserver.core.domain.usecase.route.GetRouteUseCase
+import com.rio.mockserver.core.domain.usecase.route.GetRoutesUseCase
 import com.rio.mockserver.core.domain.usecase.route.DetectShadowedRoutesUseCase
 import com.rio.mockserver.core.domain.usecase.route.SaveRouteUseCase
 import com.rio.mockserver.core.domain.usecase.route.ValidateRouteUseCase
 import com.rio.mockserver.core.domain.usecase.server.ObserveServerAddressesUseCase
+import com.rio.mockserver.core.domain.usecase.server.ObserveServerStatusUseCase
 import com.rio.mockserver.core.domain.usecase.settings.GetServerSettingsUseCase
 import com.rio.mockserver.core.domain.usecase.traffic.ObserveTrafficUseCase
 import com.rio.mockserver.core.data.util.LoopbackRequester
@@ -42,8 +44,10 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 internal class RouteEditorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val routeRepository: RouteRepository,
-    private val collectionRepository: CollectionRepository,
+    private val getRoute: GetRouteUseCase,
+    private val getRoutes: GetRoutesUseCase,
+    private val getCollection: GetCollectionUseCase,
+    private val getCollections: GetCollectionsUseCase,
     private val saveRoute: SaveRouteUseCase,
     private val validateRoute: ValidateRouteUseCase,
     private val detectShadowed: DetectShadowedRoutesUseCase,
@@ -51,7 +55,7 @@ internal class RouteEditorViewModel @Inject constructor(
     private val observeTraffic: ObserveTrafficUseCase,
     private val observeAddresses: ObserveServerAddressesUseCase,
     private val getSettings: GetServerSettingsUseCase,
-    private val serverRepository: MockServerRepository,
+    private val observeServerStatus: ObserveServerStatusUseCase,
     private val idGenerator: IdGenerator,
     private val loopbackRequester: LoopbackRequester,
 ) : MviViewModel<RouteEditorState, RouteEditorIntent, RouteEditorEffect>(RouteEditorState()) {
@@ -161,7 +165,7 @@ internal class RouteEditorViewModel @Inject constructor(
     private fun loadRoute() {
         viewModelScope.launch {
             val existing = args.routeId?.let { id ->
-                (routeRepository.get(id) as? AppResult.Success)?.data
+                (getRoute(id) as? AppResult.Success)?.data
             }
 
             val draft = when {
@@ -200,7 +204,7 @@ internal class RouteEditorViewModel @Inject constructor(
         val entry = observeTraffic().first().firstOrNull { it.id == entryId }
             ?: return MockRoute(id = idGenerator.newId(), collectionId = args.collectionId, name = "")
 
-        val collections = collectionRepository.observeCollections().first()
+        val collections = getCollections().first()
         val draft = createFromTraffic(entry, collections)
 
         reduce {
@@ -229,11 +233,11 @@ internal class RouteEditorViewModel @Inject constructor(
     private fun observeContext() {
         viewModelScope.launch {
             combine(
-                collectionRepository.observeCollection(targetCollectionId),
-                routeRepository.observeRoutes(targetCollectionId),
+                getCollection(targetCollectionId),
+                getRoutes(targetCollectionId),
                 observeAddresses(),
                 getSettings(),
-                serverRepository.status,
+                observeServerStatus(),
             ) { collection, routes, addresses, settings, status ->
                 this@RouteEditorViewModel.collection = collection
                 this@RouteEditorViewModel.siblingRoutes = routes
@@ -354,7 +358,7 @@ internal class RouteEditorViewModel @Inject constructor(
      */
     private fun testRoute() {
         viewModelScope.launch {
-            if (!serverRepository.status.value.isRunning) {
+            if (!observeServerStatus().value.isRunning) {
                 emitEffect(RouteEditorEffect.ShowError(DomainError.BindFailed))
                 return@launch
             }

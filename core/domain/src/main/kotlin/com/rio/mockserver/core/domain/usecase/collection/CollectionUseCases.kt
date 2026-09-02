@@ -18,6 +18,18 @@ class GetCollectionsUseCase @Inject constructor(
 }
 
 /**
+ * One collection, observed.
+ *
+ * Emits `null` once it is deleted, which is what lets a detail screen close itself instead of
+ * showing the last state it happened to hold.
+ */
+class GetCollectionUseCase @Inject constructor(
+    private val repository: CollectionRepository,
+) {
+    operator fun invoke(id: String): Flow<MockCollection?> = repository.observeCollection(id)
+}
+
+/**
  * Validates and saves a collection.
  *
  * The base path is normalised here rather than in the editor, so `api/v1/`, `/api/v1` and

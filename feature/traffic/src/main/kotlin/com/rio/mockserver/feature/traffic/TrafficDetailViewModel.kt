@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.rio.mockserver.core.common.config.AppConstants
 import com.rio.mockserver.core.domain.model.ServerStatus
-import com.rio.mockserver.core.domain.repository.MockServerRepository
 import com.rio.mockserver.core.domain.usecase.server.ObserveServerAddressesUseCase
+import com.rio.mockserver.core.domain.usecase.server.ObserveServerStatusUseCase
 import com.rio.mockserver.core.domain.usecase.settings.GetServerSettingsUseCase
 import com.rio.mockserver.core.domain.usecase.traffic.FormatEntryAsCurlUseCase
 import com.rio.mockserver.core.domain.usecase.traffic.FormatEntryAsTextUseCase
@@ -27,7 +27,7 @@ internal class TrafficDetailViewModel @Inject constructor(
     private val formatAsText: FormatEntryAsTextUseCase,
     private val observeAddresses: ObserveServerAddressesUseCase,
     private val getSettings: GetServerSettingsUseCase,
-    private val serverRepository: MockServerRepository,
+    private val observeServerStatus: ObserveServerStatusUseCase,
 ) : MviViewModel<TrafficDetailState, TrafficDetailIntent, TrafficDetailEffect>(TrafficDetailState()) {
 
     private val entryId = savedStateHandle.toRoute<TrafficDetailRoute>().entryId
@@ -45,7 +45,7 @@ internal class TrafficDetailViewModel @Inject constructor(
             combine(
                 observeAddresses(),
                 getSettings(),
-                serverRepository.status,
+                observeServerStatus(),
             ) { addresses, settings, status ->
                 val port = (status as? ServerStatus.Running)?.address?.port ?: settings.port
                 addresses.firstOrNull()?.toBaseUrl(port)

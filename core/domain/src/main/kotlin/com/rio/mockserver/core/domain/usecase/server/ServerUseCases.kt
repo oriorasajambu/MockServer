@@ -66,6 +66,24 @@ class ObserveServerStatusUseCase @Inject constructor(
 }
 
 /**
+ * The two counters the server screen shows, since the current run started.
+ *
+ * Exposed as a use case rather than letting the screen reach for [MockServerRepository], which is
+ * the rule SPEC §2.2 states: a ViewModel sees `Start`, `Stop` and the observers, never the engine
+ * or the repository that fronts it.
+ */
+class ObserveServerCountersUseCase @Inject constructor(
+    private val serverRepository: MockServerRepository,
+) {
+
+    /** Requests served. */
+    fun requests(): StateFlow<Long> = serverRepository.requestCount
+
+    /** Of those, the ones that matched no route. */
+    fun unmatched(): StateFlow<Long> = serverRepository.unmatchedCount
+}
+
+/**
  * The addresses a client could use, best first (SPEC §8.5).
  *
  * Re-emits on every connectivity change, because the IP changes the instant Wi-Fi flips or a

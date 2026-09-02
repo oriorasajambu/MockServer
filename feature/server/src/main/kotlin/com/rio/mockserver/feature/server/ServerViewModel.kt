@@ -3,9 +3,10 @@ package com.rio.mockserver.feature.server
 import androidx.lifecycle.viewModelScope
 import com.rio.mockserver.core.common.result.AppResult
 import com.rio.mockserver.core.domain.model.ServerStatus
-import com.rio.mockserver.core.domain.repository.MockServerRepository
 import com.rio.mockserver.core.domain.usecase.chaos.GetChaosProfilesUseCase
 import com.rio.mockserver.core.domain.usecase.server.ObserveServerAddressesUseCase
+import com.rio.mockserver.core.domain.usecase.server.ObserveServerCountersUseCase
+import com.rio.mockserver.core.domain.usecase.server.ObserveServerStatusUseCase
 import com.rio.mockserver.core.domain.usecase.server.SetPauseModeUseCase
 import com.rio.mockserver.core.domain.usecase.settings.GetServerSettingsUseCase
 import com.rio.mockserver.core.domain.usecase.settings.UpdateServerSettingsUseCase
@@ -31,7 +32,8 @@ import kotlinx.coroutines.launch
  */
 @HiltViewModel
 internal class ServerViewModel @Inject constructor(
-    private val serverRepository: MockServerRepository,
+    private val observeServerStatus: ObserveServerStatusUseCase,
+    private val observeCounters: ObserveServerCountersUseCase,
     private val observeAddresses: ObserveServerAddressesUseCase,
     private val getSettings: GetServerSettingsUseCase,
     private val updateSettings: UpdateServerSettingsUseCase,
@@ -92,9 +94,9 @@ internal class ServerViewModel @Inject constructor(
     private fun observeServer() {
         viewModelScope.launch {
             combine(
-                serverRepository.status,
-                serverRepository.requestCount,
-                serverRepository.unmatchedCount,
+                observeServerStatus(),
+                observeCounters.requests(),
+                observeCounters.unmatched(),
                 observeAddresses(),
                 getSettings(),
             ) { status, requestCount, unmatchedCount, addresses, settings ->

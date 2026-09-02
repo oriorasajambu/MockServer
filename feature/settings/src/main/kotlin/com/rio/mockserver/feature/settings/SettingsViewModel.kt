@@ -3,11 +3,11 @@ package com.rio.mockserver.feature.settings
 import androidx.lifecycle.viewModelScope
 import com.rio.mockserver.core.common.result.AppResult
 import com.rio.mockserver.core.domain.model.ServerSettings
-import com.rio.mockserver.core.domain.repository.MockServerRepository
 import com.rio.mockserver.core.domain.usecase.chaos.GetChaosProfilesUseCase
 import com.rio.mockserver.core.domain.usecase.chaos.ResetChaosSeedUseCase
 import com.rio.mockserver.core.domain.usecase.chaos.SetGlobalChaosProfileUseCase
 import com.rio.mockserver.core.domain.usecase.importexport.ExportCollectionJsonUseCase
+import com.rio.mockserver.core.domain.usecase.server.ObserveServerStatusUseCase
 import com.rio.mockserver.core.domain.usecase.settings.GenerateApiKeyUseCase
 import com.rio.mockserver.core.domain.usecase.settings.GetServerSettingsUseCase
 import com.rio.mockserver.core.domain.usecase.settings.UpdateServerSettingsUseCase
@@ -27,7 +27,7 @@ internal class SettingsViewModel @Inject constructor(
     private val resetChaosSeed: ResetChaosSeedUseCase,
     private val generateApiKey: GenerateApiKeyUseCase,
     private val exportAll: ExportCollectionJsonUseCase,
-    private val serverRepository: MockServerRepository,
+    private val observeServerStatus: ObserveServerStatusUseCase,
     private val serviceController: SettingsServiceController,
 ) : MviViewModel<SettingsState, SettingsIntent, SettingsEffect>(SettingsState()) {
 
@@ -39,7 +39,7 @@ internal class SettingsViewModel @Inject constructor(
             combine(
                 getSettings(),
                 getChaosProfiles(),
-                serverRepository.status,
+                observeServerStatus(),
             ) { settings, profiles, status ->
                 if (status.isRunning && runningSettings == null) runningSettings = settings
                 if (!status.isRunning) runningSettings = null

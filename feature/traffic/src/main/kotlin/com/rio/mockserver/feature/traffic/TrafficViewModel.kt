@@ -2,10 +2,10 @@ package com.rio.mockserver.feature.traffic
 
 import androidx.lifecycle.viewModelScope
 import com.rio.mockserver.core.common.config.AppConstants
-import com.rio.mockserver.core.domain.repository.MockServerRepository
 import com.rio.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
 import com.rio.mockserver.core.domain.usecase.route.GetRoutesUseCase
 import com.rio.mockserver.core.domain.usecase.server.ObserveServerAddressesUseCase
+import com.rio.mockserver.core.domain.usecase.server.ObserveServerStatusUseCase
 import com.rio.mockserver.core.domain.usecase.settings.GetServerSettingsUseCase
 import com.rio.mockserver.core.domain.usecase.traffic.ClearTrafficUseCase
 import com.rio.mockserver.core.domain.usecase.traffic.ExportTrafficAsHarUseCase
@@ -33,7 +33,7 @@ internal class TrafficViewModel @Inject constructor(
     private val getCollections: GetCollectionsUseCase,
     private val getRoutes: GetRoutesUseCase,
     private val getSettings: GetServerSettingsUseCase,
-    private val serverRepository: MockServerRepository,
+    private val observeServerStatus: ObserveServerStatusUseCase,
 ) : MviViewModel<TrafficState, TrafficIntent, TrafficEffect>(TrafficState()) {
 
     /**
@@ -182,7 +182,7 @@ internal class TrafficViewModel @Inject constructor(
             combine(
                 observeAddresses(),
                 getSettings(),
-                serverRepository.status,
+                observeServerStatus(),
             ) { addresses, settings, status ->
                 val port = (status as? com.rio.mockserver.core.domain.model.ServerStatus.Running)
                     ?.address?.port

@@ -4,11 +4,11 @@ import androidx.lifecycle.viewModelScope
 import com.rio.mockserver.core.common.result.AppResult
 import com.rio.mockserver.core.domain.model.ImportConflict
 import com.rio.mockserver.core.domain.model.MockCollection
-import com.rio.mockserver.core.domain.repository.RouteRepository
 import com.rio.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
 import com.rio.mockserver.core.domain.usecase.importexport.CommitImportUseCase
 import com.rio.mockserver.core.domain.usecase.importexport.DetectImportConflictsUseCase
 import com.rio.mockserver.core.domain.usecase.importexport.ParseImportUseCase
+import com.rio.mockserver.core.domain.usecase.route.GetRoutesUseCase
 import com.rio.mockserver.core.domain.util.IdGenerator
 import com.rio.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +23,7 @@ internal class ImportViewModel @Inject constructor(
     private val detectConflicts: DetectImportConflictsUseCase,
     private val commitImport: CommitImportUseCase,
     private val getCollections: GetCollectionsUseCase,
-    private val routeRepository: RouteRepository,
+    private val getRoutes: GetRoutesUseCase,
     private val idGenerator: IdGenerator,
 ) : MviViewModel<ImportState, ImportIntent, ImportEffect>(ImportState()) {
 
@@ -122,7 +122,7 @@ internal class ImportViewModel @Inject constructor(
                 return@launch
             }
 
-            val existing = routeRepository.observeRoutes(target.id).first()
+            val existing = getRoutes(target.id).first()
             reduce { copy(conflicts = detectConflicts(preview, target, existing)) }
         }
     }

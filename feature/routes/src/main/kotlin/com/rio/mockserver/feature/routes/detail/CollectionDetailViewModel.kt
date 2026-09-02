@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.rio.mockserver.core.common.result.AppResult
 import com.rio.mockserver.core.domain.model.RoutingSnapshot
-import com.rio.mockserver.core.domain.repository.CollectionRepository
+import com.rio.mockserver.core.domain.usecase.collection.GetCollectionUseCase
 import com.rio.mockserver.core.domain.usecase.importexport.ExportCollectionJsonUseCase
 import com.rio.mockserver.core.domain.usecase.importexport.ExportPostmanCollectionUseCase
 import com.rio.mockserver.core.domain.usecase.route.DeleteRouteUseCase
@@ -32,7 +32,7 @@ internal class CollectionDetailViewModel @Inject constructor(
     private val detectShadowed: DetectShadowedRoutesUseCase,
     private val exportJson: ExportCollectionJsonUseCase,
     private val exportPostman: ExportPostmanCollectionUseCase,
-    collectionRepository: CollectionRepository,
+    getCollection: GetCollectionUseCase,
 ) : MviViewModel<CollectionDetailState, CollectionDetailIntent, CollectionDetailEffect>(
     CollectionDetailState(),
 ) {
@@ -50,7 +50,7 @@ internal class CollectionDetailViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             combine(
-                collectionRepository.observeCollection(collectionId).filterNotNull(),
+                getCollection(collectionId).filterNotNull(),
                 getRoutes(collectionId),
             ) { collection, routes ->
                 // Shadowing is decided against a snapshot built from *this* collection alone.

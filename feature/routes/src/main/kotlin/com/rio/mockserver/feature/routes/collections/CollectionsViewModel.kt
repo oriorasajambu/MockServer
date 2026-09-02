@@ -8,7 +8,7 @@ import com.rio.mockserver.core.domain.usecase.collection.DeleteCollectionUseCase
 import com.rio.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
 import com.rio.mockserver.core.domain.usecase.collection.SaveCollectionUseCase
 import com.rio.mockserver.core.domain.usecase.collection.ToggleCollectionUseCase
-import com.rio.mockserver.core.domain.repository.RouteRepository
+import com.rio.mockserver.core.domain.usecase.route.GetRoutesUseCase
 import com.rio.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -22,14 +22,14 @@ internal class CollectionsViewModel @Inject constructor(
     private val saveCollection: SaveCollectionUseCase,
     private val deleteCollection: DeleteCollectionUseCase,
     private val toggleCollection: ToggleCollectionUseCase,
-    private val routeRepository: RouteRepository,
+    private val getRoutes: GetRoutesUseCase,
 ) : MviViewModel<CollectionsState, CollectionsIntent, CollectionsEffect>(CollectionsState()) {
 
     init {
         viewModelScope.launch {
             combine(
                 getCollections(),
-                routeRepository.observeAllRoutes(),
+                getRoutes.all(),
             ) { collections, routes ->
                 Triple(
                     collections,
