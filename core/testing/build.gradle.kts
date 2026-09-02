@@ -2,7 +2,7 @@
  * Shared test infrastructure: dispatcher rules, fakes, Turbine helpers.
  *
  * Consumed as `testImplementation(project(":core:testing"))` — which the
- * `minion.android.feature` convention adds automatically, so a new feature's tests get it
+ * `mockserver.android.feature` convention adds automatically, so a new feature's tests get it
  * without anyone having to remember.
  *
  * Note this module's sources live in `src/main`, not `src/test`. A module's test source set is
@@ -11,11 +11,11 @@
  * get the JUnit `TestWatcher` it extends.
  */
 plugins {
-    id("minion.android.library")
+    id("mockserver.android.library")
 }
 
 android {
-    namespace = "com.minion.scaffold.core.testing"
+    namespace = "com.minion.mockserver.core.testing"
 }
 
 dependencies {

@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "exportedBy": "MockServer for Android",
+  "exportedAt": 1767312245000,
+  "collections": [
+    {
+      "id": "c-legacy",
+      "name": "Legacy",
+      "basePath": "/legacy",
+      "isEnabled": true,
+      "order": 1,
+      "cors": {
+        "isEnabled": true,
+        "allowedOrigins": [
+          "https://legacy.example.com"
+        ],
+        "allowedMethods": [
+          "GET",
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "allowedHeaders": [
+          "*"
+        ],
+        "allowCredentials": false,
+        "maxAgeSeconds": 3600
+      },
+      "createdAt": 1700000000000
+    }
+  ],
+  "routes": [
+    {
+      "id": "r-legacy",
+      "collectionId": "c-legacy",
+      "name": "Legacy create",
+      "method": "POST",
+      "pathPattern": "/legacy/{id}",
+      "matchers": [
+        {
+          "type": "header",
+          "name": "X-Legacy",
+          "op": "EQUALS",
+          "value": "yes"
+        },
+        {
+          "type": "bodySubset",
+          "json": "{\"legacy\":true}"
+        }
+      ],
+      "response": {
+        "statusCode": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"id\":\"{{path.id}}\"}",
+        "delayMillisOverride": 120
+      },
+      "chaosOverride": {
+        "id": "p-legacy",
+        "name": "Legacy chaos",
+        "delay": {
+          "type": "fixed",
+          "millis": 750
+        },
+        "errorInjection": {
+          "probability": 0.2,
+          "statuses": [
+            {
+              "status": 500,
+              "weight": 1
+            },
+            {
+              "status": 503,
+              "weight": 1
+            },
+            {
+              "status": 429,
+              "weight": 1
+            }
+          ],
+          "body": "{\"error\":\"Injected by chaos engine\"}",
+          "retryAfterSeconds": 5
+        },
+        "connectionReset": {
+          "probability": 0.05,
+          "dropAfterBytes": 32
+        },
+        "malformedBody": {
+          "probability": 0.0,
+          "truncateAtPercent": 50
+        }
+      },
+      "isEnabled": true,
+      "createdAt": 1700000001000,
+      "needsBody": false
+    }
+  ],
+  "chaosProfiles": [
+    {
+      "id": "p-legacy",
+      "name": "Legacy chaos",
+      "delay": {
+        "type": "fixed",
+        "millis": 750
+      },
+      "errorInjection": {
+        "probability": 0.2,
+        "statuses": [
+          {
+            "status": 500,
+            "weight": 1
+          },
+          {
+            "status": 503,
+            "weight": 1
+          },
+          {
+            "status": 429,
+            "weight": 1
+          }
+        ],
+        "body": "{\"error\":\"Injected by chaos engine\"}",
+        "retryAfterSeconds": 5
+      },
+      "connectionReset": {
+        "probability": 0.05,
+        "dropAfterBytes": 32
+      },
+      "malformedBody": {
+        "probability": 0.0,
+        "truncateAtPercent": 50
+      }
+    }
+  ]
+}

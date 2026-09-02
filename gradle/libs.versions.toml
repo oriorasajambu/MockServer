@@ -36,6 +36,9 @@ arch-core = "2.2.0"
 mockk = "1.14.11"
 turbine = "1.2.1"
 room = "2.8.4"
+ktor = "3.5.2"
+kaml = "0.104.0"
+zxing = "3.5.3"
 work = "2.11.2"
 hilt-work = "1.4.0"
 
@@ -101,6 +104,22 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 
+# Embedded HTTP server — the app *is* a server, so Ktor sits where a client library normally
+# would. CIO is the pure-Kotlin engine: no Netty, no Java NIO frameworks, and it suspends rather
+# than blocking a thread per connection, which is what makes a 30-second chaos delay free.
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor" }
+ktor-server-cio = { group = "io.ktor", name = "ktor-server-cio", version.ref = "ktor" }
+ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", version.ref = "ktor" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+
+# YAML for OpenAPI import. kaml parses into kotlinx.serialization's tree, so JSON and YAML specs
+# converge on one traversal instead of two.
+kaml = { group = "com.charleskorn.kaml", name = "kaml", version.ref = "kaml" }
+
+# QR encoding only. `core` is the encoder; `android-core`/`android-embedded` (the scanner and its
+# camera permission) are deliberately absent.
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+
 # Background sync — SyncWorker drains the outbox.
 work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 work-testing = { group = "androidx.work", name = "work-testing", version.ref = "work" }
@@ -160,7 +179,7 @@ kotlin-serializable = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 # Plugins defined by this project
-minion-android-library = { id = "minion.android.library" }
+mockserver-android-library = { id = "mockserver.android.library" }
 
 [bundles]
 jetpack = [
@@ -208,12 +227,10 @@ reactive = [
     "kotlin-reflect"
 ]
 
-networking = [
-    "okhttp-urlconnection",
-    "okhttp-logging",
-    "retrofit-core",
-    "retrofit-converter-gson",
-    "gson"
+# The embedded server. Not a "networking" bundle: nothing here makes an outbound call.
+server = [
+    "ktor-server-core",
+    "ktor-server-cio",
 ]
 
 unit-test = [

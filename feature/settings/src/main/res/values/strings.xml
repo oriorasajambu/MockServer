@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy for Settings, the import flow, and the chaos profile editor. -->
+<resources>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_server">Server</string>
+    <string name="settings_section_access">Access</string>
+    <string name="settings_section_chaos">Chaos</string>
+    <string name="settings_section_traffic">Traffic log</string>
+    <string name="settings_section_unmatched">Unmatched requests</string>
+    <string name="settings_section_data">Import and export</string>
+    <string name="settings_section_battery">Battery</string>
+
+    <string name="settings_port">Port</string>
+    <string name="settings_port_help">1024–65535. If the port is taken, the next ten are tried.</string>
+
+    <string name="settings_api_key">Require an API key</string>
+    <string name="settings_api_key_header">Header name</string>
+    <string name="settings_regenerate">Regenerate</string>
+
+    <string name="settings_edit_profiles">Edit chaos profiles</string>
+    <string name="settings_seed">Chaos seed</string>
+    <string name="settings_seed_help">The same seed replays the same sequence of failures, so a flaky result can be reproduced on demand.</string>
+    <string name="settings_seed_regenerated">New chaos seed: %1$s</string>
+
+    <string name="settings_log_capacity">Entries kept</string>
+    <string name="settings_log_capacity_help">50–2000. The log is held in memory and cleared when the app stops.</string>
+
+    <string name="settings_unmatched_status">Status</string>
+    <string name="settings_unmatched_body">Body</string>
+    <string name="settings_unmatched_help">{{path}} and {{method}} are replaced with what the client actually asked for.</string>
+
+    <string name="settings_import">Import a file</string>
+    <string name="settings_export_everything">Everything</string>
+    <string name="settings_export_saved">Saved as %1$s</string>
+
+    <string name="settings_battery_help">Battery optimisation can stop the server while the screen is off. Exempting this app keeps a long session alive.</string>
+    <string name="settings_battery_action">Open battery settings</string>
+
+    <string name="settings_restart_required">The server is running with the previous %1$s. Restart to apply.</string>
+    <string name="settings_restart">Restart server</string>
+    <string name="settings_field_port">port</string>
+    <string name="settings_field_bind">bind address</string>
+    <string name="settings_field_api_key">API key</string>
+
+    <!-- Import -->
+    <string name="import_title">Import routes</string>
+    <string name="import_body">Reads OpenAPI 3.0 and 3.1 (JSON or YAML), Postman v2.1 collections, and HAR captures. Nothing is written until you have seen what is in the file.</string>
+    <string name="import_pick">Choose a file</string>
+    <string name="import_parsing">Reading the file…</string>
+    <plurals name="import_found">
+        <item quantity="one">%1$d route found in a %2$s document</item>
+        <item quantity="other">%1$d routes found in a %2$s document</item>
+    </plurals>
+    <plurals name="import_needs_body">
+        <item quantity="one">%1$d has no example response, and will be imported with an empty body.</item>
+        <item quantity="other">%1$d have no example response, and will be imported with an empty body.</item>
+    </plurals>
+    <string name="import_no_example">No example response in the source</string>
+    <string name="import_new_collection">New collection</string>
+    <string name="import_collection_name">Collection name</string>
+    <string name="import_collection_base_path">Base path</string>
+    <string name="import_select_all">Select all</string>
+    <string name="import_select_none">Select none</string>
+    <string name="import_conflict">Already exists as \"%1$s\"</string>
+    <string name="import_skip">Skip</string>
+    <string name="import_replace">Replace</string>
+    <string name="import_keep_both">Keep both</string>
+    <plurals name="import_commit">
+        <item quantity="one">Import %1$d route</item>
+        <item quantity="other">Import %1$d routes</item>
+    </plurals>
+    <plurals name="import_done">
+        <item quantity="one">Imported %1$d route</item>
+        <item quantity="other">Imported %1$d routes</item>
+    </plurals>
+
+    <!-- Chaos -->
+    <string name="chaos_title">Chaos profiles</string>
+    <string name="chaos_edit_title">Edit profile</string>
+    <string name="chaos_new">New profile</string>
+    <string name="chaos_delete">Delete</string>
+    <string name="chaos_name">Name</string>
+    <string name="chaos_delay">Fixed delay (ms)</string>
+    <string name="chaos_delay_help">Applied to every response. Capped at 60000 ms.</string>
+    <string name="chaos_error_probability">Inject an error status</string>
+    <string name="chaos_error_help">Replaces the response with 500, 503 or 429.</string>
+    <string name="chaos_reset_probability">Kill the connection</string>
+    <string name="chaos_reset_help">Writes part of the body and then closes the socket without a clean end.</string>
+    <string name="chaos_reset_bytes">Bytes written before the reset</string>
+    <string name="chaos_malformed_probability">Send a truncated body</string>
+    <string name="chaos_malformed_help">Content-Length still declares the full length, so a strict client reports an incomplete body.</string>
+    <string name="chaos_malformed_percent">Percent of the body sent</string>
+    <string name="chaos_precedence_note">At most one of these three fires per request, in the order shown. A delay applies as well as whichever one fires.</string>
+    <string name="chaos_summary">errors %1$d%%, resets %2$d%%, truncated %3$d%%</string>
+    <string name="chaos_summary_off">No chaos</string>
+    <string name="chaos_save">Save</string>
+    <string name="chaos_cancel">Cancel</string>
+
+</resources>

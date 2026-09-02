@@ -7,5 +7,9 @@
   file from becoming a thousand-line dumping ground nobody can safely delete from.
 -->
 <resources>
-    <string name="app_name">Android Scaffold</string>
+    <string name="app_name">Mock Server</string>
+    <string name="tab_server">Server</string>
+    <string name="tab_routes">Routes</string>
+    <string name="tab_traffic">Traffic</string>
+    <string name="tab_settings">Settings</string>
 </resources>

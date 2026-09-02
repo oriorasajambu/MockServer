@@ -9,7 +9,7 @@
  * module must stay consumable by pure-Kotlin `:core:domain`. It lives in `:core:ui` instead.
  */
 plugins {
-    id("minion.jvm.library")
+    id("mockserver.jvm.library")
 }
 
 dependencies {

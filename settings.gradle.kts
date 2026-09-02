@@ -26,7 +26,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AndroidScaffold"
+rootProject.name = "MockServer"
 
 // The only module that may see both a feature and a repository implementation: it assembles the
 // navigation graph and the DI graph, and does nothing else.
@@ -45,14 +45,24 @@ include(":core:navigation")
 include(":core:designsystem")
 include(":core:ui")
 
+// The embedded server. Pure Kotlin: Ktor CIO has no Android dependency, so keeping the engine
+// out of an Android module means the request pipeline can be exercised by `testApplication`
+// on the JVM, with no device and no emulator (SPEC §14).
+include(":core:server")
+
+// Import/export wire formats. Pure Kotlin, so every importer is testable against golden files.
+include(":core:importexport")
+
 // Data
-include(":core:network")
 include(":core:data")
 
 // Test infrastructure, consumed via testImplementation.
 include(":core:testing")
 
-// Features
-// One line per feature module, e.g. include(":feature:home").
-// `python scripts/scaffold_feature.py --name Home` generates the module and prints the line.
+// Features — one per screen area (SPEC §10.1). The four bottom-bar tabs plus the full-screen
+// destinations they push to.
+include(":feature:server")
+include(":feature:routes")
+include(":feature:traffic")
+include(":feature:settings")
 

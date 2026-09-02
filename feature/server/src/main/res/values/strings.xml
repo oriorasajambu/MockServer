@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy for the Server tab. Lives with the screen that shows it. -->
+<resources>
+
+    <string name="server_start">Start server</string>
+    <string name="server_stop">Stop server</string>
+    <string name="server_starting">Starting…</string>
+    <string name="server_stopping">Stopping…</string>
+    <string name="server_pause">Pause — refuse requests with 503</string>
+    <string name="server_resume">Resume</string>
+
+    <string name="server_title">Server</string>
+    <string name="server_copied">Copied</string>
+    <string name="server_qr_close">Close</string>
+    <string name="server_qr_description">QR code for %1$s</string>
+
+
+
+    <string name="server_port_fallback">Port %1$d was in use — running on %2$d</string>
+    <string name="server_remember_port">Remember %1$d</string>
+
+    <string name="server_notification_off_title">Notifications are off for this app</string>
+    <string name="server_notification_off_body">The server keeps running, but without its notification you cannot stop or pause it without opening the app, and the system is more likely to reclaim the process.</string>
+    <string name="server_notification_off_action">Turn notifications on</string>
+    <string name="server_battery_title">The server was stopped in the background</string>
+    <string name="server_battery_body">Battery optimisation can kill the server while the screen is off. Exempting this app keeps a long session alive.</string>
+    <string name="server_battery_action">Open battery settings</string>
+    <string name="server_battery_dismiss">Not now</string>
+
+    <string name="server_stat_uptime">Uptime</string>
+    <string name="server_stat_requests">Requests</string>
+    <string name="server_stat_rate">Requests / min</string>
+    <string name="server_stat_rate_value">%1$d</string>
+    <string name="server_stat_unmatched">Unmatched</string>
+
+</resources>

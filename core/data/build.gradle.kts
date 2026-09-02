@@ -1,19 +1,29 @@
 /**
- * Data tier — the assembly point, and the error boundary.
+ * Data tier — persistence, the platform, and the assembly point.
  *
- * Repository implementations that satisfy `:core:domain`'s interfaces, DTO↔model mappers, and
- * the one place exceptions are allowed to exist: `safeCall` catches them here and converts them
- * into a typed `DomainError`, so nothing above this layer ever sees a `Throwable`.
+ * Repository implementations that satisfy `:core:domain`'s interfaces, Room and DataStore, and
+ * the Android half of running a server: the foreground service, the notification, the WifiLock,
+ * NSD advertisement, interface enumeration and QR encoding.
+ *
+ * The socket itself is not here — it lives in `:core:server`, which is pure Kotlin so the request
+ * pipeline can be tested without a device. This module owns the platform; that one owns the wire.
  *
  * Never imports Compose or `:core:ui`.
  */
 plugins {
-    id("minion.android.library")
-    id("minion.android.hilt")
+    id("mockserver.android.library")
+    id("mockserver.android.hilt")
+    alias(libs.plugins.kotlin.serializable)
 }
 
 android {
-    namespace = "com.minion.scaffold.core.data"
+    namespace = "com.minion.mockserver.core.data"
+}
+
+ksp {
+    // Room writes the schema JSON here so a migration can be diffed against the previous version.
+    // Without it, `exportSchema = true` is a build warning and migrations are written blind.
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -21,10 +31,24 @@ dependencies {
     // produce domain models, so both are part of this module's public surface.
     api(project(":core:common"))
     api(project(":core:domain"))
-    implementation(project(":core:network"))
 
-    // ErrorMapper matches on retrofit2.HttpException to turn a status code into a DomainError.
-    implementation(libs.retrofit.core)
+    // The Hilt component generated in :app binds MockServerRepository to the implementation in
+    // :core:server, so that type must be on :app's compile classpath.
+    api(project(":core:server"))
+    api(project(":core:importexport"))
+
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 
     implementation(libs.data.store)
+    implementation(libs.kotlin.serializable)
+
+    // Encode only. `zxing:android-core` and the embedded scanner — and the camera permission they
+    // bring — are deliberately absent (SPEC §8.5).
+    implementation(libs.zxing.core)
+
+    implementation(libs.androidx.core)
+
+    testImplementation(libs.room.testing)
 }

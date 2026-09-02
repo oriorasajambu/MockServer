@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy for the Traffic tab and one entry's detail. -->
+<resources>
+
+    <string name="traffic_title">Traffic</string>
+    <string name="traffic_detail_title">Request</string>
+    <string name="traffic_search_label">Search paths, headers and bodies</string>
+    <string name="traffic_status_class">%1$dxx</string>
+    <string name="traffic_unmatched_only">Unmatched</string>
+    <string name="traffic_clear_filters">Clear filters</string>
+    <string name="traffic_export_har">Save HAR</string>
+    <string name="traffic_share_har">Share HAR</string>
+    <string name="traffic_har_saved">Saved as %1$s</string>
+    <string name="traffic_clear">Clear log</string>
+    <string name="traffic_copied">Copied</string>
+    <plurals name="traffic_new_entries">
+        <item quantity="one">%1$d new — jump to latest</item>
+        <item quantity="other">%1$d new — jump to latest</item>
+    </plurals>
+    <plurals name="traffic_dropped">
+        <item quantity="one">%1$d entry dropped — the log could not keep up</item>
+        <item quantity="other">%1$d entries dropped — the log could not keep up</item>
+    </plurals>
+
+
+    <string name="traffic_empty_title">No requests yet</string>
+    <string name="traffic_empty_body">Start the server and point a client at the address on the Server tab. Every request shows up here, matched or not.</string>
+    <string name="traffic_filtered_empty_title">Nothing matches these filters</string>
+    <string name="traffic_filtered_empty_body">There is traffic in the log, but none of it passes the current filters.</string>
+
+    <string name="traffic_detail_request">Request</string>
+    <string name="traffic_detail_response">Response</string>
+    <string name="traffic_detail_headers">Headers</string>
+    <string name="traffic_detail_matched">Matched %1$s</string>
+    <string name="traffic_detail_chaos">Chaos: %1$d ms delay, %2$s</string>
+    <string name="traffic_detail_chaos_none">no failure injected</string>
+    <string name="traffic_detail_unresolved">Unresolved placeholders: %1$s</string>
+    <string name="traffic_detail_copy_curl">Copy as cURL</string>
+    <string name="traffic_detail_copy_body">Copy body</string>
+    <string name="traffic_detail_share">Share</string>
+    <string name="traffic_detail_pretty">Pretty</string>
+    <string name="traffic_detail_raw">Raw</string>
+    <string name="traffic_detail_create_rule">Create rule from this request</string>
+    <string name="traffic_detail_gone_title">This entry is gone</string>
+    <string name="traffic_detail_gone_body">The traffic log is a fixed-size buffer held in memory, so older entries drop off as new ones arrive.</string>
+
+</resources>

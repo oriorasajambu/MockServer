@@ -1,0 +1,32 @@
+openapi: 3.1.0
+info:
+  title: Inventory API
+  version: "2.0"
+servers:
+  - url: https://inventory.example.com/v2
+paths:
+  /items:
+    get:
+      summary: List items
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                items:
+                  - sku: A1
+                    qty: 3
+                total: 1
+  /items/{sku}:
+    put:
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  sku: A1
+                  qty: 9
