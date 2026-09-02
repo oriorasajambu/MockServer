@@ -11,17 +11,9 @@
     <string name="traffic_har_saved">Saved as %1$s</string>
     <string name="traffic_clear">Clear log</string>
     <string name="traffic_copied">Copied</string>
-    <string name="traffic_duration">%1$d ms</string>
     <string name="traffic_new_entries">%1$d new — jump to latest</string>
     <string name="traffic_dropped">%1$d entries dropped — the log could not keep up</string>
 
-    <string name="traffic_chaos">chaos</string>
-    <string name="traffic_unmatched">unmatched</string>
-    <string name="traffic_rejected">rejected</string>
-    <string name="traffic_paused">paused</string>
-    <string name="traffic_preflight">preflight</string>
-    <string name="traffic_too_large">too large</string>
-    <string name="traffic_errored">error</string>
 
     <string name="traffic_empty_title">No requests yet</string>
     <string name="traffic_empty_body">Start the server and point a client at the address on the Server tab. Every request shows up here, matched or not.</string>
@@ -31,10 +23,6 @@
     <string name="traffic_detail_request">Request</string>
     <string name="traffic_detail_response">Response</string>
     <string name="traffic_detail_headers">Headers</string>
-    <string name="traffic_detail_body">Body</string>
-    <string name="traffic_detail_no_body">No body</string>
-    <string name="traffic_detail_binary">Binary, %1$d bytes — not stored as text</string>
-    <string name="traffic_detail_truncated">Truncated — the body was longer than the log keeps</string>
     <string name="traffic_detail_matched">Matched %1$s</string>
     <string name="traffic_detail_chaos">Chaos: %1$d ms delay, %2$s</string>
     <string name="traffic_detail_chaos_none">no failure injected</string>

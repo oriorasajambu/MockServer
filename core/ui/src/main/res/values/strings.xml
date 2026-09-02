@@ -44,5 +44,31 @@
     <string name="chaos_banner_title">Chaos: ON</string>
     <string name="chaos_banner_body">Responses may be delayed, replaced with errors, truncated or cut off — profile \"%1$s\".</string>
 
+    <!-- The live-log row: duration, and the one-word reason a row is not a plain match. -->
+    <string name="traffic_duration">%1$d ms</string>
+    <string name="traffic_chaos">chaos</string>
+    <string name="traffic_unmatched">unmatched</string>
+    <string name="traffic_rejected">rejected</string>
+    <string name="traffic_paused">paused</string>
+    <string name="traffic_preflight">preflight</string>
+    <string name="traffic_too_large">too large</string>
+    <string name="traffic_errored">error</string>
+
+    <string name="body_title">Body</string>
+    <string name="body_binary">Binary, %1$d bytes — not stored as text</string>
+    <string name="body_none">No body</string>
+    <string name="body_truncated">Truncated — the body was longer than the log keeps</string>
+
+    <!-- The address block: the hero of the server screen. -->
+    <string name="server_copy">Copy</string>
+    <string name="server_qr">QR</string>
+    <string name="server_interface">on %1$s</string>
+    <string name="server_more_addresses">%1$d more addresses</string>
+    <string name="server_hide_addresses">Hide other addresses</string>
+    <string name="server_vpn_note">VPN — clients on your LAN cannot reach this address</string>
+    <string name="server_advertised_as">Advertised as %1$s.local</string>
+    <string name="server_no_network">No network — localhost only</string>
+    <string name="server_no_network_detail">Connect to Wi‑Fi or turn on the hotspot to serve other devices. Apps on this phone can still reach the server.</string>
+
     <string name="server_open_access_note">Anyone on this network can reach these endpoints.</string>
 </resources>

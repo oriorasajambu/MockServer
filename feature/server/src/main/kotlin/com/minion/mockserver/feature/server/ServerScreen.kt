@@ -39,7 +39,10 @@ import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.BoundAddress
 import com.minion.mockserver.core.domain.model.NetworkAddress
 import com.minion.mockserver.core.domain.model.ServerStatus
+import com.minion.mockserver.core.ui.component.AddressBlock
 import com.minion.mockserver.core.ui.component.ChaosBanner
+import com.minion.mockserver.core.ui.component.NoticeCard
+import com.minion.mockserver.core.ui.component.StatRow
 import com.minion.mockserver.core.ui.component.OpenAccessNote
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -119,7 +122,18 @@ internal fun ServerContent(
             .padding(Dimens.space),
         verticalArrangement = Arrangement.spacedBy(Dimens.space),
     ) {
-        AddressBlock(state = state, onIntent = onIntent)
+        AddressBlock(
+            primaryBaseUrl = state.primaryBaseUrl,
+            primaryAddress = state.primaryAddress,
+            loopbackUrl = state.loopbackUrl,
+            extraAddresses = state.addresses.drop(1),
+            boundPort = state.boundPort,
+            isExpanded = state.isAddressListExpanded,
+            advertisedName = state.advertisedName,
+            onCopy = { onIntent(ServerIntent.CopyAddress(it)) },
+            onShowQr = { onIntent(ServerIntent.ShowQr) },
+            onToggleExpanded = { onIntent(ServerIntent.ToggleAddressList) },
+        )
 
         StartStopButton(state = state, onIntent = onIntent)
 
@@ -146,154 +160,32 @@ internal fun ServerContent(
             OpenAccessNote()
         }
 
+        // The server runs without the notification; what is lost is stated plainly (SPEC §13):
+        // the ability to stop it without opening the app, and a signal to the system that the
+        // process is doing something the user asked for.
         if (state.showNotificationWarning) {
-            NotificationWarning(onIntent = onIntent)
+            NoticeCard(
+                title = stringResource(R.string.server_notification_off_title),
+                body = stringResource(R.string.server_notification_off_body),
+                actionLabel = stringResource(R.string.server_notification_off_action),
+                onAction = { onIntent(ServerIntent.OpenNotificationSettings) },
+            )
         }
 
+        // Never on first launch: this appears only once the app has detected it was killed while
+        // the server was running (SPEC §8.2).
         if (state.showBatteryOptimisationCard) {
-            BatteryOptimisationCard(onIntent = onIntent)
+            NoticeCard(
+                title = stringResource(R.string.server_battery_title),
+                body = stringResource(R.string.server_battery_body),
+                actionLabel = stringResource(R.string.server_battery_action),
+                onAction = { onIntent(ServerIntent.RequestBatteryExemption) },
+                dismissLabel = stringResource(R.string.server_battery_dismiss),
+                onDismiss = { onIntent(ServerIntent.DismissBatteryCard) },
+            )
         }
 
         Stats(state = state)
-    }
-}
-
-/**
- * The hero: the winning address, large and monospaced, with a copy button and a QR.
- *
- * `localhost` gets its own permanent row rather than being one of the ranked addresses, because
- * it answers a different question — "how does another app on this phone reach it" — and it is the
- * only row that is still correct when there is no network at all.
- */
-@Composable
-private fun AddressBlock(
-    state: ServerState,
-    onIntent: (ServerIntent) -> Unit,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = Dimens.elevationCard),
-    ) {
-        Column(
-            modifier = Modifier.padding(Dimens.space),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-        ) {
-            val primary = state.primaryBaseUrl
-            if (primary == null) {
-                Text(
-                    text = stringResource(R.string.server_no_network),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = stringResource(R.string.server_no_network_detail),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                Text(
-                    text = primary,
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = Dimens.heroAddressTextSize,
-                    ),
-                )
-                state.primaryAddress?.let { address ->
-                    Text(
-                        text = stringResource(R.string.server_interface, address.interfaceName),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-                    TextButton(onClick = { onIntent(ServerIntent.CopyAddress(primary)) }) {
-                        Text(stringResource(R.string.server_copy))
-                    }
-                    TextButton(onClick = { onIntent(ServerIntent.ShowQr) }) {
-                        Text(stringResource(R.string.server_qr))
-                    }
-                }
-            }
-
-            HorizontalDivider()
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(
-                    text = state.loopbackUrl,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                )
-                TextButton(onClick = { onIntent(ServerIntent.CopyAddress(state.loopbackUrl)) }) {
-                    Text(stringResource(R.string.server_copy))
-                }
-            }
-
-            val extras = state.addresses.drop(1)
-            if (extras.isNotEmpty()) {
-                TextButton(onClick = { onIntent(ServerIntent.ToggleAddressList) }) {
-                    Text(
-                        if (state.isAddressListExpanded) {
-                            stringResource(R.string.server_hide_addresses)
-                        } else {
-                            stringResource(R.string.server_more_addresses, extras.size)
-                        },
-                    )
-                }
-                if (state.isAddressListExpanded) {
-                    extras.forEach { address ->
-                        AddressRow(
-                            address = address,
-                            port = state.boundPort,
-                            onCopy = { onIntent(ServerIntent.CopyAddress(it)) },
-                        )
-                    }
-                }
-            }
-
-            state.advertisedName?.let { name ->
-                Text(
-                    text = stringResource(R.string.server_advertised_as, name),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AddressRow(
-    address: NetworkAddress,
-    port: Int,
-    onCopy: (String) -> Unit,
-) {
-    val url = address.toBaseUrl(port)
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Column {
-            Text(
-                text = url,
-                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-            )
-            Text(
-                text = when (address.kind) {
-                    // The VPN row carries its own explanation: it looks like a perfectly good
-                    // address and no LAN client can route to it (SPEC §13).
-                    NetworkAddress.Kind.VPN -> stringResource(R.string.server_vpn_note)
-                    else -> address.interfaceName
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        TextButton(onClick = { onCopy(url) }) {
-            Text(stringResource(R.string.server_copy))
-        }
     }
 }
 
@@ -350,62 +242,6 @@ private fun FallbackNotice(
     }
 }
 
-/**
- * The server runs without the notification; what is lost is stated plainly (SPEC §13).
- *
- * Two things go with the notification: the ability to stop the server without opening the app,
- * and a signal to the system that the process is doing something the user asked for. Neither is
- * worth a modal, and neither is worth hiding — so it is a card with a way to fix it.
- */
-@Composable
-private fun NotificationWarning(onIntent: (ServerIntent) -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(Dimens.space),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-        ) {
-            Text(
-                text = stringResource(R.string.server_notification_off_title),
-                style = MaterialTheme.typography.titleSmall,
-            )
-            Text(
-                text = stringResource(R.string.server_notification_off_body),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            TextButton(onClick = { onIntent(ServerIntent.OpenNotificationSettings) }) {
-                Text(stringResource(R.string.server_notification_off_action))
-            }
-        }
-    }
-}
-
-@Composable
-private fun BatteryOptimisationCard(onIntent: (ServerIntent) -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(Dimens.space),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-        ) {
-            Text(
-                text = stringResource(R.string.server_battery_title),
-                style = MaterialTheme.typography.titleSmall,
-            )
-            Text(
-                text = stringResource(R.string.server_battery_body),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-                TextButton(onClick = { onIntent(ServerIntent.RequestBatteryExemption) }) {
-                    Text(stringResource(R.string.server_battery_action))
-                }
-                TextButton(onClick = { onIntent(ServerIntent.DismissBatteryCard) }) {
-                    Text(stringResource(R.string.server_battery_dismiss))
-                }
-            }
-        }
-    }
-}
-
 @Composable
 private fun Stats(state: ServerState) {
     Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceHalf)) {
@@ -424,20 +260,6 @@ private fun Stats(state: ServerState) {
         StatRow(
             label = stringResource(R.string.server_stat_unmatched),
             value = state.unmatchedCount.toString(),
-        )
-    }
-}
-
-@Composable
-private fun StatRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
         )
     }
 }

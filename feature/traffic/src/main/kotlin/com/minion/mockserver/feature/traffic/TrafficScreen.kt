@@ -1,6 +1,5 @@
 package com.minion.mockserver.feature.traffic
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,8 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,11 +36,9 @@ import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.ui.component.EmptyState
-import com.minion.mockserver.core.ui.component.MethodBadge
-import com.minion.mockserver.core.ui.component.StatusPill
+import com.minion.mockserver.core.ui.component.TrafficRow
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
-import com.minion.mockserver.core.ui.util.DateUtil
 import com.minion.mockserver.core.ui.util.copyToClipboard
 import com.minion.mockserver.core.ui.util.rememberDocumentSaver
 import com.minion.mockserver.core.ui.util.shareText
@@ -249,66 +244,6 @@ private fun SearchAndFilters(
  * the end — `/api/v1/users/42` and `/api/v1/users/43` differ in the last two characters, and
  * end-ellipsis would render them identical.
  */
-@Composable
-private fun TrafficRow(
-    entry: TrafficEntry,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = Dimens.space, vertical = Dimens.spaceMedium),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-    ) {
-        MethodBadge(entry.method)
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = entry.path,
-                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                maxLines = 1,
-                overflow = TextOverflow.MiddleEllipsis,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-                Text(
-                    text = DateUtil.formatTime(entry.receivedAt),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = stringResource(R.string.traffic_duration, entry.durationMillis),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                entry.outcomeLabel()?.let { label ->
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            }
-        }
-
-        StatusPill(entry.statusCode)
-    }
-}
-
-/** The one-word reason a row is not an ordinary match, or `null` when it is. */
-@Composable
-private fun TrafficEntry.outcomeLabel(): String? = when (outcome) {
-    TrafficEntry.Outcome.MATCHED -> chaosApplied?.let { stringResource(R.string.traffic_chaos) }
-    TrafficEntry.Outcome.UNMATCHED -> stringResource(R.string.traffic_unmatched)
-    TrafficEntry.Outcome.REJECTED -> stringResource(R.string.traffic_rejected)
-    TrafficEntry.Outcome.PAUSED -> stringResource(R.string.traffic_paused)
-    TrafficEntry.Outcome.PREFLIGHT -> stringResource(R.string.traffic_preflight)
-    TrafficEntry.Outcome.TOO_LARGE -> stringResource(R.string.traffic_too_large)
-    TrafficEntry.Outcome.ERRORED -> stringResource(R.string.traffic_errored)
-}
-
 private val METHODS = listOf("GET", "POST", "PUT", "PATCH", "DELETE")
 private val STATUS_CLASSES = listOf(2, 3, 4, 5)
 private const val CLIPBOARD_LABEL = "cURL"

@@ -17,7 +17,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,6 +34,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ChaosProfile
+import com.minion.mockserver.core.ui.component.LabelledTextField
+import com.minion.mockserver.core.ui.component.SectionTitle
+import com.minion.mockserver.core.ui.component.ToggleRow
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
 import com.minion.mockserver.core.ui.util.shareText
@@ -104,15 +106,13 @@ internal fun SettingsContent(
 
         SectionTitle(stringResource(R.string.settings_section_server))
 
-        OutlinedTextField(
+        LabelledTextField(
             value = state.portInput,
             onValueChange = { onIntent(SettingsIntent.UpdatePort(it)) },
-            label = { Text(stringResource(R.string.settings_port)) },
-            supportingText = { Text(stringResource(R.string.settings_port_help)) },
+            label = stringResource(R.string.settings_port),
+            hint = stringResource(R.string.settings_port_help),
             isError = state.error != null,
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
+            numeric = true,
         )
 
         HorizontalDivider()
@@ -124,12 +124,10 @@ internal fun SettingsContent(
             onCheckedChange = { onIntent(SettingsIntent.SetApiKeyEnabled(it)) },
         )
         if (state.settings.apiKeyEnabled) {
-            OutlinedTextField(
+            LabelledTextField(
                 value = state.settings.apiKeyHeaderName,
                 onValueChange = { onIntent(SettingsIntent.UpdateApiKeyHeader(it)) },
-                label = { Text(stringResource(R.string.settings_api_key_header)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                label = stringResource(R.string.settings_api_key_header),
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -198,14 +196,12 @@ internal fun SettingsContent(
         HorizontalDivider()
         SectionTitle(stringResource(R.string.settings_section_traffic))
 
-        OutlinedTextField(
+        LabelledTextField(
             value = state.logCapacityInput,
             onValueChange = { onIntent(SettingsIntent.UpdateLogCapacity(it)) },
-            label = { Text(stringResource(R.string.settings_log_capacity)) },
-            supportingText = { Text(stringResource(R.string.settings_log_capacity_help)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.settings_log_capacity),
+            hint = stringResource(R.string.settings_log_capacity_help),
+            numeric = true,
         )
 
         HorizontalDivider()
@@ -290,23 +286,6 @@ private fun SettingsState.RestartField.label(): String = when (this) {
     SettingsState.RestartField.PORT -> stringResource(R.string.settings_field_port)
     SettingsState.RestartField.BIND_ADDRESS -> stringResource(R.string.settings_field_bind)
     SettingsState.RestartField.API_KEY -> stringResource(R.string.settings_field_api_key)
-}
-
-@Composable
-private fun SectionTitle(text: String) {
-    Text(text = text, style = MaterialTheme.typography.titleSmall)
-}
-
-@Composable
-private fun ToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
-    }
 }
 
 @Preview

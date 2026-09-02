@@ -22,15 +22,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.TrafficEntry
-import com.minion.mockserver.core.domain.util.JsonTree
+import com.minion.mockserver.core.ui.component.BodyBlock
 import com.minion.mockserver.core.ui.component.EmptyState
+import com.minion.mockserver.core.ui.component.HeaderTable
 import com.minion.mockserver.core.ui.component.MethodBadge
 import com.minion.mockserver.core.ui.component.StatusPill
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
+import com.minion.mockserver.core.ui.R as UiR
 import com.minion.mockserver.core.ui.util.copyToClipboard
 import com.minion.mockserver.core.ui.util.shareText
 import com.minion.mockserver.core.ui.util.showToast
@@ -172,7 +176,7 @@ private fun Header(
             MethodBadge(entry.method)
             StatusPill(entry.statusCode)
             Text(
-                text = stringResource(R.string.traffic_duration, entry.durationMillis),
+                text = stringResource(UiR.string.traffic_duration, entry.durationMillis),
                 style = MaterialTheme.typography.labelMedium,
             )
         }
@@ -238,66 +242,38 @@ private fun Header(
     }
 }
 
-@Composable
-private fun HeaderTable(title: String, headers: Map<String, String>) {
-    if (headers.isEmpty()) return
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceHalf)) {
-        Text(title, style = MaterialTheme.typography.titleSmall)
-        headers.forEach { (name, value) ->
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.weight(WEIGHT_NAME),
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
-                    modifier = Modifier.weight(WEIGHT_VALUE),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BodyBlock(
-    body: String?,
-    byteCount: Int,
-    truncated: Boolean,
-    prettyPrint: Boolean,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceHalf)) {
-        Text(stringResource(R.string.traffic_detail_body), style = MaterialTheme.typography.titleSmall)
-        when {
-            // A binary body is reported by size, never rendered as mojibake (SPEC §5.4).
-            body == null && byteCount > 0 -> Text(
-                text = stringResource(R.string.traffic_detail_binary, byteCount),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            body.isNullOrBlank() -> Text(
-                text = stringResource(R.string.traffic_detail_no_body),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            else -> Text(
-                text = if (prettyPrint) JsonTree.prettify(body) else body,
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-            )
-        }
-        if (truncated) {
-            Text(
-                text = stringResource(R.string.traffic_detail_truncated),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error,
-            )
-        }
-    }
-}
-
 private const val CLIPBOARD_LABEL = "Traffic entry"
-private const val WEIGHT_NAME = 1f
-private const val WEIGHT_VALUE = 2f
+
+@Preview(name = "Traffic detail — unmatched")
+@Composable
+internal fun TrafficDetailContentPreview() {
+    AppTheme {
+        TrafficDetailContent(
+            state = TrafficDetailState(
+                entry = TrafficEntry(
+                    id = "1",
+                    receivedAt = 0L,
+                    clientIp = "192.168.1.22",
+                    method = "POST",
+                    path = "/api/v1/orders",
+                    requestHeaders = mapOf("Content-Type" to listOf("application/json")),
+                    requestBody = """{"sku":"A-1","qty":2}""",
+                    statusCode = 404,
+                    responseHeaders = mapOf("Content-Type" to "application/json; charset=utf-8"),
+                    responseBody = """{"error":"No mock route matched"}""",
+                    durationMillis = 7L,
+                    unresolvedPlaceholders = listOf("path.orderId"),
+                ),
+            ),
+            onIntent = {},
+        )
+    }
+}
+
+@Preview(name = "Traffic detail — entry dropped")
+@Composable
+internal fun TrafficDetailContentMissingPreview() {
+    AppTheme {
+        TrafficDetailContent(state = TrafficDetailState(entry = null), onIntent = {})
+    }
+}
