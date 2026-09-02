@@ -2,7 +2,6 @@ package com.rio.mockserver.core.domain.usecase.importexport
 
 import com.rio.mockserver.core.common.result.AppResult
 import com.rio.mockserver.core.domain.model.ChaosProfile
-import com.rio.mockserver.core.domain.model.MockCollection
 import com.rio.mockserver.core.domain.model.MockRoute
 import com.rio.mockserver.core.domain.repository.ChaosRepository
 import com.rio.mockserver.core.domain.repository.CollectionRepository
@@ -83,12 +82,4 @@ class ExportPostmanCollectionUseCase @Inject constructor(
     /** Exactly what this export will drop. Shown before the file is written. */
     suspend fun lossWarnings(collectionId: String): List<String> =
         exportGateway.postmanLossWarnings(routeRepository.observeRoutes(collectionId).first())
-}
-
-/** Collections and their routes, for the export picker. */
-class GetExportableCollectionsUseCase @Inject constructor(
-    private val collectionRepository: CollectionRepository,
-) {
-    suspend operator fun invoke(): List<MockCollection> =
-        collectionRepository.observeCollections().first()
 }
