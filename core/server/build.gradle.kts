@@ -24,4 +24,8 @@ dependencies {
     api(project(":core:domain"))
 
     implementation(libs.bundles.server)
+
+    // `testApplication` plus the in-VM client it hands back, which is how the request pipeline is
+    // exercised end to end with no device and no bound socket (SPEC §14, tier 2).
+    testImplementation(libs.ktor.server.test.host)
 }

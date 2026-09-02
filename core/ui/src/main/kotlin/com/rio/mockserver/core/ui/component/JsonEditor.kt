@@ -134,7 +134,10 @@ private data class JsonPalette(
     val punctuation: Color,
 )
 
-@Composable
+/**
+ * Not `@Composable`: it reads plain properties off a [ColorScheme] that has already been
+ * resolved, and it is called from inside `remember`, where a composable call is illegal.
+ */
 private fun ColorScheme.toJsonPalette() = JsonPalette(
     key = primary,
     string = tertiary,

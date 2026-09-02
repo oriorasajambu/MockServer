@@ -253,12 +253,12 @@ private fun RestartPrompt(
     state: SettingsState,
     onIntent: (SettingsIntent) -> Unit,
 ) {
+    // Resolved through `map` — an inline lambda, so the composable `label()` is legal inside it —
+    // before the join, which takes a non-inline transform and would not be.
+    val staleFields = state.restartRequired.map { it.label() }.joinToString(FIELD_SEPARATOR)
     Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
         Text(
-            text = stringResource(
-                R.string.settings_restart_required,
-                state.restartRequired.joinToString(", ") { it.label() },
-            ),
+            text = stringResource(R.string.settings_restart_required, staleFields),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.tertiary,
         )
@@ -306,3 +306,6 @@ internal fun SettingsContentPreview() {
         )
     }
 }
+
+/** Between the names of the settings that need a restart. */
+private const val FIELD_SEPARATOR = ", "

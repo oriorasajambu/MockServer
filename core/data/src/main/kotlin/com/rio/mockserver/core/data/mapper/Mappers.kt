@@ -63,7 +63,7 @@ internal object Mappers {
         matchers = decode(matchersJson, MATCHER_LIST, emptyList()),
         response = decode(responseJson, MockResponse.serializer(), MockResponse()),
         chaosOverride = chaosOverrideJson?.let {
-            decode(it, ChaosProfile.serializer(), null)
+            decodeOrNull(it, ChaosProfile.serializer())
         },
         isEnabled = isEnabled,
         createdAt = createdAt,
@@ -121,5 +121,19 @@ internal object Mappers {
         JsonTree.Permissive.decodeFromString(serializer, json)
     } catch (_: Exception) {
         fallback
+    }
+
+    /**
+     * [decode] for a nullable column: a malformed value degrades to "no override" rather than to
+     * a fabricated default, because inventing a chaos profile nobody wrote would inject failures
+     * into a route that never asked for them.
+     */
+    private fun <T : Any> decodeOrNull(
+        json: String,
+        serializer: kotlinx.serialization.KSerializer<T>,
+    ): T? = try {
+        JsonTree.Permissive.decodeFromString(serializer, json)
+    } catch (_: Exception) {
+        null
     }
 }

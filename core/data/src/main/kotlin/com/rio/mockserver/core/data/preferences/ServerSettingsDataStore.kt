@@ -119,9 +119,6 @@ class ServerSettingsDataStore @Inject constructor(
 
     private fun PauseSpec.toStored() = StoredPause(isEnabled, statusCode, retryAfterSeconds, body)
 
-    private companion object {
-        val PAUSE_SERIALIZER = StoredPause.serializer()
-    }
 
     /** DataStore keys. Names are stable: renaming one silently resets that setting. */
     private object Keys {
@@ -143,5 +140,7 @@ class ServerSettingsDataStore @Inject constructor(
     companion object {
         /** The DataStore file name. */
         const val FILE_NAME = "server_settings"
+
+        private val PAUSE_SERIALIZER = StoredPause.serializer()
     }
 }
