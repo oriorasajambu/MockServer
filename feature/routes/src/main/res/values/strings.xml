@@ -25,8 +25,6 @@
     </plurals>
     <string name="routes_export_json">Native JSON</string>
     <string name="routes_export_postman">Postman v2.1</string>
-    <string name="routes_export_share">Share</string>
-    <string name="routes_export_save">Save to a file</string>
     <string name="routes_export_saved">Saved as %1$s</string>
     <string name="routes_export_anyway">Export anyway</string>
     <string name="routes_cancel">Cancel</string>

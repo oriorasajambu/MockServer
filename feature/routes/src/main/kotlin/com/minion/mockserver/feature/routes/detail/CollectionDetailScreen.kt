@@ -36,6 +36,7 @@ import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.MockRoute
 import com.minion.mockserver.core.ui.component.AppScaffold
+import com.minion.mockserver.core.ui.component.ExportActionRow
 import com.minion.mockserver.core.ui.component.RouteRow
 import com.minion.mockserver.core.ui.component.EmptyState
 import com.minion.mockserver.core.ui.component.MethodBadge
@@ -156,15 +157,43 @@ internal fun CollectionDetailContent(
                         color = MaterialTheme.colorScheme.tertiary,
                     )
                 }
-                ExportRow(
+                ExportActionRow(
                     label = stringResource(R.string.routes_export_json),
-                    format = ExportFormat.NATIVE_JSON,
-                    onIntent = onIntent,
+                    onShare = {
+                        onIntent(
+                            CollectionDetailIntent.Export(
+                                ExportFormat.NATIVE_JSON,
+                                ExportDestination.SHARE,
+                            ),
+                        )
+                    },
+                    onSave = {
+                        onIntent(
+                            CollectionDetailIntent.Export(
+                                ExportFormat.NATIVE_JSON,
+                                ExportDestination.FILE,
+                            ),
+                        )
+                    },
                 )
-                ExportRow(
+                ExportActionRow(
                     label = stringResource(R.string.routes_export_postman),
-                    format = ExportFormat.POSTMAN,
-                    onIntent = onIntent,
+                    onShare = {
+                        onIntent(
+                            CollectionDetailIntent.Export(
+                                ExportFormat.POSTMAN,
+                                ExportDestination.SHARE,
+                            ),
+                        )
+                    },
+                    onSave = {
+                        onIntent(
+                            CollectionDetailIntent.Export(
+                                ExportFormat.POSTMAN,
+                                ExportDestination.FILE,
+                            ),
+                        )
+                    },
                 )
             }
 
@@ -193,44 +222,6 @@ internal fun CollectionDetailContent(
                     }
                 }
             }
-        }
-    }
-}
-
-/**
- * One format, both destinations (SPEC §9.2).
- *
- * Two buttons rather than one button and a chooser dialog: exporting is already a deliberate act,
- * and a phone is the wrong place to spend a tap asking a question whose answer fits on screen.
- */
-@Composable
-private fun ExportRow(
-    label: String,
-    format: ExportFormat,
-    onIntent: (CollectionDetailIntent) -> Unit,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        TextButton(
-            onClick = {
-                onIntent(CollectionDetailIntent.Export(format, ExportDestination.SHARE))
-            },
-        ) {
-            Text(stringResource(R.string.routes_export_share))
-        }
-        TextButton(
-            onClick = {
-                onIntent(CollectionDetailIntent.Export(format, ExportDestination.FILE))
-            },
-        ) {
-            Text(stringResource(R.string.routes_export_save))
         }
     }
 }

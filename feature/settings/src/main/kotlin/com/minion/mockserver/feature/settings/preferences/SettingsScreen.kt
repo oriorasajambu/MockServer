@@ -37,6 +37,7 @@ import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.ui.component.LabelledTextField
 import com.minion.mockserver.core.ui.component.AppScaffold
+import com.minion.mockserver.core.ui.component.ExportActionRow
 import com.minion.mockserver.core.ui.component.SectionTitle
 import com.minion.mockserver.core.ui.component.ToggleRow
 import com.minion.mockserver.core.ui.error.toMessageRes
@@ -237,17 +238,17 @@ internal fun SettingsContent(
             HorizontalDivider()
             SectionTitle(stringResource(R.string.settings_section_data))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-                Button(onClick = { onIntent(SettingsIntent.OpenImport) }) {
-                    Text(stringResource(R.string.settings_import))
-                }
-                TextButton(onClick = { onIntent(SettingsIntent.ExportAll) }) {
-                    Text(stringResource(R.string.settings_export_share))
-                }
-                TextButton(onClick = { onIntent(SettingsIntent.SaveExportToFile) }) {
-                    Text(stringResource(R.string.settings_export_save))
-                }
+            // Import is the section's primary action and gets its own line; export is two
+            // destinations for one thing and reads as a row.
+            Button(onClick = { onIntent(SettingsIntent.OpenImport) }) {
+                Text(stringResource(R.string.settings_import))
             }
+
+            ExportActionRow(
+                label = stringResource(R.string.settings_export_everything),
+                onShare = { onIntent(SettingsIntent.ExportAll) },
+                onSave = { onIntent(SettingsIntent.SaveExportToFile) },
+            )
 
             HorizontalDivider()
             SectionTitle(stringResource(R.string.settings_section_battery))
