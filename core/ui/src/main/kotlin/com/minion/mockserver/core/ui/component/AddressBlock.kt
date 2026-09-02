@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -30,6 +27,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.NetworkAddress
@@ -109,13 +107,13 @@ fun AddressBlock(
                     HeroAddress(url = primaryBaseUrl, modifier = Modifier.weight(ADDRESS_WEIGHT))
                     IconButton(onClick = { onCopy(primaryBaseUrl) }) {
                         Icon(
-                            imageVector = Icons.Default.ContentCopy,
+                            imageVector = MockIcons.Copy,
                             contentDescription = stringResource(R.string.server_copy),
                         )
                     }
                     IconButton(onClick = onShowQr) {
                         Icon(
-                            imageVector = Icons.Default.QrCode2,
+                            imageVector = MockIcons.QrCode,
                             contentDescription = stringResource(R.string.server_qr),
                         )
                     }
@@ -230,7 +228,7 @@ private fun AddressRow(
         }
         IconButton(onClick = { onCopy(url) }) {
             Icon(
-                imageVector = Icons.Default.ContentCopy,
+                imageVector = MockIcons.Copy,
                 contentDescription = stringResource(R.string.server_copy),
             )
         }

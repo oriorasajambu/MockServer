@@ -2,14 +2,18 @@ package com.minion.mockserver.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
@@ -68,13 +72,34 @@ fun AppNavHost(
             // Hidden on full-screen destinations: the QR is meant to fill the screen, and the
             // editor needs every pixel it can get on a phone.
             if (currentDestination?.isTopLevel() == true) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.background,
+                ) {
                     BottomNavItem.entries.forEach { item ->
+                        val selected = currentDestination.hasRouteOf(item)
                         NavigationBarItem(
-                            selected = currentDestination.hasRouteOf(item),
+                            selected = selected,
                             onClick = { navController.navigateToTab(item) },
-                            icon = { Icon(item.icon, contentDescription = null) },
+                            icon = {
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(
+                                        if (selected) item.selectedIconRes else item.iconRes,
+                                    ),
+                                    // The label under it names the destination; announcing the
+                                    // glyph too would read every tab twice.
+                                    contentDescription = null,
+                                )
+                            },
                             label = { Text(stringResource(item.labelRes)) },
+                            colors = NavigationBarItemDefaults.colors(
+                                // The accent pill behind the selected tab. Elsewhere this design
+                                // does not flood an area with accent; at 52x26 it is a mark.
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
                         )
                     }
                 }

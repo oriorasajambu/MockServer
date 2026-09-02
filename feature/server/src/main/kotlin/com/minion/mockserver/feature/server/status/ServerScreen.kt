@@ -13,10 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +37,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.designsystem.theme.MockTheme
@@ -256,7 +253,7 @@ private fun ServerActions(
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
                 ActionButton(
                     label = stringResource(R.string.server_stop),
-                    icon = Icons.Filled.Stop,
+                    icon = MockIcons.StopFill,
                     tint = scheme.error,
                     container = scheme.errorContainer,
                     enabled = !transitioning,
@@ -267,7 +264,7 @@ private fun ServerActions(
                     label = stringResource(
                         if (state.isPaused) R.string.server_resume else R.string.server_pause,
                     ),
-                    icon = Icons.Filled.Pause,
+                    icon = MockIcons.Pause,
                     tint = scheme.onSurface,
                     container = Color.Transparent,
                     enabled = !transitioning,
@@ -282,7 +279,7 @@ private fun ServerActions(
                     ServerStatus.Stopping -> stringResource(R.string.server_stopping)
                     else -> stringResource(R.string.server_start)
                 },
-                icon = Icons.Filled.PlayArrow,
+                icon = MockIcons.PlayFill,
                 tint = scheme.primary,
                 container = scheme.primaryContainer,
                 enabled = !transitioning,

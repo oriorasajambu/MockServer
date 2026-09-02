@@ -193,7 +193,6 @@ compose = [
     "compose-material2",
     "compose-material3",
     "compose-material-icons-core",
-    "compose-material-icon-extended",
     "compose-activity",
     "compose-viewmodel",
     "compose-preview",

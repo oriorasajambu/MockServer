@@ -16,9 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 
@@ -75,8 +73,8 @@ fun DialogHeader(
 internal fun DialogHeaderPreview() {
     AppTheme {
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.space)) {
-            DialogHeader(title = "Rename collection", icon = Icons.Filled.Edit, tone = Tone.Accent)
-            DialogHeader(title = "Delete route?", icon = Icons.Filled.Delete, tone = Tone.Error)
+            DialogHeader(title = "Rename collection", icon = MockIcons.PencilSimple, tone = Tone.Accent)
+            DialogHeader(title = "Delete route?", icon = MockIcons.Trash, tone = Tone.Error)
         }
     }
 }
