@@ -6,7 +6,9 @@
     <string name="traffic_status_class">%1$dxx</string>
     <string name="traffic_unmatched_only">Unmatched</string>
     <string name="traffic_clear_filters">Clear filters</string>
-    <string name="traffic_export_har">Export HAR</string>
+    <string name="traffic_export_har">Save HAR</string>
+    <string name="traffic_share_har">Share HAR</string>
+    <string name="traffic_har_saved">Saved as %1$s</string>
     <string name="traffic_clear">Clear log</string>
     <string name="traffic_copied">Copied</string>
     <string name="traffic_duration">%1$d ms</string>

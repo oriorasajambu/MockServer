@@ -27,6 +27,9 @@
     <string name="server_port_fallback">Port %1$d was in use — running on %2$d</string>
     <string name="server_remember_port">Remember %1$d</string>
 
+    <string name="server_notification_off_title">Notifications are off for this app</string>
+    <string name="server_notification_off_body">The server keeps running, but without its notification you cannot stop or pause it without opening the app, and the system is more likely to reclaim the process.</string>
+    <string name="server_notification_off_action">Turn notifications on</string>
     <string name="server_battery_title">The server was stopped in the background</string>
     <string name="server_battery_body">Battery optimisation can kill the server while the screen is off. Exempting this app keeps a long session alive.</string>
     <string name="server_battery_action">Open battery settings</string>

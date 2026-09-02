@@ -3,6 +3,8 @@ package com.rio.mockserver.feature.traffic
 import androidx.lifecycle.viewModelScope
 import com.rio.mockserver.core.common.config.AppConstants
 import com.rio.mockserver.core.domain.repository.MockServerRepository
+import com.rio.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
+import com.rio.mockserver.core.domain.usecase.route.GetRoutesUseCase
 import com.rio.mockserver.core.domain.usecase.server.ObserveServerAddressesUseCase
 import com.rio.mockserver.core.domain.usecase.settings.GetServerSettingsUseCase
 import com.rio.mockserver.core.domain.usecase.traffic.ClearTrafficUseCase
@@ -28,6 +30,8 @@ internal class TrafficViewModel @Inject constructor(
     private val exportHar: ExportTrafficAsHarUseCase,
     private val formatAsCurl: FormatEntryAsCurlUseCase,
     private val observeAddresses: ObserveServerAddressesUseCase,
+    private val getCollections: GetCollectionsUseCase,
+    private val getRoutes: GetRoutesUseCase,
     private val getSettings: GetServerSettingsUseCase,
     private val serverRepository: MockServerRepository,
 ) : MviViewModel<TrafficState, TrafficIntent, TrafficEffect>(TrafficState()) {
@@ -40,9 +44,19 @@ internal class TrafficViewModel @Inject constructor(
      */
     private val activeFilter = MutableStateFlow(ObserveTrafficUseCase.Filter())
 
+    /**
+     * Collection id → the ids of the routes in it.
+     *
+     * The log records which *route* answered, not which collection, so a collection filter has to
+     * be expanded into route ids. Kept current as routes are added and deleted, because a filter
+     * that still names a route that no longer exists quietly hides traffic.
+     */
+    private var routeIdsByCollection: Map<String, Set<String>> = emptyMap()
+
     init {
         observeEntries()
         observeBaseUrl()
+        observeCollections()
     }
 
     override fun onIntent(intent: TrafficIntent) {
@@ -64,8 +78,13 @@ internal class TrafficViewModel @Inject constructor(
                 current.copy(unmatchedOnly = intent.unmatchedOnly)
             }
 
+            is TrafficIntent.SetCollectionFilter -> {
+                reduce { copy(selectedCollectionId = intent.collectionId) }
+                applyCollectionFilter(intent.collectionId)
+            }
+
             TrafficIntent.ClearFilters -> {
-                reduce { copy(searchQuery = "") }
+                reduce { copy(searchQuery = "", selectedCollectionId = null) }
                 updateFilter { ObserveTrafficUseCase.Filter() }
             }
 
@@ -81,7 +100,13 @@ internal class TrafficViewModel @Inject constructor(
                 reduce { copy(newEntryCount = 0) }
             }
 
-            TrafficIntent.ExportHar -> exportSession()
+            TrafficIntent.ExportHar -> exportSession { har ->
+                TrafficEffect.ShareText(har, HAR_FILE_NAME)
+            }
+
+            TrafficIntent.SaveHarToFile -> exportSession { har ->
+                TrafficEffect.SaveToFile(HAR_FILE_NAME, har)
+            }
             is TrafficIntent.OpenEntry -> viewModelScope.launch {
                 emitEffect(TrafficEffect.NavigateToDetail(intent.entryId))
             }
@@ -122,6 +147,35 @@ internal class TrafficViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Keeps the collection list and the id map current.
+     *
+     * Re-applies the active collection filter on every change: a route saved into the selected
+     * collection while the log is open should start passing the filter, not wait for the user to
+     * tap the chip twice.
+     */
+    private fun observeCollections() {
+        viewModelScope.launch {
+            combine(getCollections(), getRoutes.all()) { collections, routes ->
+                collections to routes.groupBy { it.collectionId }
+                    .mapValues { (_, list) -> list.map { it.id }.toSet() }
+            }.collect { (collections, idsByCollection) ->
+                routeIdsByCollection = idsByCollection
+                reduce { copy(collections = collections) }
+                currentState.selectedCollectionId?.let { applyCollectionFilter(it) }
+            }
+        }
+    }
+
+    /** Expands a collection into the route ids the filter actually compares against. */
+    private fun applyCollectionFilter(collectionId: String?) {
+        updateFilter { current ->
+            current.copy(
+                collectionRouteIds = collectionId?.let { routeIdsByCollection[it].orEmpty() },
+            )
+        }
+    }
+
     /** The address exports are written against — whichever one the server screen is showing. */
     private fun observeBaseUrl() {
         viewModelScope.launch {
@@ -139,14 +193,14 @@ internal class TrafficViewModel @Inject constructor(
         }
     }
 
-    private fun exportSession() {
+    private fun exportSession(destination: (String) -> TrafficEffect) {
         val entries = currentState.entries
         if (entries.isEmpty()) return
         viewModelScope.launch {
             // The *filtered* set: exporting a session usually means exporting the ten requests
             // you were looking at, not the five hundred you were not.
             val har = exportHar(entries, currentState.baseUrl)
-            emitEffect(TrafficEffect.ShareText(har, HAR_SUBJECT))
+            emitEffect(destination(har))
         }
     }
 
@@ -167,6 +221,6 @@ internal class TrafficViewModel @Inject constructor(
         if (contains(value)) this - value else this + value
 
     private companion object {
-        const val HAR_SUBJECT = "Mock server session.har"
+        const val HAR_FILE_NAME = "mock-server-session.har"
     }
 }

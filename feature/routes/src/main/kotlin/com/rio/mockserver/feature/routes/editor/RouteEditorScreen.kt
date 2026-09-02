@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -63,6 +64,10 @@ internal fun RouteEditorScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // Resources, not `context.getString`: a Context read is not invalidated by a
+    // configuration change, so every string resolved through it goes stale after a locale
+    // switch and stays stale until the screen is recreated.
+    val resources = LocalResources.current
     var showUnsavedDialog by remember { mutableStateOf(false) }
 
     // Read once, on entry, so the Paste button can say what it would paste. Reading it on every
@@ -76,7 +81,7 @@ internal fun RouteEditorScreen(
             is RouteEditorEffect.NavigateToTrafficEntry -> onNavigateToTrafficEntry(effect.entryId)
             RouteEditorEffect.ReadClipboard -> viewModel.onClipboardRead(context.clipboardText())
             is RouteEditorEffect.ShowError ->
-                context.showToast(context.getString(effect.error.toMessageRes()))
+                context.showToast(resources.getString(effect.error.toMessageRes()))
         }
     }
 
@@ -161,6 +166,35 @@ internal fun RouteEditorContent(
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
             )
+
+            // Offered, not applied (SPEC §4.5). A request that missed usually carries one or two
+            // segments that look like ids, and turning them into captures by hand on a phone
+            // keyboard — brace, name, brace, in the middle of a path — is the slowest edit here.
+            if (state.pathParameterSuggestions.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+                ) {
+                    state.pathParameterSuggestions.forEach { suggestion ->
+                        AssistChip(
+                            onClick = {
+                                onIntent(RouteEditorIntent.ParameteriseSegment(suggestion.index))
+                            },
+                            label = {
+                                Text(
+                                    stringResource(
+                                        R.string.editor_parameterise,
+                                        suggestion.segment,
+                                        suggestion.name,
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                }
+            }
 
             // The whole URL a client would call, base path included — the thing that is otherwise
             // assembled in someone's head from three fields on two screens.

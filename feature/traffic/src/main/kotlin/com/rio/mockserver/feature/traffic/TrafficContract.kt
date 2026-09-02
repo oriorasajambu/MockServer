@@ -4,6 +4,7 @@ import com.rio.mockserver.core.common.error.DomainError
 import com.rio.mockserver.core.common.mvi.UiEffect
 import com.rio.mockserver.core.common.mvi.UiIntent
 import com.rio.mockserver.core.common.mvi.UiState
+import com.rio.mockserver.core.domain.model.MockCollection
 import com.rio.mockserver.core.domain.model.TrafficEntry
 import com.rio.mockserver.core.domain.usecase.traffic.ObserveTrafficUseCase
 
@@ -37,6 +38,18 @@ internal data class TrafficState(
 
     /** The address cURL and HAR exports are written against — whatever the server screen shows. */
     val baseUrl: String = "",
+
+    /** Every collection, for the collection selector (SPEC §7.3). */
+    val collections: List<MockCollection> = emptyList(),
+
+    /**
+     * The collection the log is restricted to, or `null` for all of them.
+     *
+     * Held as an id beside the filter rather than being derived from it: the filter carries the
+     * route ids the selection expands to, and route ids cannot be turned back into the
+     * collection that produced them once a route has been deleted.
+     */
+    val selectedCollectionId: String? = null,
 ) : UiState {
 
     /** True when nothing has arrived yet, as opposed to everything being filtered out. */
@@ -51,12 +64,19 @@ internal sealed interface TrafficIntent : UiIntent {
     data class ToggleMethodFilter(val method: String) : TrafficIntent
     data class ToggleStatusClassFilter(val statusClass: Int) : TrafficIntent
     data class SetUnmatchedFilter(val unmatchedOnly: Boolean?) : TrafficIntent
+
+    /** `null` clears the restriction and shows every collection's traffic again. */
+    data class SetCollectionFilter(val collectionId: String?) : TrafficIntent
     data object ClearFilters : TrafficIntent
     data object ToggleFilterSheet : TrafficIntent
     data object PauseFollow : TrafficIntent
     data object ResumeFollow : TrafficIntent
     data object ClearLog : TrafficIntent
+    /** Hands the filtered session to the share sheet, for sending it somewhere. */
     data object ExportHar : TrafficIntent
+
+    /** Writes the filtered session to a file, for opening it in a HAR viewer (SPEC §7.4). */
+    data object SaveHarToFile : TrafficIntent
     data class OpenEntry(val entryId: String) : TrafficIntent
     data class CreateRuleFrom(val entryId: String) : TrafficIntent
     data class CopyAsCurl(val entryId: String) : TrafficIntent
@@ -65,6 +85,14 @@ internal sealed interface TrafficIntent : UiIntent {
 internal sealed interface TrafficEffect : UiEffect {
     data class CopiedToClipboard(val text: String) : TrafficEffect
     data class ShareText(val text: String, val subject: String) : TrafficEffect
+
+    /**
+     * Write the HAR to a file the user picks (SPEC §7.4).
+     *
+     * The share sheet is not enough on its own here: a session export exists to be opened in
+     * Charles, Fiddler or a browser's devtools importer, and none of those take a message body.
+     */
+    data class SaveToFile(val fileName: String, val content: String) : TrafficEffect
     data class NavigateToDetail(val entryId: String) : TrafficEffect
     data class NavigateToRouteEditor(val entryId: String) : TrafficEffect
     data class ShowError(val error: DomainError) : TrafficEffect

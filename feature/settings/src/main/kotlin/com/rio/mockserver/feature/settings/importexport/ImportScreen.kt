@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,6 +51,10 @@ internal fun ImportScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // Resources, not `context.getString`: a Context read is not invalidated by a
+    // configuration change, so every string resolved through it goes stale after a locale
+    // switch and stays stale until the screen is recreated.
+    val resources = LocalResources.current
 
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument(),
@@ -69,10 +74,10 @@ internal fun ImportScreen(
             ImportEffect.OpenFilePicker -> picker.launch(MIME_TYPES)
             is ImportEffect.NavigateToCollection -> onNavigateToCollection(effect.collectionId)
             is ImportEffect.ShowError ->
-                context.showToast(context.getString(effect.error.toMessageRes()))
+                context.showToast(resources.getString(effect.error.toMessageRes()))
 
             is ImportEffect.ShowImported ->
-                context.showToast(context.getString(R.string.import_done, effect.count))
+                context.showToast(resources.getString(R.string.import_done, effect.count))
         }
     }
 

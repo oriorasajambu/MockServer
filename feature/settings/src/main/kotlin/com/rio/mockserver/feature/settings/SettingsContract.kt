@@ -52,13 +52,26 @@ internal sealed interface SettingsIntent : UiIntent {
     data class UpdateUnmatchedStatus(val status: Int) : SettingsIntent
     data object RestartServer : SettingsIntent
     data object OpenImport : SettingsIntent
+    /** Everything, to the share sheet. */
     data object ExportAll : SettingsIntent
+
+    /** Everything, to a file the user picks (SPEC §9.2). */
+    data object SaveExportToFile : SettingsIntent
     data object OpenChaosEditor : SettingsIntent
     data object OpenBatterySettings : SettingsIntent
 }
 
 internal sealed interface SettingsEffect : UiEffect {
     data class ShareText(val text: String, val subject: String) : SettingsEffect
+
+    /**
+     * Write the export to a file the user picks (SPEC §9.2).
+     *
+     * Separate from [ShareText] rather than a flag on it: a share hands the text to another app,
+     * a save produces a file on the device. Exports are wanted both ways — one to send a
+     * colleague a collection, the other to keep a backup where it can be found again.
+     */
+    data class SaveToFile(val fileName: String, val content: String) : SettingsEffect
     data object NavigateToImport : SettingsEffect
     data object NavigateToChaosEditor : SettingsEffect
     data object OpenBatterySettings : SettingsEffect

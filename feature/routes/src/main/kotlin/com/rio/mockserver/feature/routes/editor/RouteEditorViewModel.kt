@@ -115,6 +115,8 @@ internal class RouteEditorViewModel @Inject constructor(
 
             is RouteEditorIntent.ApplyAlternate -> applyAlternate(intent.statusCode)
 
+            is RouteEditorIntent.ParameteriseSegment -> parameteriseSegment(intent.index)
+
             is RouteEditorIntent.ToggleSection -> reduce {
                 copy(
                     expandedSections = if (intent.section in expandedSections) {
@@ -197,6 +199,19 @@ internal class RouteEditorViewModel @Inject constructor(
         val collections = collectionRepository.observeCollections().first()
         val draft = createFromTraffic(entry, collections)
 
+        reduce {
+            copy(
+                pathParameterSuggestions = draft.parameterisableSegments
+                    .map { (index, name) ->
+                        RouteEditorState.PathParameterSuggestion(
+                            index = index,
+                            segment = PathNormaliser.segments(draft.route.pathPattern)[index],
+                            name = name,
+                        )
+                    },
+            )
+        }
+
         // The route arrives from Traffic with no collection id — Traffic has no idea which
         // collection a failed request belongs in. The draft's own answer (the collection whose
         // base path is the longest prefix of the path) is the better one, and falls back to the
@@ -226,6 +241,33 @@ internal class RouteEditorViewModel @Inject constructor(
                 reduce { copy(resolvedUrlPreview = previewUrl(route)) }
                 revalidate()
             }
+        }
+    }
+
+    /**
+     * Rewrites one id-shaped segment as a capture (SPEC §4.5).
+     *
+     * The suggestion is discarded rather than applied if the segment at that index is no longer
+     * the one it was derived from — the user has edited the path since, and rewriting by position
+     * alone would corrupt a pattern they had already fixed by hand.
+     */
+    private fun parameteriseSegment(index: Int) {
+        val suggestion = currentState.pathParameterSuggestions
+            .firstOrNull { it.index == index }
+            ?: return
+
+        val segments = PathNormaliser.segments(currentState.route.pathPattern)
+        if (segments.getOrNull(index) != suggestion.segment) {
+            reduce { copy(pathParameterSuggestions = pathParameterSuggestions - suggestion) }
+            return
+        }
+
+        val rewritten = segments.toMutableList()
+        rewritten[index] = "{${suggestion.name}}"
+
+        reduce { copy(pathParameterSuggestions = pathParameterSuggestions - suggestion) }
+        editRoute {
+            copy(pathPattern = rewritten.joinToString(separator = "/", prefix = "/"))
         }
     }
 

@@ -34,13 +34,36 @@ internal sealed interface CollectionDetailIntent : UiIntent {
     data class ToggleRoute(val id: String, val isEnabled: Boolean) : CollectionDetailIntent
     data class DuplicateRoute(val id: String) : CollectionDetailIntent
     data class DeleteRoute(val id: String) : CollectionDetailIntent
-    data object ExportJson : CollectionDetailIntent
-    data object ExportPostman : CollectionDetailIntent
+    data class Export(
+        val format: ExportFormat,
+        val destination: ExportDestination,
+    ) : CollectionDetailIntent
 }
+
+/** The two wire formats a collection can leave in (SPEC §9.2). */
+internal enum class ExportFormat {
+    /** Full fidelity: matchers, chaos overrides and CORS all survive. */
+    NATIVE_JSON,
+
+    /** Postman v2.1. Lossy, and the user is told what will be dropped before it is written. */
+    POSTMAN,
+}
+
+/**
+ * Where an export goes.
+ *
+ * Both, rather than one: a share sends the collection to a colleague, a file keeps it somewhere
+ * it can be found again and re-imported. Offering only the share sheet makes "back up my mocks"
+ * a matter of mailing yourself a message.
+ */
+internal enum class ExportDestination { SHARE, FILE }
 
 internal sealed interface CollectionDetailEffect : UiEffect {
     data class NavigateToEditor(val routeId: String?) : CollectionDetailEffect
     data class ShareText(val text: String, val subject: String) : CollectionDetailEffect
+
+    /** Write the export to a file the user picks, through the storage-access framework. */
+    data class SaveToFile(val fileName: String, val content: String) : CollectionDetailEffect
 
     /** Postman is lossy; the warnings name what will actually be dropped (SPEC §9.2). */
     data class ConfirmLossyExport(val warnings: List<String>) : CollectionDetailEffect

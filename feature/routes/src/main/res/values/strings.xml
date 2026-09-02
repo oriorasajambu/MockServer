@@ -26,8 +26,11 @@
     <string name="routes_needs_body">Needs body</string>
     <string name="routes_chaos">Chaos</string>
     <string name="routes_needs_body_banner">%1$d routes were imported without a response body.</string>
-    <string name="routes_export_json">Export JSON</string>
-    <string name="routes_export_postman">Export Postman</string>
+    <string name="routes_export_json">Native JSON</string>
+    <string name="routes_export_postman">Postman v2.1</string>
+    <string name="routes_export_share">Share</string>
+    <string name="routes_export_save">Save to a file</string>
+    <string name="routes_export_saved">Saved as %1$s</string>
     <string name="routes_export_anyway">Export anyway</string>
     <string name="routes_cancel">Cancel</string>
     <string name="routes_postman_loss_title">This export will lose some of your rules</string>
@@ -40,6 +43,7 @@
     <string name="editor_section_response">Response</string>
     <string name="editor_section_chaos">Chaos</string>
     <string name="editor_name_label">Name</string>
+    <string name="editor_parameterise">%1$s → {%2$s}</string>
     <string name="editor_path_label">Path</string>
     <string name="editor_path_help">/users/{id} captures a segment. A trailing ** matches everything below.</string>
     <string name="editor_status_label">Status code</string>

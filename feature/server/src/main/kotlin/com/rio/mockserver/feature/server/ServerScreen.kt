@@ -25,10 +25,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rio.mockserver.core.designsystem.theme.AppTheme
 import com.rio.mockserver.core.designsystem.theme.Dimens
@@ -60,22 +64,42 @@ internal fun ServerScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // Resources, not `context.getString`: a Context read is not invalidated by a
+    // configuration change, so every string resolved through it goes stale after a locale
+    // switch and stays stale until the screen is recreated.
+    val resources = LocalResources.current
+
+    // Re-read on every resume, not once: the user can turn notifications off in system settings
+    // while this screen sits in the background, and the warning has to reflect what is true now
+    // rather than what was true when the screen was first composed (SPEC §13).
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.onIntent(
+            ServerIntent.NotificationsEnabledChanged(
+                NotificationManagerCompat.from(context).areNotificationsEnabled(),
+            ),
+        )
+    }
 
     ObserveAsEvents(viewModel.effect) { effect ->
         when (effect) {
             is ServerEffect.CopiedToClipboard -> {
                 context.copyToClipboard(CLIPBOARD_LABEL, effect.label)
-                context.showToast(context.getString(R.string.server_copied))
+                context.showToast(resources.getString(R.string.server_copied))
             }
 
             is ServerEffect.ShowError ->
-                context.showToast(context.getString(effect.error.toMessageRes()))
+                context.showToast(resources.getString(effect.error.toMessageRes()))
 
             ServerEffect.RequestNotificationPermission -> onRequestNotificationPermission()
             is ServerEffect.NavigateToQr -> onNavigateToQr(effect.url)
             ServerEffect.NavigateToSettings -> onNavigateToSettings()
             ServerEffect.OpenBatterySettings ->
                 context.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+
+            ServerEffect.OpenNotificationSettings -> context.startActivity(
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName),
+            )
         }
     }
 
@@ -120,6 +144,10 @@ internal fun ServerContent(
 
         if (!state.isApiKeyEnabled) {
             OpenAccessNote()
+        }
+
+        if (state.showNotificationWarning) {
+            NotificationWarning(onIntent = onIntent)
         }
 
         if (state.showBatteryOptimisationCard) {
@@ -318,6 +346,35 @@ private fun FallbackNotice(
         )
         TextButton(onClick = { onIntent(ServerIntent.RememberFallbackPort) }) {
             Text(stringResource(R.string.server_remember_port, state.boundPort))
+        }
+    }
+}
+
+/**
+ * The server runs without the notification; what is lost is stated plainly (SPEC §13).
+ *
+ * Two things go with the notification: the ability to stop the server without opening the app,
+ * and a signal to the system that the process is doing something the user asked for. Neither is
+ * worth a modal, and neither is worth hiding — so it is a card with a way to fix it.
+ */
+@Composable
+private fun NotificationWarning(onIntent: (ServerIntent) -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(Dimens.space),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+        ) {
+            Text(
+                text = stringResource(R.string.server_notification_off_title),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                text = stringResource(R.string.server_notification_off_body),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            TextButton(onClick = { onIntent(ServerIntent.OpenNotificationSettings) }) {
+                Text(stringResource(R.string.server_notification_off_action))
+            }
         }
     }
 }

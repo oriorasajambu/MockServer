@@ -19,6 +19,15 @@ class GetRoutesUseCase @Inject constructor(
 
     /** One route, for the editor. Emits `null` once it is deleted. */
     fun single(id: String): Flow<MockRoute?> = repository.observeRoute(id)
+
+    /**
+     * Every route in every collection.
+     *
+     * For the callers that work across collections rather than inside one — the traffic log's
+     * collection filter, which has to turn a collection into the set of route ids that answered
+     * for it (SPEC §7.3).
+     */
+    fun all(): Flow<List<MockRoute>> = repository.observeAllRoutes()
 }
 
 /**

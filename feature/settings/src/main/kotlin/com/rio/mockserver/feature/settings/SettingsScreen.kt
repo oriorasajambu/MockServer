@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,6 +38,7 @@ import com.rio.mockserver.core.domain.model.ChaosProfile
 import com.rio.mockserver.core.ui.error.toMessageRes
 import com.rio.mockserver.core.ui.mvi.ObserveAsEvents
 import com.rio.mockserver.core.ui.util.shareText
+import com.rio.mockserver.core.ui.util.rememberDocumentSaver
 import com.rio.mockserver.core.ui.util.showToast
 
 /** The Settings tab (SPEC §10.1). */
@@ -49,10 +51,22 @@ internal fun SettingsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // Resources, not `context.getString`: a Context read is not invalidated by a
+    // configuration change, so every string resolved through it goes stale after a locale
+    // switch and stays stale until the screen is recreated.
+    val resources = LocalResources.current
+
+    val saver = rememberDocumentSaver(
+        onSaved = { fileName ->
+            context.showToast(resources.getString(R.string.settings_export_saved, fileName))
+        },
+        onFailed = { error -> context.showToast(resources.getString(error.toMessageRes())) },
+    )
 
     ObserveAsEvents(viewModel.effect) { effect ->
         when (effect) {
             is SettingsEffect.ShareText -> context.shareText(effect.text, effect.subject)
+            is SettingsEffect.SaveToFile -> saver.save(effect.fileName, effect.content)
             SettingsEffect.NavigateToImport -> onNavigateToImport()
             SettingsEffect.NavigateToChaosEditor -> onNavigateToChaosEditor()
             SettingsEffect.OpenBatterySettings -> context.startActivity(
@@ -60,10 +74,10 @@ internal fun SettingsScreen(
             )
 
             is SettingsEffect.ShowError ->
-                context.showToast(context.getString(effect.error.toMessageRes()))
+                context.showToast(resources.getString(effect.error.toMessageRes()))
 
             is SettingsEffect.ShowMessage -> context.showToast(
-                context.getString(R.string.settings_seed_regenerated, effect.message),
+                resources.getString(R.string.settings_seed_regenerated, effect.message),
             )
         }
     }
@@ -224,7 +238,10 @@ internal fun SettingsContent(
                 Text(stringResource(R.string.settings_import))
             }
             TextButton(onClick = { onIntent(SettingsIntent.ExportAll) }) {
-                Text(stringResource(R.string.settings_export_all))
+                Text(stringResource(R.string.settings_export_share))
+            }
+            TextButton(onClick = { onIntent(SettingsIntent.SaveExportToFile) }) {
+                Text(stringResource(R.string.settings_export_save))
             }
         }
 

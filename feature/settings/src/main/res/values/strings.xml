@@ -30,7 +30,9 @@
     <string name="settings_unmatched_help">{{path}} and {{method}} are replaced with what the client actually asked for.</string>
 
     <string name="settings_import">Import a file</string>
-    <string name="settings_export_all">Export everything</string>
+    <string name="settings_export_share">Share everything</string>
+    <string name="settings_export_save">Save to a file</string>
+    <string name="settings_export_saved">Saved as %1$s</string>
 
     <string name="settings_battery_help">Battery optimisation can stop the server while the screen is off. Exempting this app keeps a long session alive.</string>
     <string name="settings_battery_action">Open battery settings</string>

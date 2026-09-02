@@ -48,10 +48,27 @@ internal data class ServerState(
 
     /** Shown after the app detects it was killed while running (SPEC §8.2). */
     val showBatteryOptimisationCard: Boolean = false,
+
+    /**
+     * Whether the system will show this app's notifications.
+     *
+     * Read from the platform on every resume rather than from the permission result, because the
+     * user can revoke it in system settings while the app sits in the background, and a state
+     * that only ever updates on a grant would keep claiming the notification is there.
+     */
+    val areNotificationsEnabled: Boolean = true,
 ) : UiState {
 
     /** The address the hero block shows, or `null` when there is no usable interface. */
     val primaryAddress: NetworkAddress? get() = addresses.firstOrNull()
+
+    /**
+     * Whether to warn that the server is running without its notification (SPEC §13).
+     *
+     * Only while running: with the socket closed there is nothing to protect, and a permanent
+     * warning about a consequence that has not happened yet is a warning people learn to skip.
+     */
+    val showNotificationWarning: Boolean get() = status.isRunning && !areNotificationsEnabled
 
     /** The port actually bound, falling back to the requested one before the socket is open. */
     val boundPort: Int
@@ -78,6 +95,10 @@ internal sealed interface ServerIntent : UiIntent {
     data object DismissBatteryCard : ServerIntent
     data object RequestBatteryExemption : ServerIntent
     data object OpenSettings : ServerIntent
+    data object OpenNotificationSettings : ServerIntent
+
+    /** Reported by the screen on every resume, since only it can ask the platform. */
+    data class NotificationsEnabledChanged(val enabled: Boolean) : ServerIntent
 }
 
 internal sealed interface ServerEffect : UiEffect {
@@ -95,4 +116,7 @@ internal sealed interface ServerEffect : UiEffect {
     data class NavigateToQr(val url: String) : ServerEffect
     data object NavigateToSettings : ServerEffect
     data object OpenBatterySettings : ServerEffect
+
+    /** Opens this app's notification settings, so the warning has somewhere to lead. */
+    data object OpenNotificationSettings : ServerEffect
 }

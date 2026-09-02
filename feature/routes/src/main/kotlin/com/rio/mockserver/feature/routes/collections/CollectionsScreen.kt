@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,12 +47,16 @@ internal fun CollectionsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // Resources, not `context.getString`: a Context read is not invalidated by a
+    // configuration change, so every string resolved through it goes stale after a locale
+    // switch and stays stale until the screen is recreated.
+    val resources = LocalResources.current
 
     ObserveAsEvents(viewModel.effect) { effect ->
         when (effect) {
             is CollectionsEffect.NavigateToCollection -> onNavigateToCollection(effect.id)
             is CollectionsEffect.ShowError ->
-                context.showToast(context.getString(effect.error.toMessageRes()))
+                context.showToast(resources.getString(effect.error.toMessageRes()))
         }
     }
 

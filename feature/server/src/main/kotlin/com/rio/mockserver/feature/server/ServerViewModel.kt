@@ -72,6 +72,13 @@ internal class ServerViewModel @Inject constructor(
             ServerIntent.OpenSettings -> viewModelScope.launch {
                 emitEffect(ServerEffect.NavigateToSettings)
             }
+
+            ServerIntent.OpenNotificationSettings -> viewModelScope.launch {
+                emitEffect(ServerEffect.OpenNotificationSettings)
+            }
+
+            is ServerIntent.NotificationsEnabledChanged ->
+                reduce { copy(areNotificationsEnabled = intent.enabled) }
         }
     }
 
@@ -118,6 +125,15 @@ internal class ServerViewModel @Inject constructor(
                         showBatteryOptimisationCard = snapshot.showBatteryOptimisationCard,
                     )
                 }
+            }
+        }
+
+        // Its own collector rather than a sixth source in the combine above: the advertised name
+        // changes once per run, and folding it in would rebuild the whole snapshot on every
+        // request that ticks the counter.
+        viewModelScope.launch {
+            serviceController.advertisedName.collect { name ->
+                reduce { copy(advertisedName = name) }
             }
         }
 

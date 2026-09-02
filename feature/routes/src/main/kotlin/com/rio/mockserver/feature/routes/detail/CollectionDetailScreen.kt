@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +40,7 @@ import com.rio.mockserver.core.ui.component.MethodBadge
 import com.rio.mockserver.core.ui.component.StatusPill
 import com.rio.mockserver.core.ui.error.toMessageRes
 import com.rio.mockserver.core.ui.mvi.ObserveAsEvents
+import com.rio.mockserver.core.ui.util.rememberDocumentSaver
 import com.rio.mockserver.core.ui.util.shareText
 import com.rio.mockserver.core.ui.util.showToast
 import com.rio.mockserver.feature.routes.R
@@ -52,15 +54,27 @@ internal fun CollectionDetailScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // Resources, not `context.getString`: a Context read is not invalidated by a
+    // configuration change, so every string resolved through it goes stale after a locale
+    // switch and stays stale until the screen is recreated.
+    val resources = LocalResources.current
     var lossWarnings by remember { mutableStateOf<List<String>?>(null) }
+
+    val saver = rememberDocumentSaver(
+        onSaved = { fileName ->
+            context.showToast(resources.getString(R.string.routes_export_saved, fileName))
+        },
+        onFailed = { error -> context.showToast(resources.getString(error.toMessageRes())) },
+    )
 
     ObserveAsEvents(viewModel.effect) { effect ->
         when (effect) {
             is CollectionDetailEffect.NavigateToEditor -> onNavigateToEditor(effect.routeId)
             is CollectionDetailEffect.ShareText -> context.shareText(effect.text, effect.subject)
+            is CollectionDetailEffect.SaveToFile -> saver.save(effect.fileName, effect.content)
             is CollectionDetailEffect.ConfirmLossyExport -> lossWarnings = effect.warnings
             is CollectionDetailEffect.ShowError ->
-                context.showToast(context.getString(effect.error.toMessageRes()))
+                context.showToast(resources.getString(effect.error.toMessageRes()))
         }
     }
 
@@ -124,14 +138,16 @@ internal fun CollectionDetailContent(
                         color = MaterialTheme.colorScheme.tertiary,
                     )
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-                    TextButton(onClick = { onIntent(CollectionDetailIntent.ExportJson) }) {
-                        Text(stringResource(R.string.routes_export_json))
-                    }
-                    TextButton(onClick = { onIntent(CollectionDetailIntent.ExportPostman) }) {
-                        Text(stringResource(R.string.routes_export_postman))
-                    }
-                }
+                ExportRow(
+                    label = stringResource(R.string.routes_export_json),
+                    format = ExportFormat.NATIVE_JSON,
+                    onIntent = onIntent,
+                )
+                ExportRow(
+                    label = stringResource(R.string.routes_export_postman),
+                    format = ExportFormat.POSTMAN,
+                    onIntent = onIntent,
+                )
             }
 
             if (state.isEmpty) {
@@ -216,6 +232,44 @@ private fun RouteRow(
         StatusPill(route.response.statusCode)
         TextButton(onClick = onDuplicate) { Text(stringResource(R.string.routes_duplicate)) }
         Switch(checked = route.isEnabled, onCheckedChange = onToggle)
+    }
+}
+
+/**
+ * One format, both destinations (SPEC §9.2).
+ *
+ * Two buttons rather than one button and a chooser dialog: exporting is already a deliberate act,
+ * and a phone is the wrong place to spend a tap asking a question whose answer fits on screen.
+ */
+@Composable
+private fun ExportRow(
+    label: String,
+    format: ExportFormat,
+    onIntent: (CollectionDetailIntent) -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        TextButton(
+            onClick = {
+                onIntent(CollectionDetailIntent.Export(format, ExportDestination.SHARE))
+            },
+        ) {
+            Text(stringResource(R.string.routes_export_share))
+        }
+        TextButton(
+            onClick = {
+                onIntent(CollectionDetailIntent.Export(format, ExportDestination.FILE))
+            },
+        ) {
+            Text(stringResource(R.string.routes_export_save))
+        }
     }
 }
 

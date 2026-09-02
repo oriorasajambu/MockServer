@@ -119,14 +119,27 @@ internal class SettingsViewModel @Inject constructor(
             SettingsIntent.OpenChaosEditor -> emit(SettingsEffect.NavigateToChaosEditor)
             SettingsIntent.OpenBatterySettings -> emit(SettingsEffect.OpenBatterySettings)
 
-            SettingsIntent.ExportAll -> viewModelScope.launch {
-                when (val result = exportAll.all()) {
-                    is AppResult.Success -> emitEffect(
-                        SettingsEffect.ShareText(result.data, EXPORT_SUBJECT),
-                    )
+            SettingsIntent.ExportAll -> export { json ->
+                SettingsEffect.ShareText(json, EXPORT_FILE_NAME)
+            }
 
-                    is AppResult.Failure -> emitEffect(SettingsEffect.ShowError(result.error))
-                }
+            SettingsIntent.SaveExportToFile -> export { json ->
+                SettingsEffect.SaveToFile(EXPORT_FILE_NAME, json)
+            }
+        }
+    }
+
+    /**
+     * Serialises everything, then hands it to whichever destination [destination] names.
+     *
+     * The export itself is identical whether it is shared or written to a file, so only the last
+     * step differs — duplicating the read would invite the two paths to drift.
+     */
+    private fun export(destination: (String) -> SettingsEffect) {
+        viewModelScope.launch {
+            when (val result = exportAll.all()) {
+                is AppResult.Success -> emitEffect(destination(result.data))
+                is AppResult.Failure -> emitEffect(SettingsEffect.ShowError(result.error))
             }
         }
     }
@@ -177,6 +190,6 @@ internal class SettingsViewModel @Inject constructor(
     }
 
     private companion object {
-        const val EXPORT_SUBJECT = "mock-server-export.json"
+        const val EXPORT_FILE_NAME = "mock-server-export.json"
     }
 }

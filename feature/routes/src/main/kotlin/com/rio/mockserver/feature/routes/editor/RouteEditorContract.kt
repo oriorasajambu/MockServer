@@ -46,6 +46,15 @@ internal data class RouteEditorState(
     /** Other statuses an import found for the same operation, offered as one-tap swaps. */
     val alternateResponses: List<AlternateResponse> = emptyList(),
 
+    /**
+     * Path segments that look like ids, offered as captures (SPEC §4.5).
+     *
+     * Offered, never applied: `/users/42` might be the user with id 42 or a list that happens to
+     * live under a numeric segment, and only the person writing the rule knows which. Populated
+     * when the draft came from a request that missed, and empty otherwise.
+     */
+    val pathParameterSuggestions: List<PathParameterSuggestion> = emptyList(),
+
     /** Which collapsible section is expanded. All start open; a wizard would hide the whole rule. */
     val expandedSections: Set<Section> = Section.entries.toSet(),
 
@@ -55,6 +64,19 @@ internal data class RouteEditorState(
 
     /** The editor's four sections, in one scroll so the whole rule stays reviewable. */
     enum class Section { REQUEST, MATCHERS, RESPONSE, CHAOS }
+
+    /**
+     * One id-shaped segment and the capture name offered for it.
+     *
+     * [segment] is carried alongside [index] so the suggestion can be discarded if the user has
+     * edited the path in the meantime — applying it by position alone would rewrite whatever
+     * happens to sit at that index now.
+     */
+    data class PathParameterSuggestion(
+        val index: Int,
+        val segment: String,
+        val name: String,
+    )
 
     val canSave: Boolean get() = validation.canSave && !isSaving
 }
@@ -71,6 +93,9 @@ internal sealed interface RouteEditorIntent : UiIntent {
     data class AddMatcher(val matcher: RequestMatcher) : RouteEditorIntent
     data class RemoveMatcher(val index: Int) : RouteEditorIntent
     data class ApplyAlternate(val statusCode: Int) : RouteEditorIntent
+
+    /** Rewrites the segment at this index as `{name}`, and exposes it as `{{path.name}}`. */
+    data class ParameteriseSegment(val index: Int) : RouteEditorIntent
     data class ToggleSection(val section: RouteEditorState.Section) : RouteEditorIntent
     data object PasteFromClipboard : RouteEditorIntent
     data object PrettifyBody : RouteEditorIntent

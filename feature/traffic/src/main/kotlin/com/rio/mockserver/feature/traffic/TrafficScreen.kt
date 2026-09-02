@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,6 +45,7 @@ import com.rio.mockserver.core.ui.error.toMessageRes
 import com.rio.mockserver.core.ui.mvi.ObserveAsEvents
 import com.rio.mockserver.core.ui.util.DateUtil
 import com.rio.mockserver.core.ui.util.copyToClipboard
+import com.rio.mockserver.core.ui.util.rememberDocumentSaver
 import com.rio.mockserver.core.ui.util.shareText
 import com.rio.mockserver.core.ui.util.showToast
 
@@ -57,19 +59,31 @@ internal fun TrafficScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // Resources, not `context.getString`: a Context read is not invalidated by a
+    // configuration change, so every string resolved through it goes stale after a locale
+    // switch and stays stale until the screen is recreated.
+    val resources = LocalResources.current
+
+    val saver = rememberDocumentSaver(
+        onSaved = { fileName ->
+            context.showToast(resources.getString(R.string.traffic_har_saved, fileName))
+        },
+        onFailed = { error -> context.showToast(resources.getString(error.toMessageRes())) },
+    )
 
     ObserveAsEvents(viewModel.effect) { effect ->
         when (effect) {
             is TrafficEffect.CopiedToClipboard -> {
                 context.copyToClipboard(CLIPBOARD_LABEL, effect.text)
-                context.showToast(context.getString(R.string.traffic_copied))
+                context.showToast(resources.getString(R.string.traffic_copied))
             }
 
             is TrafficEffect.ShareText -> context.shareText(effect.text, effect.subject)
+            is TrafficEffect.SaveToFile -> saver.save(effect.fileName, effect.content)
             is TrafficEffect.NavigateToDetail -> onNavigateToDetail(effect.entryId)
             is TrafficEffect.NavigateToRouteEditor -> onNavigateToRouteEditor(effect.entryId)
             is TrafficEffect.ShowError ->
-                context.showToast(context.getString(effect.error.toMessageRes()))
+                context.showToast(resources.getString(effect.error.toMessageRes()))
         }
     }
 
@@ -195,11 +209,31 @@ private fun SearchAndFilters(
                 },
                 label = { Text(stringResource(R.string.traffic_unmatched_only)) },
             )
+
+            // Tapping the selected collection clears the restriction, so the chip row needs no
+            // separate "all collections" chip taking up a phone's worth of horizontal space.
+            state.collections.forEach { collection ->
+                val isSelected = collection.id == state.selectedCollectionId
+                FilterChip(
+                    selected = isSelected,
+                    onClick = {
+                        onIntent(
+                            TrafficIntent.SetCollectionFilter(
+                                collection.id.takeUnless { isSelected },
+                            ),
+                        )
+                    },
+                    label = { Text(collection.name) },
+                )
+            }
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-            TextButton(onClick = { onIntent(TrafficIntent.ExportHar) }) {
+            TextButton(onClick = { onIntent(TrafficIntent.SaveHarToFile) }) {
                 Text(stringResource(R.string.traffic_export_har))
+            }
+            TextButton(onClick = { onIntent(TrafficIntent.ExportHar) }) {
+                Text(stringResource(R.string.traffic_share_har))
             }
             TextButton(onClick = { onIntent(TrafficIntent.ClearLog) }) {
                 Text(stringResource(R.string.traffic_clear))
