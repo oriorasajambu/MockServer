@@ -13,11 +13,11 @@ import com.minion.mockserver.core.domain.usecase.settings.UpdateServerSettingsUs
 import com.minion.mockserver.core.domain.util.TimeProvider
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * The Server tab.

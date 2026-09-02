@@ -7,10 +7,10 @@ import com.minion.mockserver.core.data.mapper.Mappers.toDomain
 import com.minion.mockserver.core.data.mapper.Mappers.toEntity
 import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.domain.repository.ChaosRepository
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Room-backed chaos profiles.

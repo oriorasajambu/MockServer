@@ -5,8 +5,8 @@ import com.minion.mockserver.core.common.error.DomainError
 import com.minion.mockserver.core.common.result.AppResult
 import com.minion.mockserver.core.domain.model.ServerSettings
 import com.minion.mockserver.core.domain.repository.ServerSettingsRepository
-import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 import kotlin.random.Random
 
 /** The persisted settings, for the Settings tab and the snapshot builder. */

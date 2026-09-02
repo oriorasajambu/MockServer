@@ -23,7 +23,6 @@ import com.minion.mockserver.core.domain.usecase.server.SetPauseModeUseCase
 import com.minion.mockserver.core.domain.usecase.server.StartServerUseCase
 import com.minion.mockserver.core.domain.usecase.server.StopServerUseCase
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -32,6 +31,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Keeps the process alive while the server is bound (SPEC §8.1).

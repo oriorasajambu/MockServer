@@ -2,7 +2,6 @@ package com.minion.mockserver.feature.settings.importexport
 
 import androidx.lifecycle.viewModelScope
 import com.minion.mockserver.core.common.result.AppResult
-import com.minion.mockserver.core.domain.model.ImportConflict
 import com.minion.mockserver.core.domain.model.MockCollection
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
 import com.minion.mockserver.core.domain.usecase.importexport.CommitImportUseCase
@@ -12,9 +11,9 @@ import com.minion.mockserver.core.domain.usecase.route.GetRoutesUseCase
 import com.minion.mockserver.core.domain.util.IdGenerator
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /** The import flow. */
 @HiltViewModel

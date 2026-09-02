@@ -1,5 +1,3 @@
-import org.gradle.api.artifacts.VersionCatalogsExtension
-
 /**
  * The convention every `:feature:*` module applies: Compose + Hilt + navigation + the MVI plumbing.
  *

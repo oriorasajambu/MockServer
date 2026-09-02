@@ -1,5 +1,3 @@
-import org.gradle.api.artifacts.VersionCatalogsExtension
-
 /**
  * Hilt + KSP wiring, applied on its own so that data-layer modules can have DI without dragging
  * in Compose.

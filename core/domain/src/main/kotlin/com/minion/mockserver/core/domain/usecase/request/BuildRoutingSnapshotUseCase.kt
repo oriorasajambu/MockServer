@@ -10,12 +10,12 @@ import com.minion.mockserver.core.domain.repository.CollectionRepository
 import com.minion.mockserver.core.domain.repository.MockServerRepository
 import com.minion.mockserver.core.domain.repository.RouteRepository
 import com.minion.mockserver.core.domain.repository.ServerSettingsRepository
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Rebuilds the routing snapshot whenever anything it depends on changes (SPEC §5.5).

@@ -10,14 +10,14 @@ import com.minion.mockserver.core.data.util.NetworkInterfaceUtil
 import com.minion.mockserver.core.domain.model.NetworkAddress
 import com.minion.mockserver.core.domain.repository.NetworkAddressRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Re-resolves the device's addresses on every connectivity change (SPEC §8.5).

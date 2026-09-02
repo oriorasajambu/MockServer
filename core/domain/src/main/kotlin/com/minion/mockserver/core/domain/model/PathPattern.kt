@@ -3,6 +3,8 @@ package com.minion.mockserver.core.domain.model
 import com.minion.mockserver.core.common.config.AppConstants
 import com.minion.mockserver.core.common.error.DomainError
 import com.minion.mockserver.core.domain.exception.MockServerException
+import com.minion.mockserver.core.domain.model.PathPattern.Companion.parse
+import com.minion.mockserver.core.domain.model.PathPattern.Companion.parseOrNull
 
 /**
  * A compiled path pattern: the segment list a request is matched against (SPEC §4.2).

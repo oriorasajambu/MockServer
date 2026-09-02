@@ -1,6 +1,5 @@
 package com.minion.mockserver.feature.server.qr
 
-import com.minion.mockserver.feature.server.R
 import android.app.Activity
 import android.view.WindowManager
 import androidx.compose.foundation.Image
@@ -26,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import com.minion.mockserver.core.data.discovery.QrEncoder
 import com.minion.mockserver.core.designsystem.theme.Dimens
+import com.minion.mockserver.feature.server.R
 
 /**
  * The full-screen QR code (SPEC §8.5).

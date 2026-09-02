@@ -7,6 +7,7 @@ import androidx.navigation.toRoute
 import com.minion.mockserver.core.common.config.AppConstants
 import com.minion.mockserver.core.common.error.DomainError
 import com.minion.mockserver.core.common.result.AppResult
+import com.minion.mockserver.core.data.util.LoopbackRequester
 import com.minion.mockserver.core.domain.model.MockCollection
 import com.minion.mockserver.core.domain.model.MockRoute
 import com.minion.mockserver.core.domain.model.PathNormaliser
@@ -16,24 +17,23 @@ import com.minion.mockserver.core.domain.usecase.collection.GetCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
 import com.minion.mockserver.core.domain.usecase.collection.SaveCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.route.CreateRouteFromTrafficUseCase
+import com.minion.mockserver.core.domain.usecase.route.DetectShadowedRoutesUseCase
 import com.minion.mockserver.core.domain.usecase.route.GetRouteUseCase
 import com.minion.mockserver.core.domain.usecase.route.GetRoutesUseCase
-import com.minion.mockserver.core.domain.usecase.route.DetectShadowedRoutesUseCase
 import com.minion.mockserver.core.domain.usecase.route.SaveRouteUseCase
 import com.minion.mockserver.core.domain.usecase.route.ValidateRouteUseCase
 import com.minion.mockserver.core.domain.usecase.server.ObserveServerAddressesUseCase
 import com.minion.mockserver.core.domain.usecase.server.ObserveServerStatusUseCase
 import com.minion.mockserver.core.domain.usecase.settings.GetServerSettingsUseCase
 import com.minion.mockserver.core.domain.usecase.traffic.ObserveTrafficUseCase
-import com.minion.mockserver.core.data.util.LoopbackRequester
 import com.minion.mockserver.core.domain.util.IdGenerator
 import com.minion.mockserver.core.navigation.RouteEditorRoute
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * The route editor.

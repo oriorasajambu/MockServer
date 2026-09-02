@@ -7,9 +7,9 @@ import com.minion.mockserver.core.domain.model.ServerStatus
 import com.minion.mockserver.core.domain.repository.MockServerRepository
 import com.minion.mockserver.core.domain.repository.NetworkAddressRepository
 import com.minion.mockserver.core.domain.repository.ServerSettingsRepository
-import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 /**
  * Binds the socket, then records what actually happened (SPEC §8.3, §8.4).

@@ -1,6 +1,5 @@
 package com.minion.mockserver.core.data.preferences
 
-import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -13,11 +12,11 @@ import com.minion.mockserver.core.domain.model.MockResponse
 import com.minion.mockserver.core.domain.model.PauseSpec
 import com.minion.mockserver.core.domain.model.ServerSettings
 import com.minion.mockserver.core.domain.util.JsonTree
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Server settings in a Preferences DataStore (SPEC §11.2).

@@ -8,10 +8,10 @@ import com.minion.mockserver.core.data.mapper.Mappers.toDomain
 import com.minion.mockserver.core.data.mapper.Mappers.toEntity
 import com.minion.mockserver.core.domain.model.MockCollection
 import com.minion.mockserver.core.domain.repository.CollectionRepository
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /** Room-backed collections (SPEC §11.1). */
 @Singleton

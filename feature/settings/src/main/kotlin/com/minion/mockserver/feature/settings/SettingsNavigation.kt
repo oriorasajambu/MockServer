@@ -6,8 +6,8 @@ import com.minion.mockserver.core.navigation.ChaosEditorRoute
 import com.minion.mockserver.core.navigation.ImportRoute
 import com.minion.mockserver.core.navigation.SettingsRoute
 import com.minion.mockserver.feature.settings.chaos.ChaosEditorScreen
-import com.minion.mockserver.feature.settings.preferences.SettingsScreen
 import com.minion.mockserver.feature.settings.importexport.ImportScreen
+import com.minion.mockserver.feature.settings.preferences.SettingsScreen
 
 /** This module's entire public API. Everything else is `internal`. */
 fun NavGraphBuilder.settingsScreen(

@@ -14,7 +14,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -39,20 +38,18 @@ import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.HttpMethodFilter
 import com.minion.mockserver.core.domain.model.RequestMatcher
-import com.minion.mockserver.core.domain.model.StringOp
-import com.minion.mockserver.core.domain.usecase.route.RouteValidation
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.CollapsibleSection
-import com.minion.mockserver.core.ui.component.MatcherAdder
-import com.minion.mockserver.core.ui.component.ValidationWarnings
 import com.minion.mockserver.core.ui.component.JsonEditor
+import com.minion.mockserver.core.ui.component.MatcherAdder
 import com.minion.mockserver.core.ui.component.StatusPicker
-import com.minion.mockserver.core.ui.R as UiR
+import com.minion.mockserver.core.ui.component.ValidationWarnings
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
 import com.minion.mockserver.core.ui.util.clipboardText
 import com.minion.mockserver.core.ui.util.showToast
 import com.minion.mockserver.feature.routes.R
+import com.minion.mockserver.core.ui.R as UiR
 
 /**
  * The route editor (SPEC §10.2).

@@ -13,13 +13,13 @@ import com.minion.mockserver.core.domain.usecase.traffic.FormatEntryAsCurlUseCas
 import com.minion.mockserver.core.domain.usecase.traffic.ObserveTrafficUseCase
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /** The Traffic tab. */
 @OptIn(FlowPreview::class)

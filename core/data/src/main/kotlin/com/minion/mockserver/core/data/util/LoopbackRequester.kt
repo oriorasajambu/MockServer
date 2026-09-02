@@ -2,12 +2,12 @@ package com.minion.mockserver.core.data.util
 
 import com.minion.mockserver.core.common.dispatcher.IoDispatcher
 import com.minion.mockserver.core.common.util.Logger
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URI
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 
 /**
  * Fires one request at the app's own server over loopback.

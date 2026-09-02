@@ -9,8 +9,8 @@ import com.minion.mockserver.core.domain.usecase.chaos.GetChaosProfilesUseCase
 import com.minion.mockserver.core.domain.usecase.chaos.SaveChaosProfileUseCase
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /** The chaos profile editor. */
 @HiltViewModel

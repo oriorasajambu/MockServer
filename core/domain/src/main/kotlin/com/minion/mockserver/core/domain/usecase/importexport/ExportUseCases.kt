@@ -7,8 +7,8 @@ import com.minion.mockserver.core.domain.repository.ChaosRepository
 import com.minion.mockserver.core.domain.repository.CollectionRepository
 import com.minion.mockserver.core.domain.repository.ExportGateway
 import com.minion.mockserver.core.domain.repository.RouteRepository
-import javax.inject.Inject
 import kotlinx.coroutines.flow.first
+import javax.inject.Inject
 
 /**
  * The app's own export format: full fidelity, versioned (SPEC §9.2).

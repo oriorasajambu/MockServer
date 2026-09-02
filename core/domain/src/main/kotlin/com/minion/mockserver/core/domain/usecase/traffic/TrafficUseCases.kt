@@ -3,11 +3,11 @@ package com.minion.mockserver.core.domain.usecase.traffic
 import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.domain.repository.ExportGateway
 import com.minion.mockserver.core.domain.repository.TrafficRepository
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * The live log, filtered (SPEC §7.3).

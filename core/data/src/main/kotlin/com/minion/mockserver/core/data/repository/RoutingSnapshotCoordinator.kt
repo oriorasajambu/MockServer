@@ -8,14 +8,14 @@ import com.minion.mockserver.core.domain.repository.ServerSettingsRepository
 import com.minion.mockserver.core.domain.repository.TrafficRepository
 import com.minion.mockserver.core.domain.usecase.chaos.ChaosRandom
 import com.minion.mockserver.core.domain.usecase.request.BuildRoutingSnapshotUseCase
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Keeps the running engine in step with what is saved (SPEC §5.5).

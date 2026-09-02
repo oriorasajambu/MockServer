@@ -7,8 +7,8 @@ import com.minion.mockserver.core.domain.model.PathNormaliser
 import com.minion.mockserver.core.domain.repository.RouteRepository
 import com.minion.mockserver.core.domain.util.IdGenerator
 import com.minion.mockserver.core.domain.util.TimeProvider
-import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 /** The routes in one collection, for the collection detail list. */
 class GetRoutesUseCase @Inject constructor(

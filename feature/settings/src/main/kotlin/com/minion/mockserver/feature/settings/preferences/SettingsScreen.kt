@@ -1,8 +1,6 @@
 package com.minion.mockserver.feature.settings.preferences
 
-import com.minion.mockserver.feature.settings.R
 import android.content.Intent
-import android.provider.Settings as AndroidSettings
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,16 +33,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ChaosProfile
-import com.minion.mockserver.core.ui.component.LabelledTextField
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.ExportActionRow
+import com.minion.mockserver.core.ui.component.LabelledTextField
 import com.minion.mockserver.core.ui.component.SectionTitle
 import com.minion.mockserver.core.ui.component.ToggleRow
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
-import com.minion.mockserver.core.ui.util.shareText
 import com.minion.mockserver.core.ui.util.rememberDocumentSaver
+import com.minion.mockserver.core.ui.util.shareText
 import com.minion.mockserver.core.ui.util.showToast
+import com.minion.mockserver.feature.settings.R
+import android.provider.Settings as AndroidSettings
 
 /** The Settings tab (SPEC §10.1). */
 @Composable

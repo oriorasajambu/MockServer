@@ -4,9 +4,9 @@ import android.content.Context
 import com.minion.mockserver.core.data.discovery.NsdAdvertiser
 import com.minion.mockserver.core.data.service.MockServerService
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Starts and stops the foreground service.

@@ -6,11 +6,11 @@ import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import com.minion.mockserver.core.common.util.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Advertises the server over mDNS/DNS-SD (SPEC §8.5).

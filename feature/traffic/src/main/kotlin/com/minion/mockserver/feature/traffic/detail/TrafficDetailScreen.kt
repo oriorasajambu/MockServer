@@ -1,6 +1,5 @@
 package com.minion.mockserver.feature.traffic.detail
 
-import com.minion.mockserver.feature.traffic.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,10 +34,11 @@ import com.minion.mockserver.core.ui.component.HeaderTable
 import com.minion.mockserver.core.ui.component.MethodBadge
 import com.minion.mockserver.core.ui.component.StatusPill
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
-import com.minion.mockserver.core.ui.R as UiR
 import com.minion.mockserver.core.ui.util.copyToClipboard
 import com.minion.mockserver.core.ui.util.shareText
 import com.minion.mockserver.core.ui.util.showToast
+import com.minion.mockserver.feature.traffic.R
+import com.minion.mockserver.core.ui.R as UiR
 
 /** One traffic entry, request and response (SPEC §7.3). */
 @Composable

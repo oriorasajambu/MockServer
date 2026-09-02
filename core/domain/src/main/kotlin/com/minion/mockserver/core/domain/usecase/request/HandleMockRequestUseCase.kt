@@ -15,9 +15,9 @@ import com.minion.mockserver.core.domain.usecase.chaos.DecideChaosUseCase
 import com.minion.mockserver.core.domain.usecase.traffic.LogTrafficUseCase
 import com.minion.mockserver.core.domain.util.IdGenerator
 import com.minion.mockserver.core.domain.util.TimeProvider
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.delay
 
 /**
  * The whole request pipeline, in one place (SPEC §4.1).

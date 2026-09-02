@@ -16,10 +16,10 @@ import com.minion.mockserver.core.domain.model.StringOp
 import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.domain.model.WeightedStatus
 import io.ktor.client.request.get
+import io.ktor.client.request.head
 import io.ktor.client.request.header
 import io.ktor.client.request.options
 import io.ktor.client.request.post
-import io.ktor.client.request.head
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode

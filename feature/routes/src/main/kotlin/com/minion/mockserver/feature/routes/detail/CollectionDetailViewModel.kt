@@ -16,10 +16,10 @@ import com.minion.mockserver.core.domain.usecase.route.ToggleRouteUseCase
 import com.minion.mockserver.core.navigation.CollectionDetailRoute
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /** The routes inside one collection. */
 @HiltViewModel

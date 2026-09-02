@@ -22,7 +22,6 @@ import com.minion.mockserver.core.importexport.dto.HarRequestDto
 import com.minion.mockserver.core.importexport.dto.HarResponseDto
 import com.minion.mockserver.core.importexport.dto.HarTimingsDto
 import com.minion.mockserver.core.importexport.dto.NativeExportDto
-import com.minion.mockserver.core.importexport.dto.PostmanBodyDto
 import com.minion.mockserver.core.importexport.dto.PostmanCollectionDto
 import com.minion.mockserver.core.importexport.dto.PostmanHeaderDto
 import com.minion.mockserver.core.importexport.dto.PostmanInfoDto

@@ -19,17 +19,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
-import androidx.compose.ui.text.input.ImeAction
+import com.minion.mockserver.core.domain.model.ChaosProfile
+import com.minion.mockserver.core.domain.model.DelaySpec
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.LabelledTextField
 import com.minion.mockserver.core.ui.component.ProbabilitySlider
-import com.minion.mockserver.core.domain.model.ChaosProfile
-import com.minion.mockserver.core.domain.model.DelaySpec
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.feature.settings.R
 

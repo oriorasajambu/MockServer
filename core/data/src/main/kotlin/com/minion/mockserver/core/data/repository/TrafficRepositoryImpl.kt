@@ -4,10 +4,6 @@ import com.minion.mockserver.core.common.config.AppConstants
 import com.minion.mockserver.core.common.dispatcher.ApplicationScope
 import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.domain.repository.TrafficRepository
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -17,6 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicInteger
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * The in-memory traffic log (SPEC §7.1).

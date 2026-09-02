@@ -13,9 +13,9 @@ import com.minion.mockserver.core.domain.usecase.settings.GetServerSettingsUseCa
 import com.minion.mockserver.core.domain.usecase.settings.UpdateServerSettingsUseCase
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /** The Settings tab. */
 @HiltViewModel
