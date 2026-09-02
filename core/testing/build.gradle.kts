@@ -15,7 +15,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rio.mockserver.core.testing"
+    namespace = "com.minion.mockserver.core.testing"
 }
 
 dependencies {

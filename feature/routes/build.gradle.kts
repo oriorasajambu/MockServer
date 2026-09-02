@@ -11,7 +11,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rio.mockserver.feature.routes"
+    namespace = "com.minion.mockserver.feature.routes"
 }
 
 dependencies {

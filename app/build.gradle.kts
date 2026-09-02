@@ -11,10 +11,10 @@ plugins {
 }
 
 android {
-    namespace = "com.rio.mockserver"
+    namespace = "com.minion.mockserver"
 
     defaultConfig {
-        applicationId = "com.rio.mockserver"
+        applicationId = "com.minion.mockserver"
         versionCode = 1
         versionName = "1.0"
     }

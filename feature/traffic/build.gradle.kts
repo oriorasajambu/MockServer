@@ -6,5 +6,5 @@ plugins {
 }
 
 android {
-    namespace = "com.rio.mockserver.feature.traffic"
+    namespace = "com.minion.mockserver.feature.traffic"
 }

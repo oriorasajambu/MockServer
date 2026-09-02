@@ -17,7 +17,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rio.mockserver.core.data"
+    namespace = "com.minion.mockserver.core.data"
 }
 
 ksp {

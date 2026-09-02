@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rio.mockserver.feature.settings"
+    namespace = "com.minion.mockserver.feature.settings"
 }
 
 dependencies {

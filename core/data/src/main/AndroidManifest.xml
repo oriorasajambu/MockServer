@@ -45,7 +45,7 @@
           is never reviewed, but it is accurate either way.
         -->
         <service
-            android:name="com.rio.mockserver.core.data.service.MockServerService"
+            android:name="com.minion.mockserver.core.data.service.MockServerService"
             android:description="@string/service_description"
             android:exported="false"
             android:foregroundServiceType="specialUse">

@@ -14,5 +14,5 @@ plugins {
 }
 
 android {
-    namespace = "com.rio.mockserver.core.designsystem"
+    namespace = "com.minion.mockserver.core.designsystem"
 }

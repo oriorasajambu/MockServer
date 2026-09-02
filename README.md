@@ -17,6 +17,11 @@ demo an integration with no network at all.
 Built from the specification in `SPEC-1.md`. Where the code departs from it, the KDoc at that
 point says so and why.
 
+One departure is too diffuse to annotate at a point: the package is **`com.minion.mockserver`**,
+not the `com.rio.mockserver` the spec's tree shows. That was settled in review, after the spec was
+written. `SPEC-1.md` is left as it was authored rather than back-edited, so it stays the document
+the work was quoted against.
+
 ---
 
 ## 1. What it does
