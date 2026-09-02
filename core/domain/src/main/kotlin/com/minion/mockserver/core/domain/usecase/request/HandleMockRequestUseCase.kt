@@ -97,7 +97,23 @@ class HandleMockRequestUseCase @Inject constructor(
         request: MockRequest,
         snapshot: RoutingSnapshot,
         config: ServerConfig,
-    ): Decision {
+    ): Decision = reject(request, snapshot, config) ?: resolve(request, snapshot)
+
+    /**
+     * Steps 1-4 of SPEC §4.1: the reasons a request never reaches the rules at all.
+     *
+     * Pause, the API-key guard, a CORS preflight and the 5 MB ceiling are all "answer now and
+     * stop", and separating them from resolution is what keeps each half readable — the guards
+     * share nothing but their shape, and the resolution below reads as one straight line once
+     * they are gone.
+     *
+     * @return the answer to send, or `null` to carry on to [resolve]
+     */
+    private fun reject(
+        request: MockRequest,
+        snapshot: RoutingSnapshot,
+        config: ServerConfig,
+    ): Decision? {
         // 1. Pause. Ahead of everything else because a paused server has nothing to say about
         //    keys, origins or routes — but the request is still logged, so pausing does not make
         //    the inspector go quiet.
@@ -165,6 +181,11 @@ class HandleMockRequestUseCase @Inject constructor(
             )
         }
 
+        return null
+    }
+
+    /** Steps 5-7: match, decide chaos, render. */
+    private fun resolve(request: MockRequest, snapshot: RoutingSnapshot): Decision {
         // 5. Matching.
         val match = resolveRoute(request, snapshot)
         val response = match?.compiled?.route?.response ?: snapshot.unmatchedResponse
