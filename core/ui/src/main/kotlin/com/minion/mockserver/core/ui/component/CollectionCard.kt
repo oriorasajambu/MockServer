@@ -144,12 +144,11 @@ private fun Header(
                 )
             }
         }
-        // Not in the design, and it has to stay. The detail screen's overflow menu now carries
-        // Rename, which is all the design's dialog (1r) changes — it says outright that the path
-        // prefix does not move. But a collection also owns its base path and its CORS config
-        // (SPEC 8.7), and this dialog is the only place either can be edited after creation. The
-        // twenty-one screens never gave those a home; until they do, removing this would make
-        // per-collection CORS unreachable.
+        // Deliberately kept, though the design has no pencil here. The detail screen's overflow
+        // carries Rename, which is all the design's dialog (1r) changes — it says outright that
+        // the path prefix does not move. A collection also owns its base path and its CORS config
+        // (SPEC 8.7), and this dialog is the only place either can be edited after creation, so
+        // this is the entry point to those. The twenty-one screens never gave them one.
         IconButton(onClick = onEdit) {
             Icon(
                 imageVector = MockIcons.PencilSimple,

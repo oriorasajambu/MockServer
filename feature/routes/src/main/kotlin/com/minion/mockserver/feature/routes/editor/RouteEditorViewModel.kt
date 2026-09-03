@@ -67,6 +67,15 @@ internal class RouteEditorViewModel @Inject constructor(
     private var collection: MockCollection? = null
 
     /**
+     * The route and body as last loaded or saved.
+     *
+     * The dots on the tabs mean "different from what is stored", which needs something to
+     * compare against. A single `hasUnsavedChanges` flag cannot say *which* tab moved.
+     */
+    private var savedRoute: MockRoute? = null
+    private var savedBody: String = ""
+
+    /**
      * A collection this draft needs but that does not exist yet (SPEC §4.5).
      *
      * Built, not written: entering the editor from a request that matched nothing should not
@@ -108,7 +117,13 @@ internal class RouteEditorViewModel @Inject constructor(
                 editRoute { copy(response = response.copy(statusCode = intent.statusCode)) }
 
             is RouteEditorIntent.UpdateBody -> {
-                reduce { copy(bodyText = intent.body, hasUnsavedChanges = true) }
+                reduce {
+                    copy(
+                        bodyText = intent.body,
+                        hasUnsavedChanges = true,
+                        dirtyTabs = dirtyTabs(route, intent.body.text),
+                    )
+                }
                 editRoute { copy(response = response.copy(body = intent.body.text)) }
             }
 
@@ -134,14 +149,10 @@ internal class RouteEditorViewModel @Inject constructor(
 
             is RouteEditorIntent.ParameteriseSegment -> parameteriseSegment(intent.index)
 
-            is RouteEditorIntent.ToggleSection -> reduce {
-                copy(
-                    expandedSections = if (intent.section in expandedSections) {
-                        expandedSections - intent.section
-                    } else {
-                        expandedSections + intent.section
-                    },
-                )
+            is RouteEditorIntent.SelectTab -> reduce { copy(activeTab = intent.tab) }
+
+            RouteEditorIntent.OpenTestEntry -> currentState.testResult?.let { result ->
+                emit(RouteEditorEffect.NavigateToTrafficEntry(result.entryId))
             }
 
             RouteEditorIntent.PasteFromClipboard -> emit(RouteEditorEffect.ReadClipboard)
@@ -190,6 +201,10 @@ internal class RouteEditorViewModel @Inject constructor(
                     name = "",
                 )
             }
+
+            // The baseline the tab dots compare against. A route just loaded has no dirty tab.
+            savedRoute = draft
+            savedBody = draft.response.body
 
             reduce {
                 copy(
@@ -306,8 +321,49 @@ internal class RouteEditorViewModel @Inject constructor(
     }
 
     private fun editRoute(transform: MockRoute.() -> MockRoute) {
-        reduce { copy(route = route.transform(), hasUnsavedChanges = true) }
+        reduce {
+            val updated = route.transform()
+            copy(
+                route = updated,
+                hasUnsavedChanges = true,
+                dirtyTabs = dirtyTabs(updated, bodyText.text),
+            )
+        }
         revalidate()
+    }
+
+    /**
+     * Which tabs differ from what is stored.
+     *
+     * Compared field by field rather than by whole-object equality, because a tab has to light up
+     * only for edits made under it — a changed status code is the Response tab's business and
+     * says nothing about Request.
+     */
+    private fun dirtyTabs(route: MockRoute, body: String): Set<RouteEditorState.Tab> {
+        val saved = savedRoute ?: return emptySet()
+        val dirty = mutableSetOf<RouteEditorState.Tab>()
+        if (route.name != saved.name ||
+            route.method != saved.method ||
+            route.pathPattern != saved.pathPattern ||
+            route.matchers != saved.matchers
+        ) {
+            dirty += RouteEditorState.Tab.REQUEST
+        }
+        // The per-route delay is stored on the response but edited on the Chaos tab, so it is
+        // held out of this comparison and counted below. Without that, setting a delay lights up
+        // a tab the user never opened.
+        if (route.response.copy(delayMillisOverride = null) !=
+            saved.response.copy(delayMillisOverride = null) ||
+            body != savedBody
+        ) {
+            dirty += RouteEditorState.Tab.RESPONSE
+        }
+        if (route.chaosOverride != saved.chaosOverride ||
+            route.response.delayMillisOverride != saved.response.delayMillisOverride
+        ) {
+            dirty += RouteEditorState.Tab.CHAOS
+        }
+        return dirty
     }
 
     /**
@@ -376,7 +432,12 @@ internal class RouteEditorViewModel @Inject constructor(
 
             when (val result = saveRoute(currentState.route)) {
                 is AppResult.Success -> {
-                    reduce { copy(isSaving = false, hasUnsavedChanges = false) }
+                    // Saving moves the baseline, which clears every dot.
+                    savedRoute = currentState.route
+                    savedBody = currentState.bodyText.text
+                    reduce {
+                        copy(isSaving = false, hasUnsavedChanges = false, dirtyTabs = emptySet())
+                    }
                     emitEffect(RouteEditorEffect.NavigateBack)
                 }
 
@@ -411,7 +472,11 @@ internal class RouteEditorViewModel @Inject constructor(
                         return@launch
                     }
 
-                    is AppResult.Success -> reduce { copy(hasUnsavedChanges = false) }
+                    is AppResult.Success -> {
+                        savedRoute = currentState.route
+                        savedBody = currentState.bodyText.text
+                        reduce { copy(hasUnsavedChanges = false, dirtyTabs = emptySet()) }
+                    }
                 }
             }
 
@@ -434,7 +499,20 @@ internal class RouteEditorViewModel @Inject constructor(
             // The entry the request produced. Read after the send, so it is the new one.
             val newest = observeTraffic().first().firstOrNull()
             if (newest != null && newest.id != before) {
-                emitEffect(RouteEditorEffect.NavigateToTrafficEntry(newest.id))
+                // Reported in place rather than by navigating. The old behaviour threw the user
+                // into the traffic log on every test, which loses the editor's scroll position
+                // and the cursor — expensive when testing is something done repeatedly while
+                // adjusting a body. The bar leads to the same entry for anyone who wants it.
+                reduce {
+                    copy(
+                        testResult = RouteEditorState.TestResult(
+                            statusCode = newest.statusCode,
+                            durationMillis = newest.durationMillis,
+                            byteCount = newest.responseBody?.toByteArray()?.size ?: 0,
+                            entryId = newest.id,
+                        ),
+                    )
+                }
             }
         }
     }

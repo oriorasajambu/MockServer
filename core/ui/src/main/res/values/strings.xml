@@ -37,7 +37,9 @@
     <string name="error_unknown">Something went wrong. Try again.</string>
 
     <!-- Shared components. Screen copy lives in the feature that shows it. -->
-    <string name="editor_paste">Paste JSON from clipboard</string>
+    <!-- Short: the preview line under it already says what would be pasted, and a long
+         label pushed Format off the edge of the screen. -->
+    <string name="editor_paste">Paste</string>
     <string name="editor_paste_preview">Paste: %1$s</string>
     <string name="editor_format">Format</string>
 
@@ -58,6 +60,11 @@
     <!-- The collection and route rows. -->
     <string name="collections_edit">Edit</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="editor_body_label">Body</string>
+
+    <!-- The inline result after firing a route at itself from the editor. -->
+    <string name="editor_test_fired">Test fired</string>
+    <string name="editor_test_result">%1$d · %2$d ms · %3$d B</string>
     <plurals name="collections_route_count">
         <item quantity="one">%1$d route</item>
         <item quantity="other">%1$d routes</item>

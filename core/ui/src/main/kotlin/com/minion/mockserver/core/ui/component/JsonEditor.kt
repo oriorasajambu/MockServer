@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -25,6 +27,7 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
@@ -37,9 +40,11 @@ import com.minion.mockserver.core.ui.R
  *
  * Phone authoring is the constraint behind every decision here:
  *
- * - **Paste is the primary action**, a full-width button above the field rather than a keyboard
- *   long-press. Bodies are almost always pasted from a terminal or a colleague's message, and a
- *   long-press-and-aim on a phone is the slowest interaction in the app.
+ * - **Paste is a first-class action** above the field rather than a keyboard long-press. Bodies
+ *   are almost always pasted from a terminal or a colleague's message, and a long-press-and-aim
+ *   on a phone is the slowest interaction in the app. What is on the clipboard is previewed on
+ *   its own line rather than inside the button: a forty-character label pushed Format off the
+ *   right-hand edge of the screen entirely.
  * - **A symbol row** puts `{ } [ ] " : ,` one tap away instead of three, which is where a phone
  *   keyboard buries them.
  * - **Syntax highlighting is a `VisualTransformation`**, not a third-party editor. The whole
@@ -57,25 +62,56 @@ fun JsonEditor(
     modifier: Modifier = Modifier,
     error: String? = null,
     clipboardPreview: String? = null,
+    contentType: String? = null,
     onPaste: () -> Unit = {},
     onPrettify: () -> Unit = {},
 ) {
     Column(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            TextButton(onClick = onPaste) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+                modifier = Modifier.weight(1f),
+            ) {
                 Text(
-                    text = clipboardPreview
-                        ?.let { stringResourceWithPreview(it) }
-                        ?: stringResource(R.string.editor_paste),
+                    text = stringResource(R.string.editor_body_label),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                 )
+                if (contentType != null) {
+                    Text(
+                        text = contentType,
+                        style = MockTheme.typography.codeSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            TextButton(onClick = onPaste) {
+                Text(stringResource(R.string.editor_paste), maxLines = 1)
             }
             TextButton(onClick = onPrettify) {
-                Text(stringResource(R.string.editor_format))
+                Text(stringResource(R.string.editor_format), maxLines = 1)
             }
+        }
+
+        // What pasting would actually overwrite the body with. On its own line because it is up
+        // to forty characters of someone else's JSON, and no button label survives that.
+        clipboardPreview?.let { preview ->
+            Text(
+                text = stringResourceWithPreview(preview),
+                style = MockTheme.typography.codeSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
 
         val jsonColours = MockTheme.colors

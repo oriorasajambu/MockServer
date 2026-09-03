@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
+import com.minion.mockserver.core.designsystem.theme.MockTheme
 
 /**
  * The heading above a group of related controls.
@@ -64,6 +66,11 @@ fun ToggleRow(
  * @param hint shown under the field; `null` leaves the supporting slot empty
  * @param numeric whether to ask for the numeric keyboard
  * @param imeAction what the keyboard's action key does — `Next` for any field with one after it
+ * @param mono sets the value in the machine face. For anything a client will send verbatim — a
+ *   path, a header name — where proportional digits and an ambiguous `l`/`1` cost more than the
+ *   prettier text is worth.
+ * @param unit a fixed suffix inside the field, like `ms`. Inside rather than in the hint, because
+ *   a unit that lives under the field is read after the number has already been typed wrong.
  */
 @Composable
 fun LabelledTextField(
@@ -75,6 +82,8 @@ fun LabelledTextField(
     isError: Boolean = false,
     numeric: Boolean = false,
     imeAction: ImeAction = ImeAction.Next,
+    mono: Boolean = false,
+    unit: String? = null,
 ) {
     val focusManager = LocalFocusManager.current
     OutlinedTextField(
@@ -82,6 +91,12 @@ fun LabelledTextField(
         onValueChange = onValueChange,
         label = { Text(label) },
         supportingText = hint?.let { { Text(it) } },
+        suffix = unit?.let { { Text(it, style = MockTheme.typography.codeSmall) } },
+        textStyle = if (mono) {
+            MockTheme.typography.codeLarge
+        } else {
+            LocalTextStyle.current
+        },
         isError = isError,
         singleLine = true,
         keyboardOptions = KeyboardOptions(

@@ -22,6 +22,30 @@
     <!-- Route list -->
     <string name="routes_new">New route</string>
 
+    <!-- Route editor: the three tabs and what each one explains. -->
+    <string name="editor_tab_request">Request</string>
+    <string name="editor_tab_response">Response</string>
+    <string name="editor_tab_chaos">Chaos</string>
+    <string name="editor_subtitle_unsaved">Unsaved changes</string>
+    <string name="editor_subtitle_route">%1$s %2$s</string>
+    <string name="editor_specificity_label">Match specificity</string>
+    <string name="editor_specificity_help">Higher wins when two routes could both answer.</string>
+    <string name="editor_name_help">Left blank, it takes the method and path.</string>
+    <string name="editor_method_label">Method</string>
+    <string name="editor_status_label">Status code</string>
+    <string name="editor_matchers_help">Narrow the match further</string>
+    <string name="editor_matchers_none">None yet</string>
+    <string name="editor_new_callout">A path is all this needs. The response defaults to 200 {} until you change it.</string>
+    <string name="editor_chaos_now_title">What a call to this route does now</string>
+    <string name="editor_chaos_now_delay">Waits %1$d ms, then answers %2$d with the body from the Response tab.</string>
+    <string name="editor_chaos_now_plain">Answers %1$d with the body from the Response tab.</string>
+    <string name="editor_chaos_route_only">This route only</string>
+    <string name="editor_chaos_route_only_help">Set here, kept even when the active profile is None.</string>
+    <string name="editor_chaos_global">Everything else</string>
+    <string name="editor_chaos_global_help">Failures come from the active chaos profile and apply to every route.</string>
+    <string name="editor_delay_unit">ms</string>
+    <string name="editor_save_route">Save route</string>
+
     <!-- Collection detail: the top bar, its overflow menu, and the two dialogs it opens. -->
     <string name="routes_detail_subtitle">%1$s · %2$s</string>
     <plurals name="routes_count">
@@ -83,7 +107,8 @@
     <string name="editor_path_label">Path</string>
     <string name="editor_path_help">/users/{id} captures a segment. A trailing ** matches everything below.</string>
     <string name="editor_alternate">Use %1$d</string>
-    <string name="editor_delay_label">Fixed delay (ms)</string>
+    <!-- No unit in the label: the field carries "ms" as a suffix inside it. -->
+    <string name="editor_delay_label">Fixed delay</string>
     <string name="editor_delay_help">Applies to this route only, and survives turning chaos off.</string>
     <string name="editor_specificity">Specificity: %1$d</string>
     <string name="editor_shadowed_help">Another route always beats this one, so it can never answer a request. Make its path or matchers more specific.</string>
