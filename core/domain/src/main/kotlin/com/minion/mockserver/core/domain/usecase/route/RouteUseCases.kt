@@ -9,6 +9,7 @@ import com.minion.mockserver.core.domain.util.IdGenerator
 import com.minion.mockserver.core.domain.util.TimeProvider
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import kotlinx.coroutines.flow.first
 
 /** The routes in one collection, for the collection detail list. */
 class GetRoutesUseCase @Inject constructor(
@@ -48,10 +49,19 @@ class SaveRouteUseCase @Inject constructor(
         val validation = validateRoute(route)
         validation.errors.firstOrNull()?.let { return AppResult.Failure(it) }
 
+        // A new route goes to the end of its collection's list. Read only when the route is new:
+        // every later save already carries the order the user arranged.
+        val order = if (route.id.isBlank()) {
+            repository.observeRoutes(route.collectionId).first().size
+        } else {
+            route.order
+        }
+
         val prepared = route.copy(
             id = route.id.ifBlank { idGenerator.newId() },
             name = route.name.trim(),
             pathPattern = PathNormaliser.normalise(route.pathPattern),
+            order = order,
             createdAt = if (route.createdAt > 0L) route.createdAt else timeProvider.nowMillis(),
             // Saving a body is what clears the import flag. Doing it here rather than in the
             // editor means an import commit that fills bodies in bulk clears them too.

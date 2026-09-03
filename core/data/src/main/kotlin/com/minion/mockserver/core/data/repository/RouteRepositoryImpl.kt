@@ -41,6 +41,9 @@ internal class RouteRepositoryImpl @Inject constructor(
 
     override suspend fun delete(id: String): AppResult<Unit> = safeCall { dao.deleteById(id) }
 
+    override suspend fun reorder(idsInOrder: List<String>): AppResult<Unit> =
+        safeCall { dao.reorder(idsInOrder) }
+
     override suspend fun setEnabled(id: String, isEnabled: Boolean): AppResult<Unit> =
         safeCall { dao.setEnabled(id, isEnabled) }
 }

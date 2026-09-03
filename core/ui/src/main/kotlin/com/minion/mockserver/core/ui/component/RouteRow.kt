@@ -58,7 +58,12 @@ fun RouteRow(
     onToggle: (Boolean) -> Unit,
     onDuplicate: () -> Unit,
     modifier: Modifier = Modifier,
+    onMoveUp: (() -> Unit)? = null,
+    onMoveDown: (() -> Unit)? = null,
 ) {
+    // Reorder handles replace the duplicate button and the switch rather than joining them. Four
+    // controls beside a path leaves it about ninety dips wide, which is where it starts shredding.
+    val isReordering = onMoveUp != null || onMoveDown != null
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -121,18 +126,39 @@ fun RouteRow(
             Caption(route = route, isShadowed = isShadowed)
         }
 
-        IconButton(onClick = onDuplicate) {
-            Icon(
-                imageVector = MockIcons.Copy,
-                contentDescription = stringResource(R.string.routes_duplicate),
-                modifier = Modifier.size(Dimens.iconSmall),
+        if (isReordering) {
+            IconButton(onClick = { onMoveUp?.invoke() }, enabled = onMoveUp != null) {
+                Icon(
+                    imageVector = MockIcons.CaretUp,
+                    contentDescription = stringResource(R.string.routes_move_up),
+                    modifier = Modifier.size(Dimens.iconSmall),
+                )
+            }
+            IconButton(
+                onClick = { onMoveDown?.invoke() },
+                enabled = onMoveDown != null,
+                modifier = Modifier.padding(end = Dimens.spaceSmall),
+            ) {
+                Icon(
+                    imageVector = MockIcons.CaretDown,
+                    contentDescription = stringResource(R.string.routes_move_down),
+                    modifier = Modifier.size(Dimens.iconSmall),
+                )
+            }
+        } else {
+            IconButton(onClick = onDuplicate) {
+                Icon(
+                    imageVector = MockIcons.Copy,
+                    contentDescription = stringResource(R.string.routes_duplicate),
+                    modifier = Modifier.size(Dimens.iconSmall),
+                )
+            }
+            MockSwitch(
+                checked = route.isEnabled,
+                onCheckedChange = onToggle,
+                modifier = Modifier.padding(end = Dimens.spaceSmall),
             )
         }
-        MockSwitch(
-            checked = route.isEnabled,
-            onCheckedChange = onToggle,
-            modifier = Modifier.padding(end = Dimens.spaceSmall),
-        )
     }
 }
 

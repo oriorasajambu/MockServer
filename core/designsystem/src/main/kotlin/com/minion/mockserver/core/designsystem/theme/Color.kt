@@ -61,8 +61,9 @@ internal val Neutral900 = Color(0xFF292B31)
  * request and a 5xx have to read as *wrong* and no ramp step says that. Its container and border
  * below were derived from it to match.
  *
- * Open question 01 in the developer handoff: confirm this value or supply a replacement. It is
- * deliberately left as the odd one out rather than disguised as a ramp step.
+ * This was open question 01 in the developer handoff, and the answer is that it stays. It is left
+ * visibly the odd one out rather than disguised as a ramp step: the next person to look for where
+ * this hue comes from should find this comment rather than assume Nocturne defines one.
  */
 internal val Red80 = Color(0xFFF2B8B5)
 

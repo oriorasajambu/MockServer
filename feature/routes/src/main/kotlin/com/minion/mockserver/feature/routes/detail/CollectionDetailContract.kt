@@ -37,7 +37,38 @@ internal data class CollectionDetailState(
     val renameError: DomainError? = null,
 
     val isConfirmingDelete: Boolean = false,
+
+    /** The find-route field, and what is typed in it. */
+    val isSearchOpen: Boolean = false,
+    val searchQuery: String = "",
+
+    /**
+     * Whether the list is being arranged rather than used.
+     *
+     * A mode rather than always-on handles: the row already carries a duplicate button and a
+     * switch, and a third and fourth control on it would leave the path about ninety dips wide.
+     */
+    val isReordering: Boolean = false,
 ) : UiState {
+
+    /**
+     * The routes actually drawn, filtered by [searchQuery].
+     *
+     * Matches on path and name together: a route is looked for by the URL it answers as often as
+     * by what it was called, and which of the two someone remembers is not predictable.
+     */
+    val visibleRoutes: List<MockRoute>
+        get() = if (searchQuery.isBlank()) {
+            routes
+        } else {
+            routes.filter {
+                it.pathPattern.contains(searchQuery, ignoreCase = true) ||
+                    it.name.contains(searchQuery, ignoreCase = true)
+            }
+        }
+
+    /** True when a search is on and hiding everything, as opposed to an empty collection. */
+    val isSearchEmpty: Boolean get() = routes.isNotEmpty() && visibleRoutes.isEmpty()
 
     val needsBodyCount: Int get() = routes.count { it.needsBody }
 
@@ -76,6 +107,15 @@ internal sealed interface CollectionDetailIntent : UiIntent {
 
     data object ImportIntoCollection : CollectionDetailIntent
 
+    data object ToggleSearch : CollectionDetailIntent
+    data class UpdateSearch(val query: String) : CollectionDetailIntent
+
+    /** Copies the collection and everything in it, then opens the copy. */
+    data object DuplicateCollection : CollectionDetailIntent
+
+    data object ToggleReordering : CollectionDetailIntent
+    data class MoveRoute(val id: String, val up: Boolean) : CollectionDetailIntent
+
     data object StartDelete : CollectionDetailIntent
     data object ConfirmDelete : CollectionDetailIntent
     data object DismissDelete : CollectionDetailIntent
@@ -112,6 +152,9 @@ internal sealed interface CollectionDetailEffect : UiEffect {
 
     /** Opens the importer with this collection already chosen as the destination. */
     data class NavigateToImport(val collectionId: String) : CollectionDetailEffect
+
+    /** Opens another collection — where a duplicate lands, so the copy is what you see next. */
+    data class NavigateToCollection(val collectionId: String) : CollectionDetailEffect
 
     /** After a delete: this screen is showing something that no longer exists. */
     data object NavigateBack : CollectionDetailEffect

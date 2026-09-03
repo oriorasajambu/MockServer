@@ -7,6 +7,7 @@ import com.minion.mockserver.core.common.result.AppResult
 import com.minion.mockserver.core.domain.model.MockCollection
 import com.minion.mockserver.core.domain.model.RoutingSnapshot
 import com.minion.mockserver.core.domain.usecase.collection.DeleteCollectionUseCase
+import com.minion.mockserver.core.domain.usecase.collection.DuplicateCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.collection.SaveCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.importexport.ExportCollectionJsonUseCase
@@ -15,6 +16,7 @@ import com.minion.mockserver.core.domain.usecase.route.DeleteRouteUseCase
 import com.minion.mockserver.core.domain.usecase.route.DetectShadowedRoutesUseCase
 import com.minion.mockserver.core.domain.usecase.route.DuplicateRouteUseCase
 import com.minion.mockserver.core.domain.usecase.route.GetRoutesUseCase
+import com.minion.mockserver.core.domain.usecase.route.ReorderRoutesUseCase
 import com.minion.mockserver.core.domain.usecase.route.ToggleRouteUseCase
 import com.minion.mockserver.core.navigation.CollectionDetailRoute
 import com.minion.mockserver.core.ui.mvi.MviViewModel
@@ -36,6 +38,8 @@ internal class CollectionDetailViewModel @Inject constructor(
     private val exportJson: ExportCollectionJsonUseCase,
     private val exportPostman: ExportPostmanCollectionUseCase,
     private val saveCollection: SaveCollectionUseCase,
+    private val duplicateCollection: DuplicateCollectionUseCase,
+    private val reorderRoutes: ReorderRoutesUseCase,
     private val deleteCollection: DeleteCollectionUseCase,
     getCollection: GetCollectionUseCase,
 ) : MviViewModel<CollectionDetailState, CollectionDetailIntent, CollectionDetailEffect>(
@@ -141,6 +145,45 @@ internal class CollectionDetailViewModel @Inject constructor(
             CollectionDetailIntent.ImportIntoCollection -> {
                 reduce { copy(isMenuOpen = false) }
                 emit(CollectionDetailEffect.NavigateToImport(collectionId))
+            }
+
+            CollectionDetailIntent.ToggleSearch -> reduce {
+                // Closing the field clears the query: a hidden filter still hiding routes is the
+                // kind of state that gets reported as "my route disappeared".
+                copy(isSearchOpen = !isSearchOpen, searchQuery = "")
+            }
+
+            is CollectionDetailIntent.UpdateSearch -> reduce { copy(searchQuery = intent.query) }
+
+            CollectionDetailIntent.DuplicateCollection -> viewModelScope.launch {
+                reduce { copy(isMenuOpen = false) }
+                when (val result = duplicateCollection(collectionId)) {
+                    is AppResult.Success ->
+                        emitEffect(CollectionDetailEffect.NavigateToCollection(result.data.id))
+
+                    is AppResult.Failure ->
+                        emitEffect(CollectionDetailEffect.ShowError(result.error))
+                }
+            }
+
+            CollectionDetailIntent.ToggleReordering -> reduce {
+                // Arranging and filtering at once would reorder a list with rows missing from it,
+                // and the indices written would be of the filtered view rather than the real one.
+                copy(
+                    isReordering = !isReordering,
+                    isMenuOpen = false,
+                    isSearchOpen = false,
+                    searchQuery = "",
+                )
+            }
+
+            is CollectionDetailIntent.MoveRoute -> viewModelScope.launch {
+                val order = reorderRoutes.moved(
+                    routeIdsInOrder = currentState.routes.map { it.id },
+                    routeId = intent.id,
+                    up = intent.up,
+                )
+                reorderRoutes(order)
             }
 
             CollectionDetailIntent.StartDelete -> reduce {

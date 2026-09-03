@@ -48,7 +48,7 @@ interface RouteRepository {
     /** Every route, across every collection. What the snapshot builder subscribes to. */
     fun observeAllRoutes(): Flow<List<MockRoute>>
 
-    /** The routes in one collection, in creation order. */
+    /** The routes in one collection, in the order the user arranged them. */
     fun observeRoutes(collectionId: String): Flow<List<MockRoute>>
 
     fun observeRoute(id: String): Flow<MockRoute?>
@@ -63,6 +63,9 @@ interface RouteRepository {
     suspend fun delete(id: String): AppResult<Unit>
 
     suspend fun setEnabled(id: String, isEnabled: Boolean): AppResult<Unit>
+
+    /** Persists a reordering as one transaction, so no intermediate order is ever observable. */
+    suspend fun reorder(idsInOrder: List<String>): AppResult<Unit>
 }
 
 /** Named chaos profiles (SPEC §6). */

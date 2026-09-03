@@ -130,6 +130,13 @@ fun AppNavHost(
             collectionDetailScreen(
                 onNavigateBack = navController::popBackStack,
                 onNavigateToImport = { id -> navController.navigate(ImportRoute(id)) },
+                // The duplicate replaces this screen rather than stacking on it: going back from
+                // a copy should reach the collection list, not the original it was made from.
+                onNavigateToCollection = { id ->
+                    navController.navigate(CollectionDetailRoute(id)) {
+                        popUpTo(CollectionDetailRoute::class) { inclusive = true }
+                    }
+                },
                 onNavigateToEditor = { routeId ->
                     val collectionId = navController.currentCollectionId() ?: return@collectionDetailScreen
                     navController.navigate(RouteEditorRoute(collectionId, routeId))

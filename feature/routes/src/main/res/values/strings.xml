@@ -59,6 +59,15 @@
     <string name="routes_more_actions">More actions</string>
     <string name="routes_menu_rename">Rename</string>
     <string name="routes_menu_import">Import into this one</string>
+    <string name="routes_menu_duplicate">Duplicate collection</string>
+    <string name="routes_menu_reorder">Reorder routes</string>
+    <string name="routes_menu_reorder_done">Done reordering</string>
+    <string name="routes_find">Find route</string>
+    <string name="routes_find_hint">Find a route by path or name</string>
+    <string name="routes_find_empty_title">No route matches</string>
+    <string name="routes_find_empty_body">Nothing in this collection has that in its path or its name.</string>
+    <!-- Shown while arranging, because order is presentation and matching is not. -->
+    <string name="routes_reorder_note">Order is how the list reads. Which route answers is still decided by how specific it is.</string>
     <plurals name="routes_menu_disable_all">
         <item quantity="one">Turn the route off</item>
         <item quantity="other">Turn all %1$d routes off</item>

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -43,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.minion.mockserver.core.common.error.DomainError
+import com.minion.mockserver.core.designsystem.component.AppOutlinedButton
 import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
@@ -55,6 +57,7 @@ import com.minion.mockserver.core.ui.component.EmptyState
 import com.minion.mockserver.core.ui.component.FadedDivider
 import com.minion.mockserver.core.ui.component.LabelledTextField
 import com.minion.mockserver.core.ui.component.RouteRow
+import com.minion.mockserver.core.ui.component.SearchBar
 import com.minion.mockserver.core.ui.component.Tone
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -69,6 +72,7 @@ import com.minion.mockserver.feature.routes.R
 internal fun CollectionDetailScreen(
     onNavigateToEditor: (String?) -> Unit,
     onNavigateToImport: (String) -> Unit,
+    onNavigateToCollection: (String) -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CollectionDetailViewModel = hiltViewModel(),
@@ -99,6 +103,8 @@ internal fun CollectionDetailScreen(
                 context.showToast(resources.getString(effect.error.toMessageRes()))
 
             is CollectionDetailEffect.NavigateToImport -> onNavigateToImport(effect.collectionId)
+            is CollectionDetailEffect.NavigateToCollection ->
+                onNavigateToCollection(effect.collectionId)
             CollectionDetailEffect.NavigateBack -> onNavigateBack()
         }
     }
@@ -167,13 +173,34 @@ internal fun CollectionDetailContent(
                 ),
                 verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
             ) {
-                ExportMenuButton(onIntent = onIntent)
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+                    ExportMenuButton(onIntent = onIntent)
+                    AppOutlinedButton(
+                        text = stringResource(R.string.routes_find),
+                        icon = MockIcons.MagnifyingGlass,
+                        onClick = { onIntent(CollectionDetailIntent.ToggleSearch) },
+                    )
+                }
+
+                if (state.isSearchOpen) {
+                    SearchBar(
+                        query = state.searchQuery,
+                        onQueryChange = { onIntent(CollectionDetailIntent.UpdateSearch(it)) },
+                        hint = stringResource(R.string.routes_find_hint),
+                    )
+                }
 
                 Text(
                     text = stringResource(R.string.routes_export_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
+                // Said where the arranging happens, because a list you can order strongly implies
+                // first-match-wins, and this app decides by specificity instead (SPEC 4.3).
+                if (state.isReordering) {
+                    Callout(text = stringResource(R.string.routes_reorder_note))
+                }
 
                 if (state.needsBodyCount > 0) {
                     Text(
@@ -190,7 +217,12 @@ internal fun CollectionDetailContent(
 
             FadedDivider()
 
-            if (state.isEmpty) {
+            if (state.isSearchEmpty) {
+                EmptyState(
+                    title = stringResource(R.string.routes_find_empty_title),
+                    description = stringResource(R.string.routes_find_empty_body),
+                )
+            } else if (state.isEmpty) {
                 EmptyState(
                     title = stringResource(R.string.routes_empty_title),
                     description = stringResource(R.string.routes_empty_body),
@@ -199,7 +231,10 @@ internal fun CollectionDetailContent(
                 )
             } else {
                 LazyColumn(contentPadding = PaddingValues(bottom = Dimens.space)) {
-                    items(items = state.routes, key = { it.id }) { route ->
+                    itemsIndexed(
+                        items = state.visibleRoutes,
+                        key = { _, route -> route.id },
+                    ) { index, route ->
                         RouteRow(
                             route = route,
                             isShadowed = state.shadowedBy.containsKey(route.id),
@@ -209,6 +244,20 @@ internal fun CollectionDetailContent(
                             },
                             onDuplicate = {
                                 onIntent(CollectionDetailIntent.DuplicateRoute(route.id))
+                            },
+                            // Null at the ends, which disables the handle rather than wrapping
+                            // the row around to the other end of the list.
+                            onMoveUp = if (state.isReordering && index > 0) {
+                                { onIntent(CollectionDetailIntent.MoveRoute(route.id, up = true)) }
+                            } else {
+                                null
+                            },
+                            onMoveDown = if (state.isReordering &&
+                                index < state.visibleRoutes.lastIndex
+                            ) {
+                                { onIntent(CollectionDetailIntent.MoveRoute(route.id, up = false)) }
+                            } else {
+                                null
                             },
                         )
                     }
@@ -287,6 +336,11 @@ private fun CollectionMenu(
             onClick = { onIntent(CollectionDetailIntent.StartRename) },
         )
         MenuItem(
+            label = stringResource(R.string.routes_menu_duplicate),
+            icon = MockIcons.Copy,
+            onClick = { onIntent(CollectionDetailIntent.DuplicateCollection) },
+        )
+        MenuItem(
             label = stringResource(R.string.routes_menu_import),
             icon = MockIcons.FileArrowDown,
             onClick = { onIntent(CollectionDetailIntent.ImportIntoCollection) },
@@ -304,6 +358,20 @@ private fun CollectionMenu(
             onClick = {
                 onIntent(CollectionDetailIntent.SetAllRoutesEnabled(state.willEnableAll))
             },
+        )
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+        MenuItem(
+            label = stringResource(
+                if (state.isReordering) {
+                    R.string.routes_menu_reorder_done
+                } else {
+                    R.string.routes_menu_reorder
+                },
+            ),
+            icon = MockIcons.ArrowsDownUp,
+            onClick = { onIntent(CollectionDetailIntent.ToggleReordering) },
         )
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

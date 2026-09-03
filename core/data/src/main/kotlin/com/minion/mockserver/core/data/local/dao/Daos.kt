@@ -51,10 +51,13 @@ interface CollectionDao {
 @Dao
 interface RouteDao {
 
-    @Query("SELECT * FROM ${RouteEntity.TABLE} ORDER BY createdAt ASC")
+    @Query("SELECT * FROM ${RouteEntity.TABLE} ORDER BY `${RouteEntity.ORDER_COLUMN}` ASC, createdAt ASC")
     fun observeAll(): Flow<List<RouteEntity>>
 
-    @Query("SELECT * FROM ${RouteEntity.TABLE} WHERE collectionId = :collectionId ORDER BY createdAt ASC")
+    @Query(
+        "SELECT * FROM ${RouteEntity.TABLE} WHERE collectionId = :collectionId " +
+            "ORDER BY `${RouteEntity.ORDER_COLUMN}` ASC, createdAt ASC",
+    )
     fun observeByCollection(collectionId: String): Flow<List<RouteEntity>>
 
     @Query("SELECT * FROM ${RouteEntity.TABLE} WHERE id = :id")
@@ -73,6 +76,20 @@ interface RouteDao {
 
     @Query("DELETE FROM ${RouteEntity.TABLE} WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("UPDATE ${RouteEntity.TABLE} SET `${RouteEntity.ORDER_COLUMN}` = :order WHERE id = :id")
+    suspend fun setOrder(id: String, order: Int)
+
+    /**
+     * Writes a whole collection's order in one transaction.
+     *
+     * One statement per row, but one transaction around them: a half-applied reorder is a list
+     * with two routes claiming the same index, and the observing flow would emit it.
+     */
+    @Transaction
+    suspend fun reorder(idsInOrder: List<String>) {
+        idsInOrder.forEachIndexed { index, id -> setOrder(id, index) }
+    }
 
     @Query("UPDATE ${RouteEntity.TABLE} SET isEnabled = :isEnabled WHERE id = :id")
     suspend fun setEnabled(id: String, isEnabled: Boolean)

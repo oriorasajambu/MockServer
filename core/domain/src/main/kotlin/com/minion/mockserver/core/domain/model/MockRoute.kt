@@ -41,6 +41,15 @@ data class MockRoute(
     val createdAt: Long = 0L,
 
     /**
+     * Where this route sits in its collection's list.
+     *
+     * Explicit rather than implied by [createdAt], because the order is now something the user
+     * sets: matching is decided by specificity (SPEC §4.3), so this is purely how the list reads
+     * — and a list that cannot be arranged is one where a route added last is stuck last.
+     */
+    val order: Int = 0,
+
+    /**
      * Set by an importer when a spec defined the operation but no example body (SPEC §9.1).
      *
      * The route is created anyway, with an empty body and this flag, because a missing mock you

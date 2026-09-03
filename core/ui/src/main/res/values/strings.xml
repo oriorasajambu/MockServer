@@ -117,6 +117,8 @@
     <string name="route_preview_delay">%1$dms</string>
     <string name="route_preview_delay_range">%1$d–%2$dms</string>
     <string name="routes_duplicate">Duplicate</string>
+    <string name="routes_move_up">Move up</string>
+    <string name="routes_move_down">Move down</string>
     <string name="routes_shadowed">Shadowed</string>
     <string name="routes_needs_body">Needs body</string>
     <string name="routes_chaos">Chaos</string>

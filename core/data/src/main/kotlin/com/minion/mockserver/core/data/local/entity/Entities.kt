@@ -72,12 +72,22 @@ data class RouteEntity(
     /** The other statuses the source defined, as JSON. `[]` for a hand-written route. */
     @ColumnInfo(defaultValue = EMPTY_JSON_ARRAY)
     val alternatesJson: String,
+
+    /** Where the route sits in its collection's list. See `ReorderRoutesUseCase`. */
+    @ColumnInfo(name = ORDER_COLUMN, defaultValue = "0")
+    val order: Int,
 ) {
     companion object {
         const val TABLE = "routes"
 
         /** Matches the migration's `DEFAULT`, so a v1 row reads back as "no alternates". */
         const val EMPTY_JSON_ARRAY = "[]"
+
+        /**
+         * Quoted everywhere it appears in SQL: `order` is a reserved word, and an unquoted one
+         * is a syntax error rather than a column.
+         */
+        const val ORDER_COLUMN = "sortOrder"
     }
 }
 
