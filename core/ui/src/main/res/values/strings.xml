@@ -60,6 +60,31 @@
     <!-- The collection and route rows. -->
     <string name="collections_edit">Edit</string>
     <string name="dialog_cancel">Cancel</string>
+
+    <!-- What a chaos profile does, in words. See ChaosDescription.kt for the rounding rule. -->
+    <string name="chaos_desc_clean">Every response goes out clean.</string>
+    <string name="chaos_desc_nothing_fails">Nothing fails.</string>
+    <string name="chaos_desc_sentence">%1$s %2$s</string>
+    <string name="chaos_desc_delay">Everything waits %1$s.</string>
+    <string name="chaos_desc_delay_range">Everything waits between %1$s and %2$s.</string>
+    <plurals name="chaos_desc_error">
+        <item quantity="one">About %1$d request in %2$d fails.</item>
+        <item quantity="other">About %1$d requests in %2$d fail.</item>
+    </plurals>
+    <plurals name="chaos_desc_reset">
+        <item quantity="one">About %1$d request in %2$d is cut mid-body with no clean end.</item>
+        <item quantity="other">About %1$d requests in %2$d are cut mid-body with no clean end.</item>
+    </plurals>
+    <plurals name="chaos_desc_malformed">
+        <item quantity="one">About %1$d request in %2$d arrives incomplete.</item>
+        <item quantity="other">About %1$d requests in %2$d arrive incomplete.</item>
+    </plurals>
+    <string name="chaos_desc_error_all">Every request fails.</string>
+    <string name="chaos_desc_reset_all">Every request is cut mid-body with no clean end.</string>
+    <string name="chaos_desc_malformed_all">Every request arrives incomplete.</string>
+    <string name="chaos_duration_ms">%1$d ms</string>
+    <string name="chaos_duration_seconds">%1$s s</string>
+    <string name="chaos_edit_profile">Edit profile</string>
     <string name="editor_body_label">Body</string>
 
     <!-- The inline result after firing a route at itself from the editor. -->
