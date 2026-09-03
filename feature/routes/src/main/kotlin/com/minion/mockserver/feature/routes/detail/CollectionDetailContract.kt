@@ -21,11 +21,35 @@ internal data class CollectionDetailState(
     val shadowedBy: Map<String, String> = emptyMap(),
 
     val isLoading: Boolean = true,
+
+    /** The overflow menu in the top bar. */
+    val isMenuOpen: Boolean = false,
+
+    /**
+     * The name being typed in the rename dialog, or `null` when it is closed.
+     *
+     * A nullable draft rather than a separate `isRenaming` flag: two fields can disagree about
+     * whether the dialog is open, and one of the two orderings shows an empty field.
+     */
+    val renameDraft: String? = null,
+
+    /** Rejected by [com.minion.mockserver.core.domain.usecase.collection.SaveCollectionUseCase]. */
+    val renameError: DomainError? = null,
+
+    val isConfirmingDelete: Boolean = false,
 ) : UiState {
 
     val needsBodyCount: Int get() = routes.count { it.needsBody }
 
     val isEmpty: Boolean get() = !isLoading && routes.isEmpty()
+
+    /**
+     * Whether the bulk toggle should turn everything on or everything off.
+     *
+     * Off while anything is still answering, so the menu item reads as the thing that silences
+     * the collection — the common case during debugging is "stop all of this responding".
+     */
+    val willEnableAll: Boolean get() = routes.none { it.isEnabled }
 }
 
 internal sealed interface CollectionDetailIntent : UiIntent {
@@ -38,6 +62,23 @@ internal sealed interface CollectionDetailIntent : UiIntent {
         val format: ExportFormat,
         val destination: ExportDestination,
     ) : CollectionDetailIntent
+
+    data object OpenMenu : CollectionDetailIntent
+    data object DismissMenu : CollectionDetailIntent
+
+    data object StartRename : CollectionDetailIntent
+    data class UpdateRenameDraft(val name: String) : CollectionDetailIntent
+    data object ConfirmRename : CollectionDetailIntent
+    data object DismissRename : CollectionDetailIntent
+
+    /** Every route in the collection at once, from the menu. */
+    data class SetAllRoutesEnabled(val isEnabled: Boolean) : CollectionDetailIntent
+
+    data object ImportIntoCollection : CollectionDetailIntent
+
+    data object StartDelete : CollectionDetailIntent
+    data object ConfirmDelete : CollectionDetailIntent
+    data object DismissDelete : CollectionDetailIntent
 }
 
 /** The two wire formats a collection can leave in (SPEC §9.2). */
@@ -68,4 +109,10 @@ internal sealed interface CollectionDetailEffect : UiEffect {
     /** Postman is lossy; the warnings name what will actually be dropped (SPEC §9.2). */
     data class ConfirmLossyExport(val warnings: List<String>) : CollectionDetailEffect
     data class ShowError(val error: DomainError) : CollectionDetailEffect
+
+    /** Opens the importer with this collection already chosen as the destination. */
+    data class NavigateToImport(val collectionId: String) : CollectionDetailEffect
+
+    /** After a delete: this screen is showing something that no longer exists. */
+    data object NavigateBack : CollectionDetailEffect
 }

@@ -144,9 +144,12 @@ private fun Header(
                 )
             }
         }
-        // Not in the design, which puts renaming behind the collection detail's overflow menu.
-        // That screen does not have the menu yet, and a collection's name, base path and CORS
-        // settings would be unreachable without this — so it stays until the menu lands.
+        // Not in the design, and it has to stay. The detail screen's overflow menu now carries
+        // Rename, which is all the design's dialog (1r) changes — it says outright that the path
+        // prefix does not move. But a collection also owns its base path and its CORS config
+        // (SPEC 8.7), and this dialog is the only place either can be edited after creation. The
+        // twenty-one screens never gave those a home; until they do, removing this would make
+        // per-collection CORS unreachable.
         IconButton(onClick = onEdit) {
             Icon(
                 imageVector = MockIcons.PencilSimple,

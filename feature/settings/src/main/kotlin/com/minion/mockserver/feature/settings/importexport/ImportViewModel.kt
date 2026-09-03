@@ -1,6 +1,8 @@
 package com.minion.mockserver.feature.settings.importexport
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.minion.mockserver.core.common.result.AppResult
 import com.minion.mockserver.core.domain.model.MockCollection
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
@@ -9,6 +11,7 @@ import com.minion.mockserver.core.domain.usecase.importexport.DetectImportConfli
 import com.minion.mockserver.core.domain.usecase.importexport.ParseImportUseCase
 import com.minion.mockserver.core.domain.usecase.route.GetRoutesUseCase
 import com.minion.mockserver.core.domain.util.IdGenerator
+import com.minion.mockserver.core.navigation.ImportRoute
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
@@ -24,9 +27,14 @@ internal class ImportViewModel @Inject constructor(
     private val getCollections: GetCollectionsUseCase,
     private val getRoutes: GetRoutesUseCase,
     private val idGenerator: IdGenerator,
+    savedStateHandle: SavedStateHandle,
 ) : MviViewModel<ImportState, ImportIntent, ImportEffect>(ImportState()) {
 
     init {
+        // Arriving from a collection's menu, the destination is already decided.
+        savedStateHandle.toRoute<ImportRoute>().collectionId?.let { id ->
+            reduce { copy(targetCollectionId = id) }
+        }
         viewModelScope.launch {
             getCollections().collect { collections -> reduce { copy(collections = collections) } }
         }

@@ -63,9 +63,15 @@ data object SettingsRoute : AppRoute
 @Serializable
 data class ChaosEditorRoute(val profileId: String? = null) : AppRoute
 
-/** Pick a file, preview what is in it, resolve conflicts, commit. */
+/**
+ * Pick a file, preview what is in it, resolve conflicts, commit.
+ *
+ * @param collectionId preselects the collection the routes land in. Set when arriving from a
+ *   collection's own menu, where "import into this one" has already answered the question the
+ *   picker would otherwise ask.
+ */
 @Serializable
-data object ImportRoute : AppRoute
+data class ImportRoute(val collectionId: String? = null) : AppRoute
 
 /** The full-screen QR code, with the brightness boosted. */
 @Serializable

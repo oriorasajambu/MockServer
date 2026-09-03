@@ -23,11 +23,13 @@ fun NavGraphBuilder.collectionsScreen(onNavigateToCollection: (String) -> Unit) 
 
 fun NavGraphBuilder.collectionDetailScreen(
     onNavigateToEditor: (String?) -> Unit,
+    onNavigateToImport: (String) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     composable<CollectionDetailRoute> {
         CollectionDetailScreen(
             onNavigateToEditor = onNavigateToEditor,
+            onNavigateToImport = onNavigateToImport,
             onNavigateBack = onNavigateBack,
         )
     }

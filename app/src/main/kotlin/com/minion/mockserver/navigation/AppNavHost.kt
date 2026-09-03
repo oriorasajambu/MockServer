@@ -129,6 +129,7 @@ fun AppNavHost(
             )
             collectionDetailScreen(
                 onNavigateBack = navController::popBackStack,
+                onNavigateToImport = { id -> navController.navigate(ImportRoute(id)) },
                 onNavigateToEditor = { routeId ->
                     val collectionId = navController.currentCollectionId() ?: return@collectionDetailScreen
                     navController.navigate(RouteEditorRoute(collectionId, routeId))
@@ -159,7 +160,7 @@ fun AppNavHost(
             )
 
             settingsScreen(
-                onNavigateToImport = { navController.navigate(ImportRoute) },
+                onNavigateToImport = { navController.navigate(ImportRoute()) },
                 onNavigateToChaosEditor = { navController.navigate(ChaosEditorRoute()) },
             )
             importScreen(

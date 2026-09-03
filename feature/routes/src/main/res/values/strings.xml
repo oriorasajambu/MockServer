@@ -21,6 +21,45 @@
 
     <!-- Route list -->
     <string name="routes_new">New route</string>
+
+    <!-- Collection detail: the top bar, its overflow menu, and the two dialogs it opens. -->
+    <string name="routes_detail_subtitle">%1$s · %2$s</string>
+    <plurals name="routes_count">
+        <item quantity="one">%1$d route</item>
+        <item quantity="other">%1$d routes</item>
+    </plurals>
+    <string name="routes_more_actions">More actions</string>
+    <string name="routes_menu_rename">Rename</string>
+    <string name="routes_menu_import">Import into this one</string>
+    <plurals name="routes_menu_disable_all">
+        <item quantity="one">Turn the route off</item>
+        <item quantity="other">Turn all %1$d routes off</item>
+    </plurals>
+    <plurals name="routes_menu_enable_all">
+        <item quantity="one">Turn the route on</item>
+        <item quantity="other">Turn all %1$d routes on</item>
+    </plurals>
+    <string name="routes_menu_delete">Delete collection</string>
+
+    <string name="routes_export">Export</string>
+    <string name="routes_export_note">Export writes native JSON or a Postman v2.1 collection.</string>
+    <string name="routes_export_share">Share %1$s</string>
+    <string name="routes_export_save">Save %1$s</string>
+    <string name="routes_format_json">native JSON</string>
+    <string name="routes_format_postman">Postman v2.1</string>
+
+    <string name="routes_rename_title">Rename collection</string>
+    <string name="routes_rename_label">Name</string>
+    <string name="routes_rename_help">A label for you only. Clients never see it.</string>
+    <string name="routes_rename_callout">The path prefix stays %1$s. Change it on a route\'s Path field.</string>
+
+    <string name="routes_delete_title">Delete %1$s?</string>
+    <plurals name="routes_delete_body">
+        <item quantity="one">Its route goes with it. Requests to %2$s will fall through to the unmatched response.</item>
+        <item quantity="other">Its %1$d routes go with it. Requests to %2$s will fall through to the unmatched response.</item>
+    </plurals>
+    <string name="routes_delete_callout">Nothing is exported yet. Save a copy first if you might want it back.</string>
+    <string name="routes_delete_confirm">Delete</string>
     <plurals name="routes_needs_body_banner">
         <item quantity="one">%1$d route was imported without a response body.</item>
         <item quantity="other">%1$d routes were imported without a response body.</item>
