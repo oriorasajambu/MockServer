@@ -474,9 +474,15 @@ private fun RenameDialog(
                             .weight(1f)
                             .height(Dimens.touchTarget),
                         enabled = draft.isNotBlank(),
+                        // The border has to dim with the label. Left at full accent it read as
+                        // an enabled button whose text had simply failed to draw.
                         border = BorderStroke(
                             Dimens.hairline,
-                            MaterialTheme.colorScheme.primary,
+                            if (draft.isNotBlank()) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.outlineVariant
+                            },
                         ),
                         colors = ButtonDefaults.outlinedButtonColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,

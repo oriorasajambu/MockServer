@@ -72,7 +72,10 @@ fun RouteRow(
             modifier = Modifier
                 .weight(1f)
                 .padding(
-                    start = Dimens.spaceMedium,
+                    // The rail lives *inside* the gutter, so the text after it lands on the same
+                    // 16dp as everything else on the screen. Padding it by a round step instead
+                    // left every route two dips left of the header above it.
+                    start = Dimens.space - Dimens.railWidth,
                     end = Dimens.spaceSmall,
                     top = Dimens.spaceMedium,
                     bottom = Dimens.spaceMedium,
