@@ -60,6 +60,13 @@
     <!-- The collection and route rows. -->
     <string name="collections_edit">Edit</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="search_clear">Clear search</string>
+
+    <!-- The traffic row: what happened, and when. -->
+    <string name="traffic_no_route">No route matched</string>
+    <string name="traffic_chaos_injected">Chaos injected %1$d</string>
+    <string name="traffic_matched">Matched</string>
+    <string name="traffic_timing">%1$d ms · %2$s</string>
 
     <!-- What a chaos profile does, in words. See ChaosDescription.kt for the rounding rule. -->
     <string name="chaos_desc_clean">Every response goes out clean.</string>

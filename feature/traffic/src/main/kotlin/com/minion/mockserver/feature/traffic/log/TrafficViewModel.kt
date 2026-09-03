@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.minion.mockserver.core.common.config.AppConstants
+import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
 import com.minion.mockserver.core.domain.usecase.route.GetRoutesUseCase
 import com.minion.mockserver.core.domain.usecase.server.ObserveServerAddressesUseCase
@@ -88,6 +89,10 @@ internal class TrafficViewModel @Inject constructor(
                 current.copy(unmatchedOnly = intent.unmatchedOnly)
             }
 
+            is TrafficIntent.SetChaosFilter -> updateFilter { current ->
+                current.copy(chaosOnly = intent.chaosOnly)
+            }
+
             is TrafficIntent.SetCollectionFilter -> {
                 reduce { copy(selectedCollectionId = intent.collectionId) }
                 applyCollectionFilter(intent.collectionId)
@@ -138,6 +143,7 @@ internal class TrafficViewModel @Inject constructor(
                 reduce {
                     copy(
                         entries = entries,
+                        groups = entries.collapseRepeats(),
                         // While following is paused, the pill counts what arrived behind the
                         // user's back rather than the list moving under their finger.
                         newEntryCount = if (isFollowing) {
@@ -155,6 +161,42 @@ internal class TrafficViewModel @Inject constructor(
                 reduce { copy(droppedCount = dropped) }
             }
         }
+
+        viewModelScope.launch {
+            observeTraffic.count().collect { total -> reduce { copy(totalCount = total) } }
+        }
+        viewModelScope.launch {
+            observeTraffic.unmatchedCount().collect { n -> reduce { copy(unmatchedCount = n) } }
+        }
+        viewModelScope.launch {
+            observeTraffic.chaosCount().collect { n -> reduce { copy(chaosCount = n) } }
+        }
+    }
+
+    /**
+     * Folds runs of the same request into one row.
+     *
+     * Consecutive only. A poll and an unrelated request interleaved are two different stories,
+     * and collapsing across the gap would claim a run that never happened. Identity is the method,
+     * the path and the status: a route that started answering 500 halfway through a poll is
+     * exactly the change this log exists to show, so it breaks the run.
+     */
+    private fun List<TrafficEntry>.collapseRepeats(): List<TrafficGroup> {
+        if (isEmpty()) return emptyList()
+        val groups = mutableListOf<TrafficGroup>()
+        forEach { entry ->
+            val last = groups.lastOrNull()
+            if (last != null &&
+                last.entry.method == entry.method &&
+                last.entry.path == entry.path &&
+                last.entry.statusCode == entry.statusCode
+            ) {
+                groups[groups.lastIndex] = last.copy(repeatCount = last.repeatCount + 1)
+            } else {
+                groups += TrafficGroup(entry = entry, repeatCount = 1)
+            }
+        }
+        return groups
     }
 
     /**
