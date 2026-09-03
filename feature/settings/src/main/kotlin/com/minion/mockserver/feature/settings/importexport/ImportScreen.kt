@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ImportConflict
 import com.minion.mockserver.core.ui.component.AppScaffold
@@ -128,10 +129,21 @@ internal fun ImportContent(
             }
 
             preview == null -> EmptyState(
-                title = stringResource(R.string.import_title),
-                description = stringResource(R.string.import_body),
+                title = stringResource(R.string.import_empty_title),
+                description = stringResource(R.string.import_empty_body),
+                icon = MockIcons.FileArrowDown,
+                // The formats were buried in a paragraph nobody finishes. As chips they answer
+                // "will it take my file" before the file picker opens rather than after it.
+                chips = listOf(
+                    stringResource(R.string.import_format_openapi_30),
+                    stringResource(R.string.import_format_openapi_31),
+                    stringResource(R.string.import_format_postman),
+                    stringResource(R.string.import_format_har),
+                ),
                 actionLabel = stringResource(R.string.import_pick),
+                actionIcon = MockIcons.FolderOpen,
                 onAction = { onIntent(ImportIntent.PickFile) },
+                caption = stringResource(R.string.import_limits),
                 modifier = Modifier.padding(padding),
             )
 

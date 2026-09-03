@@ -79,6 +79,9 @@ object Dimens {
     /** An icon inside a badge, a callout or a dialog header's circle. */
     val iconSmall = 18.dp
 
+    /** The one icon on an empty state, which is the largest thing on an otherwise bare screen. */
+    val iconLarge = 32.dp
+
     /** The tinted circle carrying a dialog or sheet header's icon. */
     val dialogIconSize = 34.dp
 

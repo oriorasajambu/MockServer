@@ -29,6 +29,7 @@ object MockIcons {
     val ArrowRight: ImageVector @Composable get() = vector(R.drawable.ic_ph_arrow_right)
     val ArrowSquareOut: ImageVector @Composable get() = vector(R.drawable.ic_ph_arrow_square_out)
     val ArrowsDownUp: ImageVector @Composable get() = vector(R.drawable.ic_ph_arrows_down_up)
+    val BatteryHigh: ImageVector @Composable get() = vector(R.drawable.ic_ph_battery_high)
     val CaretDown: ImageVector @Composable get() = vector(R.drawable.ic_ph_caret_down)
     val CaretRight: ImageVector @Composable get() = vector(R.drawable.ic_ph_caret_right)
     val CaretUp: ImageVector @Composable get() = vector(R.drawable.ic_ph_caret_up)
