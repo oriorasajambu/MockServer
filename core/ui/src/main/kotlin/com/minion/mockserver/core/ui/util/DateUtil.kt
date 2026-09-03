@@ -7,17 +7,34 @@ import java.time.format.DateTimeFormatter
 /**
  * Timestamp formatting for the traffic log.
  *
- * `HH:mm:ss.SSS` and nothing else. A log covering one debugging session never spans a date, and
- * milliseconds are the resolution at which two requests are actually distinguishable — which is
- * the question anyone reads this column to answer.
+ * No date: a log covering one debugging session never spans one. Two precisions, because the two
+ * places this appears are asking different questions — a row is scanned, an entry is compared.
  */
 object DateUtil {
 
     private val TIME_FORMAT: DateTimeFormatter =
         DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.systemDefault())
 
-    /** `14:03:22.481`. */
+    private val SHORT_TIME_FORMAT: DateTimeFormatter =
+        DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault())
+
+    /**
+     * `14:03:22.481`, for one entry's detail.
+     *
+     * Milliseconds are the resolution at which two requests are actually distinguishable, which
+     * is what you are asking once you have opened one.
+     */
     fun formatTime(epochMillis: Long): String = TIME_FORMAT.format(Instant.ofEpochMilli(epochMillis))
+
+    /**
+     * `14:03:22`, for a log row.
+     *
+     * The four characters milliseconds cost come straight out of the path beside them, which on a
+     * row carrying a repeat badge is the difference between `/api/v1/users/42` and `/api/v…rs/42`.
+     * Nobody distinguishes two requests by eye while scrolling; they open one.
+     */
+    fun formatTimeShort(epochMillis: Long): String =
+        SHORT_TIME_FORMAT.format(Instant.ofEpochMilli(epochMillis))
 
     /**
      * `1h 04m`, `4m 12s`, `38s`.

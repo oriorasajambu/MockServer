@@ -82,13 +82,14 @@ fun SettingsSection(
                 modifier = Modifier.weight(1f),
             )
             if (summary != null && !isExpanded) {
+                // Unweighted: it takes only the width it needs. Weighted, it claimed an equal
+                // share of the row and truncated "Unmatched requests" to make space for "404".
                 Text(
                     text = summary,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.MiddleEllipsis,
-                    modifier = Modifier.weight(1f, fill = false),
                 )
             }
             Icon(

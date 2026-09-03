@@ -8,10 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
+import com.minion.mockserver.core.designsystem.theme.MockTheme
 import com.minion.mockserver.core.domain.util.JsonTree
 import com.minion.mockserver.core.ui.R
 
@@ -43,7 +43,6 @@ fun BodyBlock(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(Dimens.spaceHalf),
     ) {
-        Text(stringResource(R.string.body_title), style = MaterialTheme.typography.titleSmall)
         when {
             body == null && byteCount > 0 -> Text(
                 text = pluralStringResource(R.plurals.body_binary, byteCount, byteCount),
@@ -59,7 +58,7 @@ fun BodyBlock(
 
             else -> Text(
                 text = if (prettyPrint) JsonTree.prettify(body) else body,
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                style = MockTheme.typography.codeMedium,
             )
         }
         if (truncated) {

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
@@ -29,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.minion.mockserver.core.designsystem.component.AppButton
 import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ImportConflict
@@ -240,21 +240,19 @@ internal fun ImportContent(
                     }
                 }
 
-                Button(
+                AppButton(
+                    text = pluralStringResource(
+                        R.plurals.import_commit,
+                        state.selectedCount,
+                        state.selectedCount,
+                    ),
+                    icon = MockIcons.FileArrowDown,
                     onClick = { onIntent(ImportIntent.Commit) },
                     enabled = state.canCommit,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(Dimens.space),
-                ) {
-                    Text(
-                        pluralStringResource(
-                            R.plurals.import_commit,
-                            state.selectedCount,
-                            state.selectedCount,
-                        ),
-                    )
-                }
+                )
             }
         }
     }

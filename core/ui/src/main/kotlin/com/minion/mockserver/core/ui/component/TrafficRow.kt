@@ -135,7 +135,7 @@ fun TrafficRow(
                 text = stringResource(
                     R.string.traffic_timing,
                     entry.durationMillis,
-                    DateUtil.formatTime(entry.receivedAt),
+                    DateUtil.formatTimeShort(entry.receivedAt),
                 ),
                 style = MockTheme.typography.codeSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

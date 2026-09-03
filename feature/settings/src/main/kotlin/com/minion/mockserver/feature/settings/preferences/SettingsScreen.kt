@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -31,6 +30,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.minion.mockserver.core.designsystem.component.AppButton
 import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
@@ -417,9 +417,11 @@ private fun DataSection(onIntent: (SettingsIntent) -> Unit) {
 
     // Import is the section's primary action and gets its own line; export is two destinations
     // for one thing and reads as a row.
-    Button(onClick = { onIntent(SettingsIntent.OpenImport) }) {
-        Text(stringResource(R.string.settings_import))
-    }
+    AppButton(
+        text = stringResource(R.string.settings_import),
+        icon = MockIcons.FileArrowDown,
+        onClick = { onIntent(SettingsIntent.OpenImport) },
+    )
 
     ExportActionRow(
         label = stringResource(R.string.settings_export_everything),
@@ -463,9 +465,10 @@ private fun RestartPrompt(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.tertiary,
         )
-        Button(onClick = { onIntent(SettingsIntent.RestartServer) }) {
-            Text(stringResource(R.string.settings_restart))
-        }
+        AppButton(
+            text = stringResource(R.string.settings_restart),
+            onClick = { onIntent(SettingsIntent.RestartServer) },
+        )
     }
 }
 
