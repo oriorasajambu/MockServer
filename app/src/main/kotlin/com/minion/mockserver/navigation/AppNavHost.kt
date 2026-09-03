@@ -137,6 +137,7 @@ fun AppNavHost(
             )
             routeEditorScreen(
                 onNavigateBack = navController::popBackStack,
+                onNavigateToChaosEditor = { navController.navigate(ChaosEditorRoute()) },
                 onNavigateToTrafficEntry = { entryId ->
                     navController.navigate(TrafficDetailRoute(entryId))
                 },

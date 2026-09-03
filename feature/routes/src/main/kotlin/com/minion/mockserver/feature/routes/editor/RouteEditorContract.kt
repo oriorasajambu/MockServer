@@ -6,6 +6,7 @@ import com.minion.mockserver.core.common.mvi.UiEffect
 import com.minion.mockserver.core.common.mvi.UiIntent
 import com.minion.mockserver.core.common.mvi.UiState
 import com.minion.mockserver.core.domain.model.AlternateResponse
+import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.domain.model.HttpMethodFilter
 import com.minion.mockserver.core.domain.model.MockRoute
 import com.minion.mockserver.core.domain.model.RequestMatcher
@@ -68,6 +69,16 @@ internal data class RouteEditorState(
 
     /** The last test fire, or `null` before the route has been fired at itself. */
     val testResult: TestResult? = null,
+
+    /**
+     * The chaos profile applied to *every* route, and the seed it replays from.
+     *
+     * Shown on the Chaos tab beside this route's own delay, because the two together are what a
+     * call actually does — a route with no override still fails if a global profile says so, and
+     * an editor that only showed the override would be describing half the behaviour.
+     */
+    val globalChaosProfile: ChaosProfile? = null,
+    val chaosSeed: Long = 0L,
 
     val isNew: Boolean = true,
     val isSaving: Boolean = false,
@@ -133,6 +144,9 @@ internal sealed interface RouteEditorIntent : UiIntent {
 
     /** Opens the traffic entry the last test produced. */
     data object OpenTestEntry : RouteEditorIntent
+
+    /** Leaves for the chaos profile list, which is where the global setting lives. */
+    data object EditChaosProfiles : RouteEditorIntent
     data object Save : RouteEditorIntent
     data object AttemptBack : RouteEditorIntent
 }
@@ -144,5 +158,6 @@ internal sealed interface RouteEditorEffect : UiEffect {
     /** "Test this route" fires a loopback request and drops the user at the resulting entry. */
     data class NavigateToTrafficEntry(val entryId: String) : RouteEditorEffect
     data object ReadClipboard : RouteEditorEffect
+    data object NavigateToChaosEditor : RouteEditorEffect
     data class ShowError(val error: DomainError) : RouteEditorEffect
 }

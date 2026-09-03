@@ -38,11 +38,13 @@ fun NavGraphBuilder.collectionDetailScreen(
 fun NavGraphBuilder.routeEditorScreen(
     onNavigateBack: () -> Unit,
     onNavigateToTrafficEntry: (String) -> Unit,
+    onNavigateToChaosEditor: () -> Unit,
 ) {
     composable<RouteEditorRoute> {
         RouteEditorScreen(
             onNavigateBack = onNavigateBack,
             onNavigateToTrafficEntry = onNavigateToTrafficEntry,
+            onNavigateToChaosEditor = onNavigateToChaosEditor,
         )
     }
 }

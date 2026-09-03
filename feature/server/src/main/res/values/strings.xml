@@ -23,7 +23,8 @@
     <string name="server_state_stopped">Stopped</string>
     <string name="server_state_running">Running · %1$s</string>
 
-    <string name="server_copied">Copied</string>
+    <!-- The snackbar names what it copied; the title says which kind of thing it was. -->
+    <string name="server_copied">Address copied</string>
     <string name="server_qr_close">Close</string>
     <string name="server_qr_description">QR code for %1$s</string>
 

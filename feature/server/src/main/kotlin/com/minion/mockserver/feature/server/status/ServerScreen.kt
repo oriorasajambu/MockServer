@@ -17,10 +17,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +50,7 @@ import com.minion.mockserver.core.domain.model.NetworkAddress
 import com.minion.mockserver.core.domain.model.ServerStatus
 import com.minion.mockserver.core.ui.component.AddressBlock
 import com.minion.mockserver.core.ui.component.AppScaffold
+import com.minion.mockserver.core.ui.component.AppSnackbar
 import com.minion.mockserver.core.ui.component.ChaosBanner
 import com.minion.mockserver.core.ui.component.NoticeCard
 import com.minion.mockserver.core.ui.component.OpenAccessNote
@@ -57,6 +62,7 @@ import com.minion.mockserver.core.ui.util.DateUtil
 import com.minion.mockserver.core.ui.util.copyToClipboard
 import com.minion.mockserver.core.ui.util.showToast
 import com.minion.mockserver.feature.server.R
+import kotlinx.coroutines.launch
 
 /**
  * The Server tab (SPEC §10.3).
@@ -82,7 +88,10 @@ internal fun ServerScreen(
     // configuration change, so text resolved through it goes stale after a locale switch.
     val resources = LocalResources.current
 
-    val copiedMessage = stringResource(R.string.server_copied)
+    // The address itself is the snackbar's body, so what was copied is visible rather than
+    // merely confirmed — three addresses sit a thumb-width apart on this screen.
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     // Re-read on every resume, not once: the user can turn notifications off in system settings
     // while this screen sits in the background, and the warning has to reflect what is true now
@@ -99,7 +108,12 @@ internal fun ServerScreen(
         when (effect) {
             is ServerEffect.CopiedToClipboard -> {
                 context.copyToClipboard(CLIPBOARD_LABEL, effect.label)
-                context.showToast(copiedMessage)
+                scope.launch {
+                    // Replaces whatever is showing: tapping copy twice should not queue two
+                    // identical confirmations behind each other.
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    snackbarHostState.showSnackbar(effect.label)
+                }
             }
 
             is ServerEffect.ShowError ->
@@ -119,7 +133,12 @@ internal fun ServerScreen(
         }
     }
 
-    ServerContent(state = state, onIntent = viewModel::onIntent, modifier = modifier)
+    ServerContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        modifier = modifier,
+        snackbarHostState = snackbarHostState,
+    )
 }
 
 @Composable
@@ -127,11 +146,17 @@ internal fun ServerContent(
     state: ServerState,
     onIntent: (ServerIntent) -> Unit,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     AppScaffold(
         title = stringResource(R.string.server_title),
         modifier = modifier,
         actions = { StatusChip(state = state) },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                AppSnackbar(data = data, title = stringResource(R.string.server_copied))
+            }
+        },
     ) { padding ->
         Column(
             modifier = Modifier

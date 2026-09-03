@@ -3,6 +3,7 @@ package com.minion.mockserver.feature.routes.editor
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.designsystem.theme.MockTheme
+import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.domain.model.HttpMethodFilter
 import com.minion.mockserver.core.domain.model.RequestMatcher
 import com.minion.mockserver.core.ui.component.AppScaffold
@@ -58,6 +60,7 @@ import com.minion.mockserver.core.ui.component.SectionTitle
 import com.minion.mockserver.core.ui.component.TestResultBar
 import com.minion.mockserver.core.ui.component.Tone
 import com.minion.mockserver.core.ui.component.ValidationWarnings
+import com.minion.mockserver.core.ui.component.chaosDescription
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
 import com.minion.mockserver.core.ui.util.clipboardText
@@ -75,6 +78,7 @@ import com.minion.mockserver.core.ui.R as UiR
 @Composable
 internal fun RouteEditorScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToChaosEditor: () -> Unit,
     onNavigateToTrafficEntry: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RouteEditorViewModel = hiltViewModel(),
@@ -98,6 +102,7 @@ internal fun RouteEditorScreen(
             RouteEditorEffect.ShowUnsavedDialog -> showUnsavedDialog = true
             is RouteEditorEffect.NavigateToTrafficEntry -> onNavigateToTrafficEntry(effect.entryId)
             RouteEditorEffect.ReadClipboard -> viewModel.onClipboardRead(context.clipboardText())
+            RouteEditorEffect.NavigateToChaosEditor -> onNavigateToChaosEditor()
             is RouteEditorEffect.ShowError ->
                 context.showToast(resources.getString(effect.error.toMessageRes()))
         }
@@ -408,12 +413,88 @@ private fun ChaosTab(
 
     FadedDivider()
 
-    SectionTitle(stringResource(R.string.editor_chaos_global))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SectionTitle(stringResource(R.string.editor_chaos_global))
+        Text(
+            text = stringResource(R.string.editor_chaos_global_where),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
     Text(
         text = stringResource(R.string.editor_chaos_global_help),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+
+    GlobalChaosCard(state = state, onIntent = onIntent)
+}
+
+/**
+ * The profile that applies to every route, and the way to change it.
+ *
+ * Read-only here. It is a global setting, and a control on a route editor that silently altered
+ * every other route would be the most surprising switch in the app — so this states what is
+ * active and hands off to the screen that owns it.
+ */
+@Composable
+private fun GlobalChaosCard(
+    state: RouteEditorState,
+    onIntent: (RouteEditorIntent) -> Unit,
+) {
+    val profile = state.globalChaosProfile
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceContainer,
+                MaterialTheme.shapes.medium,
+            )
+            .clickable { onIntent(RouteEditorIntent.EditChaosProfiles) }
+            .padding(Dimens.spaceMedium),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
+    ) {
+        Icon(
+            imageVector = MockIcons.Lightning,
+            // The profile's name is right beside it.
+            contentDescription = null,
+            tint = MockTheme.colors.chaosInjected,
+            modifier = Modifier.size(Dimens.iconSmall),
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceQuarter),
+        ) {
+            Text(
+                text = stringResource(
+                    R.string.editor_chaos_profile_name,
+                    profile?.name ?: stringResource(R.string.editor_chaos_profile_none),
+                    state.chaosSeed,
+                ),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = chaosDescription(profile ?: ChaosProfile.NONE),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Icon(
+            imageVector = MockIcons.CaretRight,
+            contentDescription = stringResource(R.string.editor_chaos_edit_profiles),
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(Dimens.iconSmall),
+        )
+    }
 }
 
 /**

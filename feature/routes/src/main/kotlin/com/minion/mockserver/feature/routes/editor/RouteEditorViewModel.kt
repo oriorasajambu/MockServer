@@ -13,6 +13,7 @@ import com.minion.mockserver.core.domain.model.MockRoute
 import com.minion.mockserver.core.domain.model.PathNormaliser
 import com.minion.mockserver.core.domain.model.RoutingSnapshot
 import com.minion.mockserver.core.domain.model.ServerStatus
+import com.minion.mockserver.core.domain.usecase.chaos.GetChaosProfilesUseCase
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.collection.GetCollectionsUseCase
 import com.minion.mockserver.core.domain.usecase.collection.SaveCollectionUseCase
@@ -57,6 +58,7 @@ internal class RouteEditorViewModel @Inject constructor(
     private val observeTraffic: ObserveTrafficUseCase,
     private val observeAddresses: ObserveServerAddressesUseCase,
     private val getSettings: GetServerSettingsUseCase,
+    private val getChaosProfiles: GetChaosProfilesUseCase,
     private val observeServerStatus: ObserveServerStatusUseCase,
     private val idGenerator: IdGenerator,
     private val loopbackRequester: LoopbackRequester,
@@ -102,6 +104,16 @@ internal class RouteEditorViewModel @Inject constructor(
     private var targetCollectionId: String = args.collectionId
 
     init {
+        // The global profile is a different flow from this route's own draft, so it is collected
+        // on its own rather than folded into the context combine, which already carries five.
+        viewModelScope.launch {
+            combine(getSettings(), getChaosProfiles()) { settings, profiles ->
+                profiles.firstOrNull { it.id == settings.globalChaosProfileId } to settings.chaosSeed
+            }.collect { (profile, seed) ->
+                reduce { copy(globalChaosProfile = profile, chaosSeed = seed) }
+            }
+        }
+
         // observeContext is started by loadRoute, not alongside it: a draft built from a traffic
         // entry works out its own collection, and observing before that resolves would subscribe
         // to the empty id and never re-subscribe.
@@ -150,6 +162,8 @@ internal class RouteEditorViewModel @Inject constructor(
             is RouteEditorIntent.ParameteriseSegment -> parameteriseSegment(intent.index)
 
             is RouteEditorIntent.SelectTab -> reduce { copy(activeTab = intent.tab) }
+
+            RouteEditorIntent.EditChaosProfiles -> emit(RouteEditorEffect.NavigateToChaosEditor)
 
             RouteEditorIntent.OpenTestEntry -> currentState.testResult?.let { result ->
                 emit(RouteEditorEffect.NavigateToTrafficEntry(result.entryId))

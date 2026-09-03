@@ -42,6 +42,10 @@
     <string name="editor_chaos_route_only">This route only</string>
     <string name="editor_chaos_route_only_help">Set here, kept even when the active profile is None.</string>
     <string name="editor_chaos_global">Everything else</string>
+    <string name="editor_chaos_global_where">Set in Settings</string>
+    <string name="editor_chaos_profile_name">%1$s · seed %2$d</string>
+    <string name="editor_chaos_profile_none">None</string>
+    <string name="editor_chaos_edit_profiles">Edit chaos profiles</string>
     <string name="editor_chaos_global_help">Failures come from the active chaos profile and apply to every route.</string>
     <string name="editor_delay_unit">ms</string>
     <string name="editor_save_route">Save route</string>
