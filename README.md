@@ -17,6 +17,13 @@ demo an integration with no network at all.
 expose `test` rather than `testDebugUnitTest`; the Android modules have no tests at all. So
 `./gradlew testDebugUnitTest` reports success having run *nothing*. See §4.
 
+GitHub Actions runs this same build on pushes and pull requests targeting `master`, and keeps a
+debug APK artifact for successful branch pushes. Pushing a `vMAJOR.MINOR.PATCH` tag on `master`
+builds and publishes a signed release APK. Configure the repository secrets
+`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and
+`ANDROID_KEY_PASSWORD` before tagging a release; the version name comes from the tag and the
+Android version code from the release workflow run number.
+
 Built from the specification in [`docs/finished/SPEC-1.md`](docs/finished/SPEC-1.md). Where the
 code departs from it, the KDoc at that point says so and why.
 
