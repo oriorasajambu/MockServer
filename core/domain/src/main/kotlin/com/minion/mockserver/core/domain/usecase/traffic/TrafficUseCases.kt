@@ -32,6 +32,15 @@ class ObserveTrafficUseCase @Inject constructor(
         /** `true` shows only unmatched, `false` only matched, `null` both. */
         val unmatchedOnly: Boolean? = null,
 
+        /**
+         * `true` shows only entries a chaos profile broke.
+         *
+         * Separate from [unmatchedOnly] rather than folded into one outcome filter: an injected
+         * failure *matched* a route, and someone hunting "what did chaos do" is asking a
+         * different question from someone hunting "what did my rules miss".
+         */
+        val chaosOnly: Boolean? = null,
+
         /** Restricts to entries answered by a route in this collection. */
         val collectionRouteIds: Set<String>? = null,
 
@@ -41,7 +50,7 @@ class ObserveTrafficUseCase @Inject constructor(
         /** Whether this filter would remove anything. Skips the scan entirely when it would not. */
         val isEmpty: Boolean
             get() = methods.isEmpty() && statusClasses.isEmpty() && unmatchedOnly == null &&
-                collectionRouteIds == null && query.isBlank()
+                chaosOnly == null && collectionRouteIds == null && query.isBlank()
     }
 
     /** Every entry, newest first. */
@@ -60,10 +69,23 @@ class ObserveTrafficUseCase @Inject constructor(
     /** How many of the current entries matched no route, for the server screen's counter. */
     fun unmatchedCount(): Flow<Int> = repository.entries.map { list -> list.count { it.isUnmatched } }
 
+    /**
+     * How many entries the log holds, unfiltered.
+     *
+     * Unfiltered on purpose: the count beside the tab title says how much traffic there has been,
+     * not how much a filter is currently letting through.
+     */
+    fun count(): Flow<Int> = repository.entries.map { it.size }
+
+    /** How many carried an injected failure, for the Chaos filter chip. */
+    fun chaosCount(): Flow<Int> =
+        repository.entries.map { list -> list.count { it.chaosApplied != null } }
+
     private fun TrafficEntry.matches(filter: Filter): Boolean {
         if (filter.methods.isNotEmpty() && method !in filter.methods) return false
         if (filter.statusClasses.isNotEmpty() && statusClass !in filter.statusClasses) return false
         if (filter.unmatchedOnly != null && isUnmatched != filter.unmatchedOnly) return false
+        if (filter.chaosOnly != null && (chaosApplied != null) != filter.chaosOnly) return false
         if (filter.collectionRouteIds != null && matchedRouteId !in filter.collectionRouteIds) return false
         if (filter.query.isNotBlank() && !containsText(filter.query)) return false
         return true

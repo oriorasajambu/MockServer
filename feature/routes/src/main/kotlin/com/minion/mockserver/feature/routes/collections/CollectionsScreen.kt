@@ -1,18 +1,22 @@
 package com.minion.mockserver.feature.routes.collections
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,12 +29,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.MockCollection
 import com.minion.mockserver.core.ui.component.AppScaffold
-import com.minion.mockserver.core.ui.component.CollectionRow
+import com.minion.mockserver.core.ui.component.CollectionCard
 import com.minion.mockserver.core.ui.component.EmptyState
+import com.minion.mockserver.core.ui.component.MockSwitch
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
 import com.minion.mockserver.core.ui.util.showToast
@@ -71,12 +77,23 @@ internal fun CollectionsContent(
     AppScaffold(
         title = stringResource(R.string.collections_title),
         modifier = modifier,
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { onIntent(CollectionsIntent.NewCollection) },
-                text = { Text(stringResource(R.string.collections_new)) },
-                icon = {},
-            )
+        actions = {
+            // The tab bar's count slot. "9 of 11 live" is the one number that says whether the
+            // server will answer what you expect, and it is cheaper to read here than to work
+            // out by scanning every card's switch.
+            if (state.totalRouteCount > 0) {
+                Text(
+                    text = stringResource(
+                        R.string.collections_live_count,
+                        state.enabledRouteCount,
+                        state.totalRouteCount,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    modifier = Modifier.padding(end = Dimens.space),
+                )
+            }
         },
     ) { padding ->
         if (state.isEmpty) {
@@ -88,17 +105,35 @@ internal fun CollectionsContent(
                 modifier = Modifier.padding(padding),
             )
         } else {
-            LazyColumn(modifier = Modifier.padding(padding)) {
+            LazyColumn(
+                modifier = Modifier.padding(padding),
+                contentPadding = PaddingValues(Dimens.space),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+            ) {
                 items(items = state.collections, key = { it.id }) { collection ->
-                    CollectionRow(
+                    CollectionCard(
                         collection = collection,
                         routeCount = state.routeCounts[collection.id] ?: 0,
                         needsBodyCount = state.needsBodyCounts[collection.id] ?: 0,
+                        previewRoutes = state.previewRoutes[collection.id].orEmpty(),
                         onOpen = { onIntent(CollectionsIntent.OpenCollection(collection.id)) },
                         onToggle = { onIntent(CollectionsIntent.ToggleCollection(collection.id, it)) },
+                        onToggleRoute = { id, enabled ->
+                            onIntent(CollectionsIntent.ToggleRoute(id, enabled))
+                        },
                         onEdit = { onIntent(CollectionsIntent.EditCollection(collection.id)) },
+                        onViewAll = { onIntent(CollectionsIntent.OpenCollection(collection.id)) },
                     )
-                    HorizontalDivider()
+                }
+
+                // The design ends the scroll with this rather than floating a FAB over the last
+                // card. The list is short — collections are made rarely — so the action can sit
+                // where the content stops instead of covering it.
+                item(key = NEW_COLLECTION_KEY) {
+                    NewCollectionButton(
+                        onClick = { onIntent(CollectionsIntent.NewCollection) },
+                        modifier = Modifier.padding(top = Dimens.spaceSmall),
+                    )
                 }
             }
         }
@@ -108,6 +143,38 @@ internal fun CollectionsContent(
         CollectionDialog(draft = draft, onIntent = onIntent)
     }
 }
+
+/** The design's end-of-list action, in the same outlined style as the Server tab's. */
+@Composable
+private fun NewCollectionButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(Dimens.touchTarget),
+        border = BorderStroke(Dimens.hairline, MaterialTheme.colorScheme.primary),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.primary,
+        ),
+    ) {
+        Icon(
+            imageVector = MockIcons.Plus,
+            // The label says it.
+            contentDescription = null,
+            modifier = Modifier.size(Dimens.iconSmall),
+        )
+        Text(
+            text = stringResource(R.string.collections_new),
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 1,
+            modifier = Modifier.padding(start = Dimens.spaceSmall),
+        )
+    }
+}
+
+/** Stable across recomposition so the button does not remount as collections change. */
+private const val NEW_COLLECTION_KEY = "new-collection"
 
 @Composable
 private fun CollectionDialog(
@@ -144,7 +211,7 @@ private fun CollectionDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(stringResource(R.string.collections_cors))
-                    Switch(
+                    MockSwitch(
                         checked = draft.corsEnabled,
                         onCheckedChange = { onIntent(CollectionsIntent.UpdateDraftCors(it)) },
                     )
@@ -162,7 +229,7 @@ private fun CollectionDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(stringResource(R.string.collections_credentials))
-                        Switch(
+                        MockSwitch(
                             checked = draft.allowCredentials,
                             onCheckedChange = { onIntent(CollectionsIntent.UpdateDraftCredentials(it)) },
                         )

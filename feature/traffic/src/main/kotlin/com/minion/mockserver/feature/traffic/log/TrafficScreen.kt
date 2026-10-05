@@ -1,22 +1,31 @@
 package com.minion.mockserver.feature.traffic.log
 
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,19 +35,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
+import com.minion.mockserver.core.designsystem.theme.MockTheme
+import com.minion.mockserver.core.designsystem.theme.PillShape
+import com.minion.mockserver.core.designsystem.theme.TINT_CONTAINER_ALPHA
 import com.minion.mockserver.core.domain.model.HttpMethodFilter
 import com.minion.mockserver.core.domain.model.TrafficEntry
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.EmptyState
+import com.minion.mockserver.core.ui.component.FadedDivider
+import com.minion.mockserver.core.ui.component.FlatDivider
+import com.minion.mockserver.core.ui.component.SearchBar
+import com.minion.mockserver.core.ui.component.SectionTitle
 import com.minion.mockserver.core.ui.component.TrafficRow
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -92,6 +112,7 @@ internal fun TrafficScreen(
     TrafficContent(state = state, onIntent = viewModel::onIntent, modifier = modifier)
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 internal fun TrafficContent(
     state: TrafficState,
@@ -108,16 +129,42 @@ internal fun TrafficContent(
     LaunchedEffect(isAtTop) {
         onIntent(if (isAtTop) TrafficIntent.ResumeFollow else TrafficIntent.PauseFollow)
     }
-    LaunchedEffect(state.entries.firstOrNull()?.id, state.isFollowing) {
-        if (state.isFollowing && state.entries.isNotEmpty()) listState.animateScrollToItem(0)
+    LaunchedEffect(state.groups.firstOrNull()?.entry?.id, state.isFollowing) {
+        if (state.isFollowing && state.groups.isNotEmpty()) listState.animateScrollToItem(0)
     }
 
     AppScaffold(
         title = stringResource(R.string.traffic_title),
         modifier = modifier,
+        actions = {
+            if (state.totalCount > 0) {
+                Text(
+                    text = pluralStringResource(
+                        R.plurals.traffic_request_count,
+                        state.totalCount,
+                        state.totalCount,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+                IconButton(onClick = { onIntent(TrafficIntent.ClearLog) }) {
+                    Icon(
+                        imageVector = MockIcons.Trash,
+                        contentDescription = stringResource(R.string.traffic_clear),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(Dimens.iconSmall),
+                    )
+                }
+            }
+        },
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-                SearchAndFilters(state = state, onIntent = onIntent)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
+            SearchAndFilters(state = state, onIntent = onIntent)
 
             if (state.droppedCount > 0) {
                 Text(
@@ -131,6 +178,8 @@ internal fun TrafficContent(
                     modifier = Modifier.padding(horizontal = Dimens.space),
                 )
             }
+
+            FadedDivider()
 
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
@@ -147,35 +196,232 @@ internal fun TrafficContent(
                     )
 
                     else -> LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                        // A stable key, so inserting at the top shifts positions without recomposing
-                        // every row below it — which at 50 req/s is the difference between a smooth
-                        // list and a stuttering one.
-                        items(items = state.entries, key = { it.id }) { entry ->
+                        // A stable key, so inserting at the top shifts positions without
+                        // recomposing every row below it — which at 50 req/s is the difference
+                        // between a smooth list and a stuttering one.
+                        items(items = state.groups, key = { it.entry.id }) { group ->
                             TrafficRow(
-                                entry = entry,
-                                onClick = { onIntent(TrafficIntent.OpenEntry(entry.id)) },
+                                entry = group.entry,
+                                repeatCount = group.repeatCount,
+                                onClick = { onIntent(TrafficIntent.OpenEntry(group.entry.id)) },
                             )
-                            HorizontalDivider()
+                            FlatDivider()
                         }
                     }
                 }
 
                 if (!state.isFollowing && state.newEntryCount > 0) {
-                    AssistChip(
-                        onClick = { onIntent(TrafficIntent.ResumeFollow) },
-                        label = {
-                            Text(
-                                pluralStringResource(
-                                    R.plurals.traffic_new_entries,
-                                    state.newEntryCount,
-                                    state.newEntryCount,
-                                ),
-                            )
-                        },
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(Dimens.spaceSmall),
+                    NewEntriesPill(count = state.newEntryCount, onClick = {
+                        onIntent(TrafficIntent.ResumeFollow)
+                    })
+                }
+            }
+        }
+    }
+
+    if (state.isFilterSheetOpen) {
+        FilterSheet(state = state, onIntent = onIntent)
+    }
+}
+
+/**
+ * The search field and the four chips above the log.
+ *
+ * Unmatched and Chaos are the two questions this screen is opened to answer, so they are chips
+ * with their counts on them — the number is the reason to tap. Method and status are refinements
+ * with a dozen values between them, so they open a sheet instead of a chip row that scrolls
+ * sideways off the edge of a phone.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SearchAndFilters(
+    state: TrafficState,
+    onIntent: (TrafficIntent) -> Unit,
+) {
+    Column(
+        modifier = Modifier.padding(
+            start = Dimens.space,
+            end = Dimens.space,
+            top = Dimens.spaceSmall,
+            bottom = Dimens.spaceSmall,
+        ),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+    ) {
+        SearchBar(
+            query = state.searchQuery,
+            onQueryChange = { onIntent(TrafficIntent.UpdateSearch(it)) },
+            hint = stringResource(R.string.traffic_search_label),
+        )
+
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+            CountChip(
+                label = stringResource(R.string.traffic_unmatched_only),
+                count = state.unmatchedCount,
+                icon = MockIcons.WarningCircle,
+                selected = state.filter.unmatchedOnly == true,
+                onClick = {
+                    onIntent(
+                        TrafficIntent.SetUnmatchedFilter(
+                            true.takeIf { state.filter.unmatchedOnly != true },
+                        ),
                     )
+                },
+            )
+            CountChip(
+                label = stringResource(R.string.traffic_chaos),
+                count = state.chaosCount,
+                icon = MockIcons.Lightning,
+                selected = state.filter.chaosOnly == true,
+                onClick = {
+                    onIntent(
+                        TrafficIntent.SetChaosFilter(
+                            true.takeIf { state.filter.chaosOnly != true },
+                        ),
+                    )
+                },
+            )
+            CountChip(
+                label = stringResource(R.string.traffic_filters),
+                count = state.filter.methods.size + state.filter.statusClasses.size,
+                icon = MockIcons.SlidersHorizontal,
+                selected = state.filter.methods.isNotEmpty() ||
+                    state.filter.statusClasses.isNotEmpty() ||
+                    state.selectedCollectionId != null,
+                onClick = { onIntent(TrafficIntent.ToggleFilterSheet) },
+            )
+        }
+    }
+}
+
+/** A filter chip that carries how much it would show. Zero hides the number, not the chip. */
+@Composable
+private fun CountChip(
+    label: String,
+    count: Int,
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val accent = MaterialTheme.colorScheme.primary
+    Row(
+        modifier = Modifier
+            .background(
+                if (selected) accent.copy(alpha = TINT_CONTAINER_ALPHA) else Color.Transparent,
+                PillShape,
+            )
+            .border(
+                BorderStroke(
+                    Dimens.hairline,
+                    if (selected) accent else MaterialTheme.colorScheme.outlineVariant,
+                ),
+                PillShape,
+            )
+            .selectable(selected = selected, role = Role.Checkbox, onClick = onClick)
+            .padding(horizontal = Dimens.spaceMedium, vertical = Dimens.spaceSmall),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceHalf),
+    ) {
+        Icon(
+            imageVector = icon,
+            // The label is right beside it.
+            contentDescription = null,
+            tint = if (selected) accent else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(Dimens.iconSmall),
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (selected) accent else MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+        )
+        if (count > 0) {
+            Text(
+                text = count.toString(),
+                style = MockTheme.typography.codeSmall,
+                color = if (selected) accent else MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+/**
+ * Method, status class and collection, behind one chip.
+ *
+ * These used to be a horizontally scrolling row of a dozen chips above the log, which cost the
+ * list a third of the screen and hid whichever filters had scrolled off the right-hand edge.
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+private fun FilterSheet(
+    state: TrafficState,
+    onIntent: (TrafficIntent) -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = { onIntent(TrafficIntent.ToggleFilterSheet) },
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(start = Dimens.space, end = Dimens.space, bottom = Dimens.spaceLarge),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
+        ) {
+            SectionTitle(stringResource(R.string.traffic_filter_method))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+                METHODS.forEach { method ->
+                    ToggleChip(
+                        label = method,
+                        selected = method in state.filter.methods,
+                        onClick = { onIntent(TrafficIntent.ToggleMethodFilter(method)) },
+                    )
+                }
+            }
+
+            SectionTitle(stringResource(R.string.traffic_filter_status))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+                STATUS_CLASSES.forEach { statusClass ->
+                    ToggleChip(
+                        label = stringResource(R.string.traffic_status_class, statusClass),
+                        selected = statusClass in state.filter.statusClasses,
+                        onClick = { onIntent(TrafficIntent.ToggleStatusClassFilter(statusClass)) },
+                    )
+                }
+            }
+
+            if (state.collections.isNotEmpty()) {
+                SectionTitle(stringResource(R.string.traffic_filter_collection))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+                    // Tapping the selected collection clears the restriction, so there is no
+                    // separate "all collections" chip taking up a row of its own.
+                    state.collections.forEach { collection ->
+                        val isSelected = collection.id == state.selectedCollectionId
+                        ToggleChip(
+                            label = collection.name,
+                            selected = isSelected,
+                            onClick = {
+                                onIntent(
+                                    TrafficIntent.SetCollectionFilter(
+                                        collection.id.takeUnless { isSelected },
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                }
+            }
+
+            FadedDivider()
+
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
+                TextButton(onClick = { onIntent(TrafficIntent.ClearFilters) }) {
+                    Text(stringResource(R.string.traffic_clear_filters))
+                }
+                TextButton(onClick = { onIntent(TrafficIntent.SaveHarToFile) }) {
+                    Text(stringResource(R.string.traffic_export_har))
+                }
+                TextButton(onClick = { onIntent(TrafficIntent.ExportHar) }) {
+                    Text(stringResource(R.string.traffic_share_har))
                 }
             }
         }
@@ -183,91 +429,41 @@ internal fun TrafficContent(
 }
 
 @Composable
-private fun SearchAndFilters(
-    state: TrafficState,
-    onIntent: (TrafficIntent) -> Unit,
-) {
-    Column(modifier = Modifier.padding(Dimens.spaceSmall)) {
-        OutlinedTextField(
-            value = state.searchQuery,
-            onValueChange = { onIntent(TrafficIntent.UpdateSearch(it)) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.traffic_search_label)) },
-            singleLine = true,
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(top = Dimens.spaceSmall),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
-        ) {
-            METHODS.forEach { method ->
-                FilterChip(
-                    selected = method in state.filter.methods,
-                    onClick = { onIntent(TrafficIntent.ToggleMethodFilter(method)) },
-                    label = { Text(method) },
-                )
-            }
-            STATUS_CLASSES.forEach { statusClass ->
-                FilterChip(
-                    selected = statusClass in state.filter.statusClasses,
-                    onClick = { onIntent(TrafficIntent.ToggleStatusClassFilter(statusClass)) },
-                    label = { Text(stringResource(R.string.traffic_status_class, statusClass)) },
-                )
-            }
-            FilterChip(
-                selected = state.filter.unmatchedOnly == true,
-                onClick = {
-                    onIntent(
-                        TrafficIntent.SetUnmatchedFilter(
-                            if (state.filter.unmatchedOnly == true) null else true,
-                        ),
-                    )
-                },
-                label = { Text(stringResource(R.string.traffic_unmatched_only)) },
+private fun ToggleChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val accent = MaterialTheme.colorScheme.primary
+    Text(
+        text = label,
+        style = MockTheme.typography.codeSmall,
+        color = if (selected) accent else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier
+            .background(
+                if (selected) accent.copy(alpha = TINT_CONTAINER_ALPHA) else Color.Transparent,
+                PillShape,
             )
-
-            // Tapping the selected collection clears the restriction, so the chip row needs no
-            // separate "all collections" chip taking up a phone's worth of horizontal space.
-            state.collections.forEach { collection ->
-                val isSelected = collection.id == state.selectedCollectionId
-                FilterChip(
-                    selected = isSelected,
-                    onClick = {
-                        onIntent(
-                            TrafficIntent.SetCollectionFilter(
-                                collection.id.takeUnless { isSelected },
-                            ),
-                        )
-                    },
-                    label = { Text(collection.name) },
-                )
-            }
-        }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall)) {
-            TextButton(onClick = { onIntent(TrafficIntent.SaveHarToFile) }) {
-                Text(stringResource(R.string.traffic_export_har))
-            }
-            TextButton(onClick = { onIntent(TrafficIntent.ExportHar) }) {
-                Text(stringResource(R.string.traffic_share_har))
-            }
-            TextButton(onClick = { onIntent(TrafficIntent.ClearLog) }) {
-                Text(stringResource(R.string.traffic_clear))
-            }
-        }
-    }
+            .border(
+                BorderStroke(
+                    Dimens.hairline,
+                    if (selected) accent else MaterialTheme.colorScheme.outlineVariant,
+                ),
+                PillShape,
+            )
+            .selectable(selected = selected, role = Role.Checkbox, onClick = onClick)
+            .padding(horizontal = Dimens.spaceMedium, vertical = Dimens.spaceSmall),
+    )
 }
 
-/**
- * One row: method, path, status, duration, and the two icons that matter.
- *
- * The path is middle-ellipsised because the distinguishing part of a mock URL is almost always
- * the end — `/api/v1/users/42` and `/api/v1/users/43` differ in the last two characters, and
- * end-ellipsis would render them identical.
- */
+/** The way back to the top when following is paused and the log has moved on without you. */
+@Composable
+private fun BoxScope.NewEntriesPill(count: Int, onClick: () -> Unit) {
+    AssistChip(
+        onClick = onClick,
+        label = { Text(pluralStringResource(R.plurals.traffic_new_entries, count, count)) },
+        modifier = Modifier
+            .align(Alignment.TopCenter)
+            .padding(Dimens.spaceSmall),
+    )
+}
+
 /** The methods worth a filter chip, named by the domain rather than respelled here. */
 private val METHODS = listOf(
     HttpMethodFilter.GET,

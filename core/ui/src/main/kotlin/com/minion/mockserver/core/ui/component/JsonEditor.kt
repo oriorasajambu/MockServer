@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -23,14 +23,16 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
+import com.minion.mockserver.core.designsystem.theme.MockColors
+import com.minion.mockserver.core.designsystem.theme.MockTheme
 import com.minion.mockserver.core.ui.R
 
 /**
@@ -38,9 +40,11 @@ import com.minion.mockserver.core.ui.R
  *
  * Phone authoring is the constraint behind every decision here:
  *
- * - **Paste is the primary action**, a full-width button above the field rather than a keyboard
- *   long-press. Bodies are almost always pasted from a terminal or a colleague's message, and a
- *   long-press-and-aim on a phone is the slowest interaction in the app.
+ * - **Paste is a first-class action** above the field rather than a keyboard long-press. Bodies
+ *   are almost always pasted from a terminal or a colleague's message, and a long-press-and-aim
+ *   on a phone is the slowest interaction in the app. What is on the clipboard is previewed on
+ *   its own line rather than inside the button: a forty-character label pushed Format off the
+ *   right-hand edge of the screen entirely.
  * - **A symbol row** puts `{ } [ ] " : ,` one tap away instead of three, which is where a phone
  *   keyboard buries them.
  * - **Syntax highlighting is a `VisualTransformation`**, not a third-party editor. The whole
@@ -58,29 +62,60 @@ fun JsonEditor(
     modifier: Modifier = Modifier,
     error: String? = null,
     clipboardPreview: String? = null,
+    contentType: String? = null,
     onPaste: () -> Unit = {},
     onPrettify: () -> Unit = {},
 ) {
     Column(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            TextButton(onClick = onPaste) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
+                modifier = Modifier.weight(1f),
+            ) {
                 Text(
-                    text = clipboardPreview
-                        ?.let { stringResourceWithPreview(it) }
-                        ?: stringResource(R.string.editor_paste),
+                    text = stringResource(R.string.editor_body_label),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                 )
+                if (contentType != null) {
+                    Text(
+                        text = contentType,
+                        style = MockTheme.typography.codeSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            TextButton(onClick = onPaste) {
+                Text(stringResource(R.string.editor_paste), maxLines = 1)
             }
             TextButton(onClick = onPrettify) {
-                Text(stringResource(R.string.editor_format))
+                Text(stringResource(R.string.editor_format), maxLines = 1)
             }
         }
 
-        val colours = MaterialTheme.colorScheme
-        val transformation = remember(colours) { JsonHighlighter(colours.toJsonPalette()) }
+        // What pasting would actually overwrite the body with. On its own line because it is up
+        // to forty characters of someone else's JSON, and no button label survives that.
+        clipboardPreview?.let { preview ->
+            Text(
+                text = stringResourceWithPreview(preview),
+                style = MockTheme.typography.codeSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        val jsonColours = MockTheme.colors
+        val transformation = remember(jsonColours) { JsonHighlighter(jsonColours.toJsonPalette()) }
 
         OutlinedTextField(
             value = value,
@@ -88,10 +123,7 @@ fun JsonEditor(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = Dimens.editorMinHeight),
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                fontFamily = FontFamily.Monospace,
-                fontSize = Dimens.monospaceTextSize,
-            ),
+            textStyle = MockTheme.typography.codeMedium,
             visualTransformation = transformation,
             isError = error != null,
             supportingText = error?.let { { Text(it) } },
@@ -107,7 +139,7 @@ fun JsonEditor(
             SYMBOLS.forEach { symbol ->
                 AssistChip(
                     onClick = { onValueChange(value.insert(symbol)) },
-                    label = { Text(symbol, fontFamily = FontFamily.Monospace) },
+                    label = { Text(symbol, style = MockTheme.typography.codeMedium) },
                 )
             }
         }
@@ -128,22 +160,22 @@ private fun TextFieldValue.insert(text: String): TextFieldValue {
 /** The colours a JSON token can take, resolved from the theme once per recomposition of the field. */
 private data class JsonPalette(
     val key: Color,
-    val string: Color,
-    val number: Color,
-    val literal: Color,
+    val value: Color,
     val punctuation: Color,
 )
 
 /**
- * Not `@Composable`: it reads plain properties off a [ColorScheme] that has already been
- * resolved, and it is called from inside `remember`, where a composable call is illegal.
+ * Not `@Composable`: it reads plain properties off a [MockColors] that has already been resolved,
+ * and it is called from inside `remember`, where a composable call is illegal.
+ *
+ * Strings, numbers and literals share one tint. Nocturne is a mono palette, so telling them apart
+ * would mean inventing two more hues, and the distinction that actually matters when reading a
+ * body is key from value — which this keeps.
  */
-private fun ColorScheme.toJsonPalette() = JsonPalette(
-    key = primary,
-    string = tertiary,
-    number = secondary,
-    literal = error,
-    punctuation = onSurfaceVariant,
+private fun MockColors.toJsonPalette() = JsonPalette(
+    key = jsonKey,
+    value = jsonValue,
+    punctuation = jsonPunctuation,
 )
 
 /**
@@ -169,7 +201,7 @@ private class JsonHighlighter(private val palette: JsonPalette) : VisualTransfor
                     // A string followed by a colon is a key; anything else is a value.
                     val isKey = source.nextNonSpace(end + 1) == ':'
                     addStyle(
-                        SpanStyle(color = if (isKey) palette.key else palette.string),
+                        SpanStyle(color = if (isKey) palette.key else palette.value),
                         index,
                         (end + 1).coerceAtMost(source.length),
                     )
@@ -179,17 +211,17 @@ private class JsonHighlighter(private val palette: JsonPalette) : VisualTransfor
                 source[index].isDigit() || (source[index] == '-' && source.getOrNull(index + 1)?.isDigit() == true) -> {
                     var end = index
                     while (end < source.length && (source[end].isDigit() || source[end] in ".eE+-")) end++
-                    addStyle(SpanStyle(color = palette.number), index, end)
+                    addStyle(SpanStyle(color = palette.value), index, end)
                     index = end
                 }
 
                 source.startsWith("true", index) || source.startsWith("null", index) -> {
-                    addStyle(SpanStyle(color = palette.literal), index, index + 4)
+                    addStyle(SpanStyle(color = palette.value), index, index + 4)
                     index += 4
                 }
 
                 source.startsWith("false", index) -> {
-                    addStyle(SpanStyle(color = palette.literal), index, index + 5)
+                    addStyle(SpanStyle(color = palette.value), index, index + 5)
                     index += 5
                 }
 

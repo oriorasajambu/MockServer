@@ -5,6 +5,7 @@ import com.minion.mockserver.core.common.mvi.UiEffect
 import com.minion.mockserver.core.common.mvi.UiIntent
 import com.minion.mockserver.core.common.mvi.UiState
 import com.minion.mockserver.core.domain.model.MockCollection
+import com.minion.mockserver.core.domain.model.MockRoute
 
 /** The Routes tab's top level: the collection list. */
 internal data class CollectionsState(
@@ -15,6 +16,18 @@ internal data class CollectionsState(
 
     /** Routes imported without a body, per collection — the "N need bodies" banner (SPEC §9.1). */
     val needsBodyCounts: Map<String, Int> = emptyMap(),
+
+    /**
+     * The first few routes of each collection, for the card preview.
+     *
+     * Truncated here rather than in the card, because how many fit is a question about this
+     * screen's density and not about what a card can draw.
+     */
+    val previewRoutes: Map<String, List<MockRoute>> = emptyMap(),
+
+    /** Across every collection — the "9 of 11 live" count beside the tab title. */
+    val enabledRouteCount: Int = 0,
+    val totalRouteCount: Int = 0,
 
     val isLoading: Boolean = true,
 
@@ -44,6 +57,9 @@ internal sealed interface CollectionsIntent : UiIntent {
     data class EditCollection(val id: String) : CollectionsIntent
     data class OpenCollection(val id: String) : CollectionsIntent
     data class ToggleCollection(val id: String, val isEnabled: Boolean) : CollectionsIntent
+
+    /** A switch on one of the preview lines inside a card. */
+    data class ToggleRoute(val id: String, val isEnabled: Boolean) : CollectionsIntent
     data class DeleteCollection(val id: String) : CollectionsIntent
     data class UpdateDraftName(val name: String) : CollectionsIntent
     data class UpdateDraftBasePath(val basePath: String) : CollectionsIntent

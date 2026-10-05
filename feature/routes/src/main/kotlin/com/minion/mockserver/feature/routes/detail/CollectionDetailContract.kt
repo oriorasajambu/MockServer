@@ -21,11 +21,66 @@ internal data class CollectionDetailState(
     val shadowedBy: Map<String, String> = emptyMap(),
 
     val isLoading: Boolean = true,
+
+    /** The overflow menu in the top bar. */
+    val isMenuOpen: Boolean = false,
+
+    /**
+     * The name being typed in the rename dialog, or `null` when it is closed.
+     *
+     * A nullable draft rather than a separate `isRenaming` flag: two fields can disagree about
+     * whether the dialog is open, and one of the two orderings shows an empty field.
+     */
+    val renameDraft: String? = null,
+
+    /** Rejected by [com.minion.mockserver.core.domain.usecase.collection.SaveCollectionUseCase]. */
+    val renameError: DomainError? = null,
+
+    val isConfirmingDelete: Boolean = false,
+
+    /** The find-route field, and what is typed in it. */
+    val isSearchOpen: Boolean = false,
+    val searchQuery: String = "",
+
+    /**
+     * Whether the list is being arranged rather than used.
+     *
+     * A mode rather than always-on handles: the row already carries a duplicate button and a
+     * switch, and a third and fourth control on it would leave the path about ninety dips wide.
+     */
+    val isReordering: Boolean = false,
 ) : UiState {
+
+    /**
+     * The routes actually drawn, filtered by [searchQuery].
+     *
+     * Matches on path and name together: a route is looked for by the URL it answers as often as
+     * by what it was called, and which of the two someone remembers is not predictable.
+     */
+    val visibleRoutes: List<MockRoute>
+        get() = if (searchQuery.isBlank()) {
+            routes
+        } else {
+            routes.filter {
+                it.pathPattern.contains(searchQuery, ignoreCase = true) ||
+                    it.name.contains(searchQuery, ignoreCase = true)
+            }
+        }
+
+    /** True when a search is on and hiding everything, as opposed to an empty collection. */
+    val isSearchEmpty: Boolean get() = routes.isNotEmpty() && visibleRoutes.isEmpty()
 
     val needsBodyCount: Int get() = routes.count { it.needsBody }
 
     val isEmpty: Boolean get() = !isLoading && routes.isEmpty()
+
+    /**
+     * Whether the bulk toggle should turn everything on or everything off.
+     *
+     * Off while anything is still answering, so the menu item reads as the thing that silences
+     * the collection — the common case during debugging is "stop all of this responding".
+     */
+    val willEnableAll: Boolean get() = routes.none { it.isEnabled }
 }
 
 internal sealed interface CollectionDetailIntent : UiIntent {
@@ -38,6 +93,32 @@ internal sealed interface CollectionDetailIntent : UiIntent {
         val format: ExportFormat,
         val destination: ExportDestination,
     ) : CollectionDetailIntent
+
+    data object OpenMenu : CollectionDetailIntent
+    data object DismissMenu : CollectionDetailIntent
+
+    data object StartRename : CollectionDetailIntent
+    data class UpdateRenameDraft(val name: String) : CollectionDetailIntent
+    data object ConfirmRename : CollectionDetailIntent
+    data object DismissRename : CollectionDetailIntent
+
+    /** Every route in the collection at once, from the menu. */
+    data class SetAllRoutesEnabled(val isEnabled: Boolean) : CollectionDetailIntent
+
+    data object ImportIntoCollection : CollectionDetailIntent
+
+    data object ToggleSearch : CollectionDetailIntent
+    data class UpdateSearch(val query: String) : CollectionDetailIntent
+
+    /** Copies the collection and everything in it, then opens the copy. */
+    data object DuplicateCollection : CollectionDetailIntent
+
+    data object ToggleReordering : CollectionDetailIntent
+    data class MoveRoute(val id: String, val up: Boolean) : CollectionDetailIntent
+
+    data object StartDelete : CollectionDetailIntent
+    data object ConfirmDelete : CollectionDetailIntent
+    data object DismissDelete : CollectionDetailIntent
 }
 
 /** The two wire formats a collection can leave in (SPEC §9.2). */
@@ -68,4 +149,13 @@ internal sealed interface CollectionDetailEffect : UiEffect {
     /** Postman is lossy; the warnings name what will actually be dropped (SPEC §9.2). */
     data class ConfirmLossyExport(val warnings: List<String>) : CollectionDetailEffect
     data class ShowError(val error: DomainError) : CollectionDetailEffect
+
+    /** Opens the importer with this collection already chosen as the destination. */
+    data class NavigateToImport(val collectionId: String) : CollectionDetailEffect
+
+    /** Opens another collection — where a duplicate lands, so the copy is what you see next. */
+    data class NavigateToCollection(val collectionId: String) : CollectionDetailEffect
+
+    /** After a delete: this screen is showing something that no longer exists. */
+    data object NavigateBack : CollectionDetailEffect
 }

@@ -19,10 +19,11 @@ import com.minion.mockserver.core.ui.R
  * the label is what keeps it reproducible afterwards.
  *
  * @param value 0.0..1.0
- * @param help what firing at this probability will actually do
+ * @param help what firing at this probability will actually do. A function of [value], not fixed
+ *   copy: a line that says the same thing at 0% and at 40% is one nobody reads twice.
  */
 @Composable
-fun ProbabilitySlider(
+fun PercentSlider(
     label: String,
     help: String,
     value: Double,
@@ -51,9 +52,9 @@ private const val PERCENT = 100
 
 @Preview
 @Composable
-internal fun ProbabilitySliderPreview() {
+internal fun PercentSliderPreview() {
     AppTheme {
-        ProbabilitySlider(
+        PercentSlider(
             label = "Inject an error status",
             help = "Replaces the response with 500, 503 or 429.",
             value = 0.35,

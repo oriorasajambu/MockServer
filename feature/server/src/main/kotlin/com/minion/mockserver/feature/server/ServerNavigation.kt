@@ -21,12 +21,14 @@ import com.minion.mockserver.feature.server.status.ServerScreen
 fun NavGraphBuilder.serverScreen(
     onNavigateToQr: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToUnmatched: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
 ) {
     composable<ServerRoute> {
         ServerScreen(
             onNavigateToQr = onNavigateToQr,
             onNavigateToSettings = onNavigateToSettings,
+            onNavigateToUnmatched = onNavigateToUnmatched,
             onRequestNotificationPermission = onRequestNotificationPermission,
         )
     }

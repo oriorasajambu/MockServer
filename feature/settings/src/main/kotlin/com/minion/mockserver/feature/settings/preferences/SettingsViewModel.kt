@@ -116,6 +116,16 @@ internal class SettingsViewModel @Inject constructor(
 
             SettingsIntent.RestartServer -> restart()
             SettingsIntent.OpenImport -> emit(SettingsEffect.NavigateToImport)
+            is SettingsIntent.ToggleSection -> reduce {
+                copy(
+                    expandedSections = if (intent.section in expandedSections) {
+                        expandedSections - intent.section
+                    } else {
+                        expandedSections + intent.section
+                    },
+                )
+            }
+
             SettingsIntent.OpenChaosEditor -> emit(SettingsEffect.NavigateToChaosEditor)
             SettingsIntent.OpenBatterySettings -> emit(SettingsEffect.OpenBatterySettings)
 

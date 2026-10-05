@@ -8,12 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +18,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -31,6 +28,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.NetworkAddress
@@ -77,6 +75,7 @@ fun AddressBlock(
     boundPort: Int,
     isExpanded: Boolean,
     advertisedName: String?,
+    isRunning: Boolean,
     onCopy: (String) -> Unit,
     onShowQr: () -> Unit,
     onToggleExpanded: () -> Unit,
@@ -87,7 +86,12 @@ fun AddressBlock(
         elevation = CardDefaults.cardElevation(defaultElevation = Dimens.elevationCard),
     ) {
         Column(
-            modifier = Modifier.padding(Dimens.space),
+            modifier = Modifier
+                .padding(Dimens.space)
+                // Dimmed while stopped. Nothing is listening on these addresses yet, and showing
+                // them at full strength invites pasting one into a client that will then refuse
+                // to connect for reasons the screen never mentioned.
+                .alpha(if (isRunning) 1f else DISABLED_ALPHA),
             verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall),
         ) {
             if (primaryBaseUrl == null) {
@@ -104,37 +108,52 @@ fun AddressBlock(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onCopy(primaryBaseUrl) },
+                        .then(
+                            if (isRunning) {
+                                Modifier.clickable { onCopy(primaryBaseUrl) }
+                            } else {
+                                Modifier
+                            },
+                        ),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     HeroAddress(url = primaryBaseUrl, modifier = Modifier.weight(ADDRESS_WEIGHT))
-                    IconButton(onClick = { onCopy(primaryBaseUrl) }) {
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = stringResource(R.string.server_copy),
-                        )
-                    }
-                    IconButton(onClick = onShowQr) {
-                        Icon(
-                            imageVector = Icons.Default.QrCode2,
-                            contentDescription = stringResource(R.string.server_qr),
-                        )
+                    // No copy or QR while stopped: both hand the address to something that is
+                    // about to fail to reach it.
+                    if (isRunning) {
+                        IconButton(onClick = { onCopy(primaryBaseUrl) }) {
+                            Icon(
+                                imageVector = MockIcons.Copy,
+                                contentDescription = stringResource(R.string.server_copy),
+                            )
+                        }
+                        IconButton(onClick = onShowQr) {
+                            Icon(
+                                imageVector = MockIcons.QrCode,
+                                contentDescription = stringResource(R.string.server_qr),
+                            )
+                        }
                     }
                 }
                 primaryAddress?.let { address ->
                     Text(
-                        text = stringResource(R.string.server_interface, address.interfaceName),
+                        text = if (isRunning) {
+                            stringResource(R.string.server_interface, address.interfaceName)
+                        } else {
+                            stringResource(R.string.server_interface_stopped, address.interfaceName)
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
 
-            HorizontalDivider()
+            FlatDivider()
 
             AddressRow(
                 url = loopbackUrl,
                 subtitle = stringResource(R.string.server_loopback_note),
+                isRunning = isRunning,
                 onCopy = onCopy,
             )
 
@@ -163,6 +182,7 @@ fun AddressBlock(
                                 NetworkAddress.Kind.VPN -> stringResource(R.string.server_vpn_note)
                                 else -> address.interfaceName
                             },
+                            isRunning = isRunning,
                             onCopy = onCopy,
                         )
                     }
@@ -208,13 +228,17 @@ private fun HeroAddress(url: String, modifier: Modifier = Modifier) {
 private fun AddressRow(
     url: String,
     subtitle: String,
+    isRunning: Boolean,
     onCopy: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onCopy(url) },
+            .then(
+                // Same rule as the hero address above: nothing to copy until something answers.
+                if (isRunning) Modifier.clickable { onCopy(url) } else Modifier,
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(ADDRESS_WEIGHT)) {
@@ -229,11 +253,13 @@ private fun AddressRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        IconButton(onClick = { onCopy(url) }) {
-            Icon(
-                imageVector = Icons.Default.ContentCopy,
-                contentDescription = stringResource(R.string.server_copy),
-            )
+        if (isRunning) {
+            IconButton(onClick = { onCopy(url) }) {
+                Icon(
+                    imageVector = MockIcons.Copy,
+                    contentDescription = stringResource(R.string.server_copy),
+                )
+            }
         }
     }
 }
@@ -274,6 +300,7 @@ internal fun AddressBlockPreview() {
             ),
             boundPort = 8080,
             isExpanded = true,
+            isRunning = true,
             advertisedName = "MockServer-Pixel-8",
             onCopy = {},
             onShowQr = {},
@@ -297,6 +324,7 @@ internal fun AddressBlockLongAddressPreview() {
             extraAddresses = emptyList(),
             boundPort = 52080,
             isExpanded = false,
+            isRunning = true,
             advertisedName = null,
             onCopy = {},
             onShowQr = {},
@@ -316,6 +344,7 @@ internal fun AddressBlockNoNetworkPreview() {
             extraAddresses = emptyList(),
             boundPort = 8080,
             isExpanded = false,
+            isRunning = true,
             advertisedName = null,
             onCopy = {},
             onShowQr = {},

@@ -41,7 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         const val NAME = "mock_server.db"
-        const val VERSION = 2
+        const val VERSION = 3
 
         /**
          * Adds `routes.alternatesJson` (SPEC §9.1).
@@ -55,6 +55,33 @@ abstract class AppDatabase : RoomDatabase() {
                 connection.execSQL(
                     "ALTER TABLE `${RouteEntity.TABLE}` ADD COLUMN `alternatesJson` " +
                         "TEXT NOT NULL DEFAULT '${RouteEntity.EMPTY_JSON_ARRAY}'",
+                )
+            }
+        }
+
+        /**
+         * Adds `routes.sortOrder`, so a collection's list can be arranged by hand.
+         *
+         * Existing rows are seeded from their creation order rather than all defaulting to 0.
+         * Every route sharing one order value would leave the list's arrangement down to whatever
+         * the secondary sort did, and the first drag would appear to shuffle unrelated rows.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE `${RouteEntity.TABLE}` ADD COLUMN " +
+                        "`${RouteEntity.ORDER_COLUMN}` INTEGER NOT NULL DEFAULT 0",
+                )
+                connection.execSQL(
+                    """
+                    UPDATE `${RouteEntity.TABLE}` SET `${RouteEntity.ORDER_COLUMN}` = (
+                        SELECT COUNT(*) FROM `${RouteEntity.TABLE}` AS earlier
+                        WHERE earlier.collectionId = `${RouteEntity.TABLE}`.collectionId
+                          AND (earlier.createdAt < `${RouteEntity.TABLE}`.createdAt
+                               OR (earlier.createdAt = `${RouteEntity.TABLE}`.createdAt
+                                   AND earlier.id < `${RouteEntity.TABLE}`.id))
+                    )
+                    """.trimIndent(),
                 )
             }
         }

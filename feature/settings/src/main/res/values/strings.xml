@@ -3,6 +3,15 @@
 <resources>
 
     <string name="settings_title">Settings</string>
+
+    <!-- The collapsible sections, and the value each shows while closed. -->
+    <string name="settings_chaos_summary">%1$s · seed %2$d</string>
+    <string name="settings_chaos_none">None</string>
+    <plurals name="settings_log_summary">
+        <item quantity="one">%1$d entry</item>
+        <item quantity="other">%1$d entries</item>
+    </plurals>
+    <string name="settings_about_body">An HTTP server that runs on this phone. Routes you write here answer requests from anything on the same network.</string>
     <string name="settings_section_server">Server</string>
     <string name="settings_section_access">Access</string>
     <string name="settings_section_chaos">Chaos</string>
@@ -10,6 +19,7 @@
     <string name="settings_section_unmatched">Unmatched requests</string>
     <string name="settings_section_data">Import and export</string>
     <string name="settings_section_battery">Battery</string>
+    <string name="settings_section_about">About</string>
 
     <string name="settings_port">Port</string>
     <string name="settings_port_help">1024–65535. If the port is taken, the next ten are tried.</string>
@@ -45,8 +55,14 @@
 
     <!-- Import -->
     <string name="import_title">Import routes</string>
-    <string name="import_body">Reads OpenAPI 3.0 and 3.1 (JSON or YAML), Postman v2.1 collections, and HAR captures. Nothing is written until you have seen what is in the file.</string>
     <string name="import_pick">Choose a file</string>
+    <string name="import_empty_title">Bring routes in from a spec</string>
+    <string name="import_empty_body">Nothing is written until you have seen what is in the file.</string>
+    <string name="import_format_openapi_30">OpenAPI 3.0</string>
+    <string name="import_format_openapi_31">OpenAPI 3.1</string>
+    <string name="import_format_postman">Postman v2.1</string>
+    <string name="import_format_har">HAR</string>
+    <string name="import_limits">JSON or YAML, up to 8 MB.</string>
     <string name="import_parsing">Reading the file…</string>
     <plurals name="import_found">
         <item quantity="one">%1$d route found in a %2$s document</item>
@@ -77,12 +93,48 @@
 
     <!-- Chaos -->
     <string name="chaos_title">Chaos profiles</string>
+    <string name="chaos_subtitle">One is active at a time</string>
+    <string name="chaos_profile_subtitle">Chaos profile</string>
+    <string name="chaos_profile_summary_title">What this profile does</string>
+    <string name="chaos_seed_note">Seed %1$d replays the same sequence of failures, so a flaky result can be reproduced on demand.</string>
+    <string name="chaos_failures_title">Failures</string>
+    <string name="chaos_delay_unit">ms</string>
+    <string name="chaos_explain">What chaos profiles do</string>
+
+    <!-- The slider lines. Off says what turning it up would do, rather than vanishing. -->
+    <string name="chaos_slider_off">Off. %1$s</string>
+    <plurals name="chaos_slider_error_on">
+        <item quantity="one">About %1$d request in %2$d comes back 500, 503 or 429 instead of the mock.</item>
+        <item quantity="other">About %1$d requests in %2$d come back 500, 503 or 429 instead of the mock.</item>
+    </plurals>
+    <plurals name="chaos_slider_reset_on">
+        <item quantity="one">About %1$d request in %2$d is cut mid-body with no clean end.</item>
+        <item quantity="other">About %1$d requests in %2$d are cut mid-body with no clean end.</item>
+    </plurals>
+    <plurals name="chaos_slider_malformed_on">
+        <item quantity="one">About %1$d request in %2$d arrives with less body than Content-Length claims.</item>
+        <item quantity="other">About %1$d requests in %2$d arrive with less body than Content-Length claims.</item>
+    </plurals>
+
+    <!-- The explainer sheet, screen 1s. -->
+    <string name="chaos_explain_title">What chaos profiles do</string>
+    <string name="chaos_explain_lead">A profile is a set of odds that break responses on purpose, so your app meets the failures a real network hands it. One profile is active at a time and applies to every route.</string>
+    <string name="chaos_explain_error_title">An error status</string>
+    <string name="chaos_explain_error_body">The mock is replaced with 500, 503 or 429.</string>
+    <string name="chaos_explain_reset_title">A dead connection</string>
+    <string name="chaos_explain_reset_body">Part of the body is written, then the socket closes with no clean end.</string>
+    <string name="chaos_explain_malformed_title">A truncated body</string>
+    <string name="chaos_explain_malformed_body">Content-Length still claims the full size, so a strict client reports an incomplete read.</string>
+    <string name="chaos_explain_seed_title">The same failures twice</string>
+    <string name="chaos_explain_seed_body">One seed replays one sequence, so a flaky result can be reproduced on demand.</string>
+    <string name="chaos_explain_closing">At most one failure fires per request. A route\'s own delay is separate and survives a profile of None.</string>
+    <string name="chaos_explain_dismiss">Got it</string>
     <string name="chaos_edit_title">Edit profile</string>
     <string name="chaos_new">New profile</string>
     <string name="chaos_delete">Delete</string>
     <string name="chaos_name">Name</string>
-    <string name="chaos_delay">Fixed delay (ms)</string>
-    <string name="chaos_delay_help">Applied to every response. Capped at 60000 ms.</string>
+    <string name="chaos_delay">Fixed delay</string>
+    <string name="chaos_delay_help">Applied to every response. Capped at 60 s.</string>
     <string name="chaos_error_probability">Inject an error status</string>
     <string name="chaos_error_help">Replaces the response with 500, 503 or 429.</string>
     <string name="chaos_reset_probability">Kill the connection</string>
@@ -91,7 +143,7 @@
     <string name="chaos_malformed_probability">Send a truncated body</string>
     <string name="chaos_malformed_help">Content-Length still declares the full length, so a strict client reports an incomplete body.</string>
     <string name="chaos_malformed_percent">Percent of the body sent</string>
-    <string name="chaos_precedence_note">At most one of these three fires per request, in the order shown. A delay applies as well as whichever one fires.</string>
+    <string name="chaos_precedence_note">At most one fires per request, in the order below. The delay applies as well.</string>
     <string name="chaos_summary">errors %1$d%%, resets %2$d%%, truncated %3$d%%</string>
     <string name="chaos_summary_off">No chaos</string>
     <string name="chaos_save">Save</string>

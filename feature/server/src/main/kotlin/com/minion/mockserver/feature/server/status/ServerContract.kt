@@ -95,6 +95,9 @@ internal sealed interface ServerIntent : UiIntent {
     data object DismissBatteryCard : ServerIntent
     data object RequestBatteryExemption : ServerIntent
     data object OpenSettings : ServerIntent
+
+    /** The unmatched counter, tapped. Only meaningful when the count is above zero. */
+    data object ViewUnmatched : ServerIntent
     data object OpenNotificationSettings : ServerIntent
 
     /** Reported by the screen on every resume, since only it can ask the platform. */
@@ -115,6 +118,9 @@ internal sealed interface ServerEffect : UiEffect {
 
     data class NavigateToQr(val url: String) : ServerEffect
     data object NavigateToSettings : ServerEffect
+
+    /** Opens the traffic log with the unmatched filter already applied. */
+    data object NavigateToUnmatched : ServerEffect
     data object OpenBatterySettings : ServerEffect
 
     /** Opens this app's notification settings, so the warning has somewhere to lead. */

@@ -5,6 +5,8 @@
     <!-- Collections -->
     <string name="collections_title">Routes</string>
     <string name="collections_new">New collection</string>
+    <!-- Beside the Routes title: how many routes will actually answer right now. -->
+    <string name="collections_live_count">%1$d of %2$d live</string>
     <string name="collections_edit_title">Edit collection</string>
     <string name="collections_save">Save</string>
     <string name="collections_cancel">Cancel</string>
@@ -19,6 +21,82 @@
 
     <!-- Route list -->
     <string name="routes_new">New route</string>
+
+    <!-- Route editor: the three tabs and what each one explains. -->
+    <string name="editor_tab_request">Request</string>
+    <string name="editor_tab_response">Response</string>
+    <string name="editor_tab_chaos">Chaos</string>
+    <string name="editor_subtitle_unsaved">Unsaved changes</string>
+    <string name="editor_subtitle_route">%1$s %2$s</string>
+    <string name="editor_specificity_label">Match specificity</string>
+    <string name="editor_specificity_help">Higher wins when two routes could both answer.</string>
+    <string name="editor_name_help">Left blank, it takes the method and path.</string>
+    <string name="editor_method_label">Method</string>
+    <string name="editor_status_label">Status code</string>
+    <string name="editor_matchers_help">Narrow the match further</string>
+    <string name="editor_matchers_none">None yet</string>
+    <string name="editor_new_callout">A path is all this needs. The response defaults to 200 {} until you change it.</string>
+    <string name="editor_chaos_now_title">What a call to this route does now</string>
+    <string name="editor_chaos_now_delay">Waits %1$d ms, then answers %2$d with the body from the Response tab.</string>
+    <string name="editor_chaos_now_plain">Answers %1$d with the body from the Response tab.</string>
+    <string name="editor_chaos_route_only">This route only</string>
+    <string name="editor_chaos_route_only_help">Set here, kept even when the active profile is None.</string>
+    <string name="editor_chaos_global">Everything else</string>
+    <string name="editor_chaos_global_where">Set in Settings</string>
+    <string name="editor_chaos_profile_name">%1$s · seed %2$d</string>
+    <string name="editor_chaos_profile_none">None</string>
+    <string name="editor_chaos_edit_profiles">Edit chaos profiles</string>
+    <string name="editor_chaos_global_help">Failures come from the active chaos profile and apply to every route.</string>
+    <string name="editor_delay_unit">ms</string>
+    <string name="editor_save_route">Save route</string>
+
+    <!-- Collection detail: the top bar, its overflow menu, and the two dialogs it opens. -->
+    <string name="routes_detail_subtitle">%1$s · %2$s</string>
+    <plurals name="routes_count">
+        <item quantity="one">%1$d route</item>
+        <item quantity="other">%1$d routes</item>
+    </plurals>
+    <string name="routes_more_actions">More actions</string>
+    <string name="routes_menu_rename">Rename</string>
+    <string name="routes_menu_import">Import into this one</string>
+    <string name="routes_menu_duplicate">Duplicate collection</string>
+    <string name="routes_menu_reorder">Reorder routes</string>
+    <string name="routes_menu_reorder_done">Done reordering</string>
+    <string name="routes_find">Find route</string>
+    <string name="routes_find_hint">Find a route by path or name</string>
+    <string name="routes_find_empty_title">No route matches</string>
+    <string name="routes_find_empty_body">Nothing in this collection has that in its path or its name.</string>
+    <!-- Shown while arranging, because order is presentation and matching is not. -->
+    <string name="routes_reorder_note">Order is how the list reads. Which route answers is still decided by how specific it is.</string>
+    <plurals name="routes_menu_disable_all">
+        <item quantity="one">Turn the route off</item>
+        <item quantity="other">Turn all %1$d routes off</item>
+    </plurals>
+    <plurals name="routes_menu_enable_all">
+        <item quantity="one">Turn the route on</item>
+        <item quantity="other">Turn all %1$d routes on</item>
+    </plurals>
+    <string name="routes_menu_delete">Delete collection</string>
+
+    <string name="routes_export">Export</string>
+    <string name="routes_export_note">Export writes native JSON or a Postman v2.1 collection.</string>
+    <string name="routes_export_share">Share %1$s</string>
+    <string name="routes_export_save">Save %1$s</string>
+    <string name="routes_format_json">native JSON</string>
+    <string name="routes_format_postman">Postman v2.1</string>
+
+    <string name="routes_rename_title">Rename collection</string>
+    <string name="routes_rename_label">Name</string>
+    <string name="routes_rename_help">A label for you only. Clients never see it.</string>
+    <string name="routes_rename_callout">The path prefix stays %1$s. Change it on a route\'s Path field.</string>
+
+    <string name="routes_delete_title">Delete %1$s?</string>
+    <plurals name="routes_delete_body">
+        <item quantity="one">Its route goes with it. Requests to %2$s will fall through to the unmatched response.</item>
+        <item quantity="other">Its %1$d routes go with it. Requests to %2$s will fall through to the unmatched response.</item>
+    </plurals>
+    <string name="routes_delete_callout">Nothing is exported yet. Save a copy first if you might want it back.</string>
+    <string name="routes_delete_confirm">Delete</string>
     <plurals name="routes_needs_body_banner">
         <item quantity="one">%1$d route was imported without a response body.</item>
         <item quantity="other">%1$d routes were imported without a response body.</item>
@@ -42,7 +120,8 @@
     <string name="editor_path_label">Path</string>
     <string name="editor_path_help">/users/{id} captures a segment. A trailing ** matches everything below.</string>
     <string name="editor_alternate">Use %1$d</string>
-    <string name="editor_delay_label">Fixed delay (ms)</string>
+    <!-- No unit in the label: the field carries "ms" as a suffix inside it. -->
+    <string name="editor_delay_label">Fixed delay</string>
     <string name="editor_delay_help">Applies to this route only, and survives turning chaos off.</string>
     <string name="editor_specificity">Specificity: %1$d</string>
     <string name="editor_shadowed_help">Another route always beats this one, so it can never answer a request. Make its path or matchers more specific.</string>

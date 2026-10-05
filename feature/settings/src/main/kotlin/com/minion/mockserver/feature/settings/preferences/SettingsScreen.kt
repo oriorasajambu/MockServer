@@ -4,37 +4,43 @@ import android.content.Intent
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.minion.mockserver.core.designsystem.component.AppButton
+import com.minion.mockserver.core.designsystem.icon.MockIcons
 import com.minion.mockserver.core.designsystem.theme.AppTheme
 import com.minion.mockserver.core.designsystem.theme.Dimens
 import com.minion.mockserver.core.domain.model.ChaosProfile
 import com.minion.mockserver.core.ui.component.AppScaffold
 import com.minion.mockserver.core.ui.component.ExportActionRow
+import com.minion.mockserver.core.ui.component.FadedDivider
 import com.minion.mockserver.core.ui.component.LabelledTextField
 import com.minion.mockserver.core.ui.component.SectionTitle
+import com.minion.mockserver.core.ui.component.SettingsSection
 import com.minion.mockserver.core.ui.component.ToggleRow
 import com.minion.mockserver.core.ui.error.toMessageRes
 import com.minion.mockserver.core.ui.mvi.ObserveAsEvents
@@ -103,29 +109,157 @@ internal fun SettingsContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(Dimens.space),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMedium),
+                .verticalScroll(rememberScrollState()),
         ) {
             if (state.showRestartPrompt) {
-                RestartPrompt(state = state, onIntent = onIntent)
+                RestartPrompt(
+                    state = state,
+                    onIntent = onIntent,
+                    modifier = Modifier.padding(Dimens.space),
+                )
             }
 
-            ServerSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
-            AccessSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
-            ChaosSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
-            TrafficLogSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
-            UnmatchedSection(state = state, onIntent = onIntent)
-            HorizontalDivider()
-            DataSection(onIntent = onIntent)
-            HorizontalDivider()
-            BatterySection(onIntent = onIntent)
+            Section(
+                section = SettingsState.Section.SERVER,
+                title = stringResource(R.string.settings_section_server),
+                icon = MockIcons.HardDrives,
+                summary = state.settings.port.toString(),
+                state = state,
+                onIntent = onIntent,
+            ) {
+                ServerSection(state = state, onIntent = onIntent)
+                AccessSection(state = state, onIntent = onIntent)
+            }
+
+            Section(
+                section = SettingsState.Section.CHAOS,
+                title = stringResource(R.string.settings_section_chaos),
+                icon = MockIcons.Lightning,
+                summary = stringResource(
+                    R.string.settings_chaos_summary,
+                    state.activeChaosName(),
+                    state.settings.chaosSeed,
+                ),
+                state = state,
+                onIntent = onIntent,
+            ) {
+                ChaosSection(state = state, onIntent = onIntent)
+            }
+
+            Section(
+                section = SettingsState.Section.TRAFFIC_LOG,
+                title = stringResource(R.string.settings_section_traffic),
+                icon = MockIcons.Pulse,
+                summary = pluralStringResource(
+                    R.plurals.settings_log_summary,
+                    state.settings.logCapacity,
+                    state.settings.logCapacity,
+                ),
+                state = state,
+                onIntent = onIntent,
+            ) {
+                TrafficLogSection(state = state, onIntent = onIntent)
+            }
+
+            Section(
+                section = SettingsState.Section.UNMATCHED,
+                title = stringResource(R.string.settings_section_unmatched),
+                icon = MockIcons.WarningCircle,
+                summary = state.settings.unmatchedResponse.statusCode.toString(),
+                state = state,
+                onIntent = onIntent,
+            ) {
+                UnmatchedSection(state = state, onIntent = onIntent)
+            }
+
+            Section(
+                section = SettingsState.Section.DATA,
+                title = stringResource(R.string.settings_section_data),
+                icon = MockIcons.ArrowsDownUp,
+                state = state,
+                onIntent = onIntent,
+            ) {
+                DataSection(onIntent = onIntent)
+            }
+
+            Section(
+                section = SettingsState.Section.BATTERY,
+                title = stringResource(R.string.settings_section_battery),
+                icon = MockIcons.BatteryHigh,
+                state = state,
+                onIntent = onIntent,
+            ) {
+                BatterySection(onIntent = onIntent)
+            }
+
+            Section(
+                section = SettingsState.Section.ABOUT,
+                title = stringResource(R.string.settings_section_about),
+                icon = MockIcons.Info,
+                summary = appVersion(),
+                state = state,
+                onIntent = onIntent,
+            ) {
+                AboutSection()
+            }
         }
     }
+}
+
+/** Wires a section to the expanded set, so no call site can toggle one and display another. */
+@Composable
+private fun Section(
+    section: SettingsState.Section,
+    title: String,
+    icon: ImageVector,
+    state: SettingsState,
+    onIntent: (SettingsIntent) -> Unit,
+    summary: String? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    SettingsSection(
+        title = title,
+        icon = icon,
+        isExpanded = section in state.expandedSections,
+        onToggle = { onIntent(SettingsIntent.ToggleSection(section)) },
+        summary = summary,
+        content = content,
+    )
+    FadedDivider()
+}
+
+/** The active profile's name, for the collapsed Chaos summary. */
+@Composable
+private fun SettingsState.activeChaosName(): String {
+    val id = settings.globalChaosProfileId
+    val profile = chaosProfiles.firstOrNull { it.id == id }
+    return profile?.name ?: stringResource(R.string.settings_chaos_none)
+}
+
+/**
+ * The installed version.
+ *
+ * Read from the package manager rather than from `BuildConfig`, because this module does not
+ * generate one and adding it for a single string would put a build-config block in every feature
+ * that ever wants the version.
+ */
+@Composable
+private fun appVersion(): String {
+    val context = LocalContext.current
+    return remember(context) {
+        runCatching {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        }.getOrNull().orEmpty()
+    }
+}
+
+@Composable
+private fun AboutSection() {
+    Text(
+        text = stringResource(R.string.settings_about_body),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 /** The port. Stale until a restart, which is what [RestartPrompt] is for. */
@@ -134,7 +268,6 @@ private fun ServerSection(
     state: SettingsState,
     onIntent: (SettingsIntent) -> Unit,
 ) {
-    SectionTitle(stringResource(R.string.settings_section_server))
 
     LabelledTextField(
         value = state.portInput,
@@ -187,7 +320,6 @@ private fun ChaosSection(
     state: SettingsState,
     onIntent: (SettingsIntent) -> Unit,
 ) {
-    SectionTitle(stringResource(R.string.settings_section_chaos))
 
     Row(
         modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -242,7 +374,6 @@ private fun TrafficLogSection(
     state: SettingsState,
     onIntent: (SettingsIntent) -> Unit,
 ) {
-    SectionTitle(stringResource(R.string.settings_section_traffic))
 
     LabelledTextField(
         value = state.logCapacityInput,
@@ -259,7 +390,6 @@ private fun UnmatchedSection(
     state: SettingsState,
     onIntent: (SettingsIntent) -> Unit,
 ) {
-    SectionTitle(stringResource(R.string.settings_section_unmatched))
 
     LabelledTextField(
         value = state.settings.unmatchedResponse.statusCode.toString(),
@@ -284,13 +414,14 @@ private fun UnmatchedSection(
 /** Import and export. Takes no state — every control here is a plain action. */
 @Composable
 private fun DataSection(onIntent: (SettingsIntent) -> Unit) {
-    SectionTitle(stringResource(R.string.settings_section_data))
 
     // Import is the section's primary action and gets its own line; export is two destinations
     // for one thing and reads as a row.
-    Button(onClick = { onIntent(SettingsIntent.OpenImport) }) {
-        Text(stringResource(R.string.settings_import))
-    }
+    AppButton(
+        text = stringResource(R.string.settings_import),
+        icon = MockIcons.FileArrowDown,
+        onClick = { onIntent(SettingsIntent.OpenImport) },
+    )
 
     ExportActionRow(
         label = stringResource(R.string.settings_export_everything),
@@ -302,7 +433,6 @@ private fun DataSection(onIntent: (SettingsIntent) -> Unit) {
 /** The always-available route to the exemption, distinct from the card the server screen shows. */
 @Composable
 private fun BatterySection(onIntent: (SettingsIntent) -> Unit) {
-    SectionTitle(stringResource(R.string.settings_section_battery))
 
     Text(
         text = stringResource(R.string.settings_battery_help),
@@ -324,6 +454,7 @@ private fun BatterySection(onIntent: (SettingsIntent) -> Unit) {
 private fun RestartPrompt(
     state: SettingsState,
     onIntent: (SettingsIntent) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     // Resolved through `map` — an inline lambda, so the composable `label()` is legal inside it —
     // before the join, which takes a non-inline transform and would not be.
@@ -334,9 +465,10 @@ private fun RestartPrompt(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.tertiary,
         )
-        Button(onClick = { onIntent(SettingsIntent.RestartServer) }) {
-            Text(stringResource(R.string.settings_restart))
-        }
+        AppButton(
+            text = stringResource(R.string.settings_restart),
+            onClick = { onIntent(SettingsIntent.RestartServer) },
+        )
     }
 }
 

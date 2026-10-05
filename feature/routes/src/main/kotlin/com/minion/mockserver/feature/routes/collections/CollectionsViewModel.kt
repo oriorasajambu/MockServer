@@ -9,6 +9,7 @@ import com.minion.mockserver.core.domain.usecase.collection.GetCollectionsUseCas
 import com.minion.mockserver.core.domain.usecase.collection.SaveCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.collection.ToggleCollectionUseCase
 import com.minion.mockserver.core.domain.usecase.route.GetRoutesUseCase
+import com.minion.mockserver.core.domain.usecase.route.ToggleRouteUseCase
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.combine
@@ -23,25 +24,29 @@ internal class CollectionsViewModel @Inject constructor(
     private val deleteCollection: DeleteCollectionUseCase,
     private val toggleCollection: ToggleCollectionUseCase,
     private val getRoutes: GetRoutesUseCase,
+    private val toggleRoute: ToggleRouteUseCase,
 ) : MviViewModel<CollectionsState, CollectionsIntent, CollectionsEffect>(CollectionsState()) {
 
     init {
         viewModelScope.launch {
-            combine(
-                getCollections(),
-                getRoutes.all(),
-            ) { collections, routes ->
-                Triple(
-                    collections,
-                    routes.groupingBy { it.collectionId }.eachCount(),
-                    routes.filter { it.needsBody }.groupingBy { it.collectionId }.eachCount(),
-                )
-            }.collect { (collections, counts, needsBody) ->
+            combine(getCollections(), getRoutes.all(), ::Pair).collect { (collections, routes) ->
+                val byCollection = routes.groupBy { it.collectionId }
                 reduce {
                     copy(
                         collections = collections,
-                        routeCounts = counts,
-                        needsBodyCounts = needsBody,
+                        routeCounts = byCollection.mapValues { (_, its) -> its.size },
+                        needsBodyCounts = routes.filter { it.needsBody }
+                            .groupingBy { it.collectionId }
+                            .eachCount(),
+                        // Whatever order the repository returns, which is creation order. The
+                        // preview is a sample rather than a ranking — there is no "most
+                        // important route", and sorting by one would only make the card's
+                        // contents shuffle as routes are edited.
+                        previewRoutes = byCollection.mapValues { (_, its) ->
+                            its.take(PREVIEW_ROUTE_COUNT)
+                        },
+                        enabledRouteCount = routes.count { it.isEnabled },
+                        totalRouteCount = routes.size,
                         isLoading = false,
                     )
                 }
@@ -51,6 +56,10 @@ internal class CollectionsViewModel @Inject constructor(
 
     override fun onIntent(intent: CollectionsIntent) {
         when (intent) {
+            is CollectionsIntent.ToggleRoute -> viewModelScope.launch {
+                toggleRoute(intent.id, intent.isEnabled)
+            }
+
             CollectionsIntent.NewCollection -> reduce { copy(editing = CollectionsState.Draft()) }
 
             is CollectionsIntent.EditCollection -> {
@@ -128,5 +137,8 @@ internal class CollectionsViewModel @Inject constructor(
 
     private companion object {
         const val SEPARATOR = ","
+
+        /** How many route lines a card previews. Three fits without the card outgrowing a thumb. */
+        const val PREVIEW_ROUTE_COUNT = 3
     }
 }

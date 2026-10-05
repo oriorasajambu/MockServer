@@ -3,18 +3,30 @@
 <resources>
 
     <string name="server_start">Start server</string>
-    <string name="server_stop">Stop server</string>
+    <!-- Short, because Stop and Pause sit side by side once the server is up; what pausing
+         actually does is explained in server_pause_note under them rather than in the label. -->
+    <string name="server_stop">Stop</string>
     <string name="server_starting">Starting…</string>
     <string name="server_stopping">Stopping…</string>
-    <string name="server_pause">Pause — refuse requests with 503</string>
+    <string name="server_pause">Pause</string>
     <string name="server_resume">Resume</string>
+    <string name="server_pause_note">Paused answers everything with 503 and keeps the port.</string>
+    <!-- Under the Start button. Deliberately does not mention who can reach the server: SPEC
+         8.6 requires a permanent, non-dismissible open-access note, and two sentences saying
+         the same thing one above the other read as a mistake. -->
+    <string name="server_start_note">Port %1$d · will listen on %2$s</string>
+    <string name="server_start_note_local">Port %1$d · apps on this phone only</string>
 
     <string name="server_title">Server</string>
-    <string name="server_copied">Copied</string>
+
+    <!-- The status beside the tab title. Also spoken, so it reads as a sentence on its own. -->
+    <string name="server_state_stopped">Stopped</string>
+    <string name="server_state_running">Running · %1$s</string>
+
+    <!-- The snackbar names what it copied; the title says which kind of thing it was. -->
+    <string name="server_copied">Address copied</string>
     <string name="server_qr_close">Close</string>
     <string name="server_qr_description">QR code for %1$s</string>
-
-
 
     <string name="server_port_fallback">Port %1$d was in use — running on %2$d</string>
     <string name="server_remember_port">Remember %1$d</string>
@@ -27,10 +39,19 @@
     <string name="server_battery_action">Open battery settings</string>
     <string name="server_battery_dismiss">Not now</string>
 
+    <string name="server_session">This session</string>
     <string name="server_stat_uptime">Uptime</string>
     <string name="server_stat_requests">Requests</string>
     <string name="server_stat_rate">Requests / min</string>
     <string name="server_stat_rate_value">%1$d</string>
     <string name="server_stat_unmatched">Unmatched</string>
+    <!-- Shown for every counter before the server has run, so the row reads as "nothing yet"
+         rather than as a measured zero. -->
+    <string name="server_stat_none">—</string>
+
+    <plurals name="server_unmatched_note">
+        <item quantity="one">%1$d request found no route. Tap to see it.</item>
+        <item quantity="other">%1$d requests found no route. Tap to see them.</item>
+    </plurals>
 
 </resources>

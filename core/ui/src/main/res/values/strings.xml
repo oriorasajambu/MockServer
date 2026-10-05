@@ -37,7 +37,9 @@
     <string name="error_unknown">Something went wrong. Try again.</string>
 
     <!-- Shared components. Screen copy lives in the feature that shows it. -->
-    <string name="editor_paste">Paste JSON from clipboard</string>
+    <!-- Short: the preview line under it already says what would be pasted, and a long
+         label pushed Format off the edge of the screen. -->
+    <string name="editor_paste">Paste</string>
     <string name="editor_paste_preview">Paste: %1$s</string>
     <string name="editor_format">Format</string>
 
@@ -57,6 +59,44 @@
 
     <!-- The collection and route rows. -->
     <string name="collections_edit">Edit</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="search_clear">Clear search</string>
+
+    <!-- The traffic row: what happened, and when. -->
+    <string name="traffic_no_route">No route matched</string>
+    <string name="traffic_chaos_injected">Chaos injected %1$d</string>
+    <string name="traffic_matched">Matched</string>
+    <string name="traffic_timing">%1$d ms · %2$s</string>
+
+    <!-- What a chaos profile does, in words. See ChaosDescription.kt for the rounding rule. -->
+    <string name="chaos_desc_clean">Every response goes out clean.</string>
+    <string name="chaos_desc_nothing_fails">Nothing fails.</string>
+    <string name="chaos_desc_sentence">%1$s %2$s</string>
+    <string name="chaos_desc_delay">Everything waits %1$s.</string>
+    <string name="chaos_desc_delay_range">Everything waits between %1$s and %2$s.</string>
+    <plurals name="chaos_desc_error">
+        <item quantity="one">About %1$d request in %2$d fails.</item>
+        <item quantity="other">About %1$d requests in %2$d fail.</item>
+    </plurals>
+    <plurals name="chaos_desc_reset">
+        <item quantity="one">About %1$d request in %2$d is cut mid-body with no clean end.</item>
+        <item quantity="other">About %1$d requests in %2$d are cut mid-body with no clean end.</item>
+    </plurals>
+    <plurals name="chaos_desc_malformed">
+        <item quantity="one">About %1$d request in %2$d arrives incomplete.</item>
+        <item quantity="other">About %1$d requests in %2$d arrive incomplete.</item>
+    </plurals>
+    <string name="chaos_desc_error_all">Every request fails.</string>
+    <string name="chaos_desc_reset_all">Every request is cut mid-body with no clean end.</string>
+    <string name="chaos_desc_malformed_all">Every request arrives incomplete.</string>
+    <string name="chaos_duration_ms">%1$d ms</string>
+    <string name="chaos_duration_seconds">%1$s s</string>
+    <string name="chaos_edit_profile">Edit profile</string>
+    <string name="editor_body_label">Body</string>
+
+    <!-- The inline result after firing a route at itself from the editor. -->
+    <string name="editor_test_fired">Test fired</string>
+    <string name="editor_test_result">%1$d · %2$d ms · %3$d B</string>
     <plurals name="collections_route_count">
         <item quantity="one">%1$d route</item>
         <item quantity="other">%1$d routes</item>
@@ -65,10 +105,25 @@
         <item quantity="one">%1$d needs a body</item>
         <item quantity="other">%1$d need bodies</item>
     </plurals>
+
+    <!-- "/api/v1 - 6 routes": the base path, then how much is under it. -->
+    <string name="collections_card_caption">%1$s · %2$s</string>
+    <plurals name="collections_view_all">
+        <item quantity="one">View the route</item>
+        <item quantity="other">View all %1$d routes</item>
+    </plurals>
+
+    <!-- A route's own chaos delay, shown on its preview line. -->
+    <string name="route_preview_delay">%1$dms</string>
+    <string name="route_preview_delay_range">%1$d–%2$dms</string>
     <string name="routes_duplicate">Duplicate</string>
+    <string name="routes_move_up">Move up</string>
+    <string name="routes_move_down">Move down</string>
     <string name="routes_shadowed">Shadowed</string>
     <string name="routes_needs_body">Needs body</string>
     <string name="routes_chaos">Chaos</string>
+    <!-- On a route row whose switch is off, beside the pills. -->
+    <string name="routes_off">off</string>
 
     <!-- The live-log row: duration, and the one-word reason a row is not a plain match. -->
     <string name="traffic_duration">%1$d ms</string>
@@ -98,6 +153,7 @@
     <string name="server_copy">Copy</string>
     <string name="server_qr">QR</string>
     <string name="server_interface">on %1$s</string>
+    <string name="server_interface_stopped">on %1$s — not listening yet</string>
     <plurals name="server_more_addresses">
         <item quantity="one">%1$d more address</item>
         <item quantity="other">%1$d more addresses</item>

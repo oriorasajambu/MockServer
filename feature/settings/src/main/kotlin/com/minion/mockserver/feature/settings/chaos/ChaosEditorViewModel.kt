@@ -8,6 +8,8 @@ import com.minion.mockserver.core.domain.model.DelaySpec
 import com.minion.mockserver.core.domain.usecase.chaos.DeleteChaosProfileUseCase
 import com.minion.mockserver.core.domain.usecase.chaos.GetChaosProfilesUseCase
 import com.minion.mockserver.core.domain.usecase.chaos.SaveChaosProfileUseCase
+import com.minion.mockserver.core.domain.usecase.chaos.SetGlobalChaosProfileUseCase
+import com.minion.mockserver.core.domain.usecase.settings.GetServerSettingsUseCase
 import com.minion.mockserver.core.ui.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -19,11 +21,24 @@ internal class ChaosEditorViewModel @Inject constructor(
     private val getProfiles: GetChaosProfilesUseCase,
     private val saveProfile: SaveChaosProfileUseCase,
     private val deleteProfile: DeleteChaosProfileUseCase,
+    private val getSettings: GetServerSettingsUseCase,
+    private val setGlobalProfile: SetGlobalChaosProfileUseCase,
 ) : MviViewModel<ChaosEditorState, ChaosEditorIntent, ChaosEditorEffect>(ChaosEditorState()) {
 
     init {
         viewModelScope.launch {
             getProfiles().collect { profiles -> reduce { copy(profiles = profiles) } }
+        }
+        // Which profile is live, and the seed, both live in settings rather than on the profiles.
+        viewModelScope.launch {
+            getSettings().collect { settings ->
+                reduce {
+                    copy(
+                        activeProfileId = settings.globalChaosProfileId,
+                        chaosSeed = settings.chaosSeed,
+                    )
+                }
+            }
         }
     }
 
@@ -31,6 +46,13 @@ internal class ChaosEditorViewModel @Inject constructor(
         when (intent) {
             ChaosEditorIntent.NewProfile ->
                 reduce { copy(editing = ChaosProfile(id = "", name = "")) }
+
+            is ChaosEditorIntent.SelectProfile -> viewModelScope.launch {
+                setGlobalProfile(intent.id)
+            }
+
+            ChaosEditorIntent.ShowExplainer -> reduce { copy(isExplainerOpen = true) }
+            ChaosEditorIntent.DismissExplainer -> reduce { copy(isExplainerOpen = false) }
 
             is ChaosEditorIntent.EditProfile -> reduce {
                 copy(editing = profiles.firstOrNull { it.id == intent.id })

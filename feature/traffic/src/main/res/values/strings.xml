@@ -3,6 +3,20 @@
 <resources>
 
     <string name="traffic_title">Traffic</string>
+    <plurals name="traffic_request_count">
+        <item quantity="one">%1$d request</item>
+        <item quantity="other">%1$d requests</item>
+    </plurals>
+    <string name="traffic_chaos">Chaos</string>
+    <string name="traffic_detail_body">Body</string>
+    <string name="traffic_detail_bytes_in">%1$d ms · %2$d B in</string>
+    <string name="traffic_detail_bytes_out">%1$d ms · %2$d B out</string>
+    <string name="traffic_detail_unmatched_note">No route matched. The unmatched fallback answered.</string>
+    <string name="traffic_detail_fallback_note">Sent by the unmatched fallback, not a route.</string>
+    <string name="traffic_filters">Filters</string>
+    <string name="traffic_filter_method">Method</string>
+    <string name="traffic_filter_status">Status</string>
+    <string name="traffic_filter_collection">Collection</string>
     <string name="traffic_detail_title">Request</string>
     <string name="traffic_search_label">Search paths, headers and bodies</string>
     <string name="traffic_status_class">%1$dxx</string>

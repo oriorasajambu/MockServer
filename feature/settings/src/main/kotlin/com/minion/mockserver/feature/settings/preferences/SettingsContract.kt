@@ -30,11 +30,23 @@ internal data class SettingsState(
 
     val isServerRunning: Boolean = false,
 
+    /**
+     * Which sections are open.
+     *
+     * A set rather than one id: the design opens Import and Battery together, and a screen that
+     * closed one section to open another would make comparing two of them a game of tapping back
+     * and forth. All start closed, so the first thing this screen shows is its own contents list.
+     */
+    val expandedSections: Set<Section> = emptySet(),
+
     val error: DomainError? = null,
 ) : UiState {
 
     /** The settings that are read once, when the socket opens. */
     enum class RestartField { PORT, BIND_ADDRESS, API_KEY }
+
+    /** The collapsible blocks, in the order they are drawn. */
+    enum class Section { SERVER, CHAOS, TRAFFIC_LOG, UNMATCHED, DATA, BATTERY, ABOUT }
 
     /** Whether to show the restart prompt at all. */
     val showRestartPrompt: Boolean get() = isServerRunning && restartRequired.isNotEmpty()
@@ -58,6 +70,7 @@ internal sealed interface SettingsIntent : UiIntent {
     /** Everything, to a file the user picks (SPEC §9.2). */
     data object SaveExportToFile : SettingsIntent
     data object OpenChaosEditor : SettingsIntent
+    data class ToggleSection(val section: SettingsState.Section) : SettingsIntent
     data object OpenBatterySettings : SettingsIntent
 }
 

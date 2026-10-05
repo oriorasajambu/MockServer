@@ -2,14 +2,18 @@ package com.minion.mockserver.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
@@ -68,13 +72,34 @@ fun AppNavHost(
             // Hidden on full-screen destinations: the QR is meant to fill the screen, and the
             // editor needs every pixel it can get on a phone.
             if (currentDestination?.isTopLevel() == true) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.background,
+                ) {
                     BottomNavItem.entries.forEach { item ->
+                        val selected = currentDestination.hasRouteOf(item)
                         NavigationBarItem(
-                            selected = currentDestination.hasRouteOf(item),
+                            selected = selected,
                             onClick = { navController.navigateToTab(item) },
-                            icon = { Icon(item.icon, contentDescription = null) },
+                            icon = {
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(
+                                        if (selected) item.selectedIconRes else item.iconRes,
+                                    ),
+                                    // The label under it names the destination; announcing the
+                                    // glyph too would read every tab twice.
+                                    contentDescription = null,
+                                )
+                            },
                             label = { Text(stringResource(item.labelRes)) },
+                            colors = NavigationBarItemDefaults.colors(
+                                // The accent pill behind the selected tab. Elsewhere this design
+                                // does not flood an area with accent; at 52x26 it is a mark.
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
                         )
                     }
                 }
@@ -89,6 +114,12 @@ fun AppNavHost(
             serverScreen(
                 onNavigateToQr = { url -> navController.navigate(QrRoute(url)) },
                 onNavigateToSettings = { navController.navigateToTab(BottomNavItem.SETTINGS) },
+                // Pushed rather than switched to as a tab: this is a drill-down from a counter,
+                // so back belongs on the Server tab the question was asked from, and a tab switch
+                // would restore the log's saved unfiltered state over the filter just asked for.
+                onNavigateToUnmatched = {
+                    navController.navigate(TrafficRoute(unmatchedOnly = true))
+                },
                 onRequestNotificationPermission = onRequestNotificationPermission,
             )
             qrScreen(onBack = navController::popBackStack)
@@ -98,6 +129,14 @@ fun AppNavHost(
             )
             collectionDetailScreen(
                 onNavigateBack = navController::popBackStack,
+                onNavigateToImport = { id -> navController.navigate(ImportRoute(id)) },
+                // The duplicate replaces this screen rather than stacking on it: going back from
+                // a copy should reach the collection list, not the original it was made from.
+                onNavigateToCollection = { id ->
+                    navController.navigate(CollectionDetailRoute(id)) {
+                        popUpTo(CollectionDetailRoute::class) { inclusive = true }
+                    }
+                },
                 onNavigateToEditor = { routeId ->
                     val collectionId = navController.currentCollectionId() ?: return@collectionDetailScreen
                     navController.navigate(RouteEditorRoute(collectionId, routeId))
@@ -105,6 +144,7 @@ fun AppNavHost(
             )
             routeEditorScreen(
                 onNavigateBack = navController::popBackStack,
+                onNavigateToChaosEditor = { navController.navigate(ChaosEditorRoute()) },
                 onNavigateToTrafficEntry = { entryId ->
                     navController.navigate(TrafficDetailRoute(entryId))
                 },
@@ -128,7 +168,7 @@ fun AppNavHost(
             )
 
             settingsScreen(
-                onNavigateToImport = { navController.navigate(ImportRoute) },
+                onNavigateToImport = { navController.navigate(ImportRoute()) },
                 onNavigateToChaosEditor = { navController.navigate(ChaosEditorRoute()) },
             )
             importScreen(

@@ -70,6 +70,7 @@ internal object Mappers {
         createdAt = createdAt,
         needsBody = needsBody,
         alternateResponses = decode(alternatesJson, ALTERNATE_LIST, emptyList()),
+        order = order,
     )
 
     fun MockRoute.toEntity(): RouteEntity = RouteEntity(
@@ -85,6 +86,7 @@ internal object Mappers {
         createdAt = createdAt,
         needsBody = needsBody,
         alternatesJson = encode(alternateResponses, ALTERNATE_LIST),
+        order = order,
     )
 
     // ---------------------------------------------------------------- chaos
