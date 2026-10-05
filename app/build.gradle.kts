@@ -10,17 +10,41 @@ plugins {
     id("mockserver.android.application")
 }
 
+val releaseStoreFile = providers.environmentVariable("ANDROID_KEYSTORE_PATH").orNull
+val releaseStorePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orNull
+val releaseKeyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orNull
+val releaseKeyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").orNull
+val releaseSigningValues = listOf(releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword)
+val releaseSigningEnabled = releaseSigningValues.any { !it.isNullOrBlank() }
+require(!releaseSigningEnabled || releaseSigningValues.all { !it.isNullOrBlank() }) {
+    "Release signing requires ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD."
+}
+
 android {
     namespace = "com.minion.mockserver"
 
     defaultConfig {
         applicationId = "com.minion.mockserver"
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = providers.gradleProperty("appVersionCode").orElse("1").get().toInt()
+        versionName = providers.gradleProperty("appVersionName").orElse("1.0").get()
+    }
+
+    if (releaseSigningEnabled) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(requireNotNull(releaseStoreFile))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+            }
+        }
     }
 
     buildTypes {
         release {
+            if (releaseSigningEnabled) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             // Off for now. The app is sideloaded to a known set of devices, and the first thing
             // minification would break is Room's and kotlinx.serialization's generated code —
             // worth turning on deliberately, with the rules written and tested, not by default.
